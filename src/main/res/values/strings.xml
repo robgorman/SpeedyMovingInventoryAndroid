@@ -1,0 +1,161 @@
+<resources>
+    <string name="app_name">Speedy</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_name">Enter Your Name</string>
+    <string name="prompt_reenter_password">Confirm Password</string>
+    <string name="prompt_address1">Address Line 1</string>
+    <string name="prompt_address2">Address Line 2 (optional)</string>
+    <string name="prompt_city_state_zip">City, State Zip</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_invalid_phone_number">This phone number is invalid</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="title_activity_jobs">Jobs</string>
+    <string name="prompt_cellular_number">10 Digit Cell Number</string>
+    <string name="remember_me">Remember Me</string>
+    <string name="action_forgot_password">Forgot Password?</string>
+    <string name="dont_have_account">Don\'t have an Account?</string>
+    <string name="signup">Sign up</string>
+    <string name="promt_enter_cellular_number">Enter 10 Digit Cell Number</string>
+    <string name="action_text_password">Text My Password</string>
+    <string name="select_a_business_category">Select a Business Category:</string>
+    <string name="create_account">Sign Up!</string>
+    <string name="title_activity_main">My Business Card</string>
+    <string name="action_change_password">Change Password</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="prompt_business_name">Business Name</string>
+    <string name="prompt_business_phone">Business Phone #</string>
+    <string name="prompt_website">Business Web Site</string>
+    <string name="action_upload_business_card">Upload New Business Card Image...</string>
+    <string name="prompt_business_email">Email Address</string>
+    <string name="send_business_card">Send Business Card</string>
+    <string name="send_business_card_title">Send Business Card</string>
+    <string name="action_send">Send</string>
+    <string name="cancel">Cancel</string>
+    <string name="change_password">Change Password</string>
+    <string name="prompt_new_password">New Password</string>
+    <string name="confirm_new_password">Confirm Password</string>
+
+    <string name="forgot_password_title">Forgot Password</string>
+    <string name="login_title">Login</string>
+    <string name="sign_up_title">Get An Account!</string>
+    <string name="a_text_message_has_been_sent">A text message has been sent to %1$s with your new password. Please change it after you login.</string>
+    <string name="error_passwords_dont_match">Passwords don\'t match</string>
+    <string name="error_must_select_business_category">You must select a business category</string>
+    <string name="action_logout">Logout</string>
+    <string name="prompt_old_password">Old Password</string>
+    <string name="error_not_a_valid_password">Not a valid password</string>
+    <string name="permission_request">Permission Request</string>
+    <string name="explanation_read_phone_state">Permission for this capability allows us to autopopulate or login form, as well as, others with your cellular phone number. Its Ok to deny this permssion, it will only affect form autopopulation.</string>
+    <string name="ok">Ok</string>
+    <string name="edit_message">Enter data in the fields below to create or update your business card. The information will be transformed into a web page that represents your card. Don\'t forget to provide an image of your business card.</string>
+    <string name="choose_business_card_button">Choose Business Card Image...</string>
+    <string name="notes_prompt">Notes To Self (optional)</string>
+    <string name="action_invite">Invite</string>
+    <string name="invite_title">Invite</string>
+    <string name="invite_message">Enter a cell number to invite a friend to download the MyBC App!</string>
+    <string name="action_about">About</string>
+    <string name="about_title">About</string>
+    <string name="mybc_title">My BC</string>
+    <string name="close">Close</string>
+    <string name="my_bc_about_message">MyBC is designed and engineered by Gateway2Services LLC. Contact Gateway2Services@gmail.com for questions or support.</string>
+    <string name="action_refresh_cards">Refresh...</string>
+    <string name="action_change_category">Change Business Category</string>
+    <string name="select_a_new_business_category">Select a New Business Category</string>
+    <string name="label_current_business_category">Current Business Category</string>
+    <string name="change_business_category_button">Make The Change</string>
+    <string name="change_business_category_body">When you change your Business Category, you will also automatically re-send your Business Card to all previously sent numbers using the new category.</string>
+    <string name="change">Change</string>
+    <string name="change_and_send">Change</string>
+    <string name="change_business_category_label">Change Business Category</string>
+    <string name="set_a_reminder">Reminder:</string>
+    <string name="auto_refresh">Auto-Refresh</string>
+    <string name="refresh_title">Refresh Business Cards</string>
+    <string name="action_refresh">Refresh</string>
+    <string-array name="reminders_array">
+        <item>None</item>
+        <item>1 Week</item>
+        <item>2 Weeks</item>
+        <item>3 Weeks</item>
+        <item>1 Month</item>
+
+        <item>2 Months</item>
+        <item>3 Months</item>
+        <item>6 Months</item>
+        <item>9 Months</item>
+    </string-array>
+    <string name="title_activity_initial_router">InitialRouterActivity</string>
+    <string name="welcome_message">Welcome to Speedy Moving Inventory</string>
+    <string name="action_send_reset_instructions">Send Reset Instructions</string>
+    <string name="a_password_reset_message_has_been_sent">A password reset message has been send to %1$s with instructions on how to reset your password.</string>
+    <string name="pick_label">Pickup</string>
+    <string name="deliver_label">Delivery Window</string>
+    <string name="button_scan">Scan Items</string>
+    <string name="permission_camera_rationale">Access to the camera is needed for reading QRC codes</string>
+    <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
+    <string name="barcode_header">Click &quot;Read Barcode&quot; to read a barcode</string>
+    <string name="read_barcode">Read Barcode</string>
+    <string name="auto_focus">Auto Focus</string>
+    <string name="use_flash">Use Flash</string>
+    <string name="barcode_success">Barcode read successfully</string>
+    <string name="barcode_failure">No barcode captured</string>
+    <string name="barcode_error">"Error reading barcode: %1$s"</string>
+    <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
+    <string name="no_external_storage_permission">You must enable the external storage application in order to take pictures.</string>
+    <string name="item_not_found">Item not found.</string>
+    <string name="title_activity_new_item">NewItemActivity</string>
+    <string name="number_of_pads">Pads:</string>
+    <string name="weight">Lbs:</string>
+    <string name="cubic_feet">Ft^3:</string>
+    <string name="value">Value:</string>
+    <string name="end_scan">End Scan</string>
+    <string name="sign_off">Sign Off</string>
+    <string name="title_activity_job">Job</string>
+    <string name="logout">Logout</string>
+    <string name="no_jobs_message">No jobs have been assigned to you. Your  Company Admin or Foreman must assign you to jobs before you can seee them.</string>
+    <string name="about">About</string>
+    <string name="speedy_moving_inventory">Speedy Moving Inventory</string>
+    <string name="welcome_to">Welcome to</string>
+    <string name="please_sign_in">Please sign in</string>
+    <string name="activity_status_label">Activity Status:</string>
+    <string name="description_label">Description:</string>
+    <string name="value_label">Value:</string>
+    <string name="insurance_label">Ins:</string>
+    <string name="number_of_pads_label">#Pads:</string>
+    <string name="category_label">Cat:</string>
+    <string name="packed_by_label">Packed By:</string>
+    <string name="volume_label">Volume:</string>
+    <string name="weight_label">Weight:</string>
+    <string name="claim_number_layout">Claim#:</string>
+    <string name="insurance_label_long">Insurance:</string>
+    <string name="category_label_long">Category:</string>
+    <string name="is_box">Is Box</string>
+    <string name="no_items_message">No moving items have been added to this job. Press the Scan button below to scan and add items.</string>
+    <string name="scanner_message">Point the camera at a QRC code to scan.</string>
+    <string name="no_photos_message">No photos of this item have been taken. Press the add photo button below to add images.</string>
+    <string name="title_activity_sign_off">SignOffActivity</string>
+    <string name="signature_message">I agree to the terms and conditions.</string>
+    <string name="clear_pad">Reset</string>
+    <string name="accept">Accept</string>
+    <string name="sign_here">Sign Here</string>
+    <string name="title_activity_item_detail">ItemDetailActivity</string>
+    <string name="claim_number_label">Claim Number:</string>
+    <string name="item_is_damaged_checkbox_label">Item Is Damaged</string>
+    <string name="active_claim_label">Active Claim</string>
+    <string name="damage_description_lable">Damage Description:</string>
+    <string name="all_items_not_scanned">Not all items are scanned. Scan all items before signoff.</string>
+    <string name="must_be_foreman_to_signoff">You must be assigned as a Foreman or above to signoff.</string>
+    <string name="job_is_complete_no_scanning">The job is complete; No further scanning is possible</string>
+    <string name="job_is_complete_no_signoff">The job is complete; No further signoff is possible</string>
+</resources>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+
+
+              xmlns:autofit="http://schemas.android.com/apk/res-auto">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:layout_marginTop="6dp"
+    android:layout_marginBottom="6dp">
+
+    <me.grantland.widget.AutofitTextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/tvJobNumber"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        autofit:minTextSize="3sp"
+        android:maxLines="1"
+        android:layout_marginLeft="6dp"
+        android:gravity="left|center_vertical"
+        android:text="Gorman, Rob"/>
+
+    <me.grantland.widget.AutofitTextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:id="@+id/tvName"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        autofit:minTextSize="3sp"
+        android:maxLines="1"
+        android:layout_marginLeft="6dp"
+        android:gravity="left|center_vertical"
+        android:text="Gorman, Rob"/>
+
+    <me.grantland.widget.AutofitTextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/tvStatus"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:maxLines="1"
+        autofit:minTextSize="8sp"
+        android:singleLine="true"
+        android:layout_marginLeft="4dp"
+        android:gravity="left|center_vertical"
+        android:text="New"/>
+
+
+    <me.grantland.widget.AutofitTextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvPickupDate"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:maxLines="1"
+        autofit:minTextSize="8sp"
+        android:singleLine="true"
+        android:layout_marginLeft="8dp"
+        android:gravity="left|center_vertical"
+        android:text="22/11/16"/>
+
+    <me.grantland.widget.AutofitTextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/tvDeliveryDate"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:maxLines="1"
+        autofit:minTextSize="8sp"
+        android:singleLine="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="2dp"
+        android:gravity="left|center_vertical"
+        android:text="22/11/16"/>
+
+</LinearLayout>
+</LinearLayout>

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              xmlns:autofit="http://schemas.android.com/apk/res-auto"
+              android:layout_marginBottom="1dp">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:id="@+id/ivItemImage"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:layout_height="120dp"
+            autofit:srcCompat="@drawable/noimage"/>
+
+        <ImageView
+            autofit:srcCompat="@drawable/damage_warning"
+            android:id="@+id/ivInactiveClaim"
+            android:layout_alignParentBottom="false"
+            android:layout_alignParentRight="false"
+            android:layout_alignRight="@id/ivItemImage"
+            android:layout_alignBottom="@id/ivItemImage"
+            android:paddingRight="10dp"
+            android:paddingBottom="10dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"/>
+
+        <ImageView
+            autofit:srcCompat="@drawable/damage_warning"
+            android:id="@+id/ivActiveClaim"
+            android:layout_centerInParent="true"
+            android:layout_width="60dp"
+            android:layout_height="60dp"/>
+
+        <me.grantland.widget.AutofitTextView
+            android:text="2 more images"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/ivItemImage"
+            android:paddingBottom="4dp"
+            android:gravity="center_horizontal"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/tvMoreImages"
+            android:textColor="@color/White"/>
+
+        <ImageView
+            autofit:srcCompat="@drawable/checkmark"
+            android:id="@+id/ivScannedCheck"
+            android:layout_height="30dp"
+            android:layout_width="30dp"
+            android:layout_alignBottom="@id/ivItemImage"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="10dp"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="2dp"
+        android:paddingTop="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <me.grantland.widget.AutofitTextView
+                android:text="@string/description_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView14"
+                android:layout_weight="2"
+                android:paddingRight="4dp"
+                android:textColor="@color/Black"/>
+
+            <me.grantland.widget.AutofitTextView
+                android:text="TextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvDescription"
+                android:layout_weight="5"
+                android:lines="1"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="@string/value_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView15"
+                        android:layout_weight="2"
+                        android:textColor="@color/Black"/>
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="$5"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        autofit:minTextSize="3sp"
+                        android:id="@+id/tvMonetaryValue"
+                        android:layout_weight="3"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="@string/insurance_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView22"
+                        android:layout_weight="2"
+                        android:textColor="@color/Black"/>
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="None"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvInsurance"
+                        android:layout_weight="3"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="@string/number_of_pads_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView17"
+                        android:layout_weight="2"
+                        android:paddingRight="4dp"
+                        android:textColor="@color/Black"/>
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="5"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        autofit:minTextSize="3sp"
+                        android:id="@+id/tvNumberOfPads"
+                        android:layout_weight="3"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="@string/category_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView18"
+                        android:layout_weight="2"
+                        android:textColor="@color/Black"/>
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="Bedroom"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvCategory"
+                        autofit:minTextSize="3sp"
+                        android:layout_weight="3"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="@string/packed_by_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView19"
+                        android:layout_weight="2"
+                        android:textColor="@color/Black"/>
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="Owner"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvPackedBy"
+                        android:layout_weight="2"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="@string/volume_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView24"
+                        android:layout_weight="2"
+                        android:paddingRight="4dp"
+                        android:textColor="@color/Black"/>
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="4ft^3"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvVolume"
+                        android:layout_weight="2"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="@string/weight_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView21"
+                        android:layout_weight="2"
+                        android:textColor="@color/Black"/>
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="44lbs"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        autofit:minTextSize="3sp"
+                        android:id="@+id/tvWeight"
+                        android:layout_weight="2"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/claimNumberLayout">
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="@string/claim_number_layout"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView26"
+                        android:layout_weight="2"
+                        android:textColor="@color/Black"/>
+
+                    <me.grantland.widget.AutofitTextView
+                        android:text="44lbs"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        autofit:minTextSize="3sp"
+                        android:id="@+id/tvClaimNumber"
+                        android:layout_weight="2"/>
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

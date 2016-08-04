@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/content_jobs"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:autofit="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.ranchosoftware.speedymovinginventory.JobsActivity"
+    tools:showIn="@layout/activity_jobs"
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/DarkGray"
+        android:id="@+id/layoutHeader"
+
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:layout_alignParentTop="true">
+
+        <me.grantland.widget.AutofitTextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/tvJobNumber"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            autofit:minTextSize="3sp"
+            android:maxLines="1"
+            android:layout_marginLeft="6dp"
+            android:gravity="left|center_vertical"
+            android:text="Job#"/>
+
+
+        <me.grantland.widget.AutofitTextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/tvName"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            autofit:minTextSize="3sp"
+            android:maxLines="1"
+            android:layout_marginLeft="6dp"
+            android:gravity="left|center_vertical"
+            android:text="Name"/>
+
+        <me.grantland.widget.AutofitTextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/tvStatus"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:maxLines="1"
+            autofit:minTextSize="8sp"
+            android:singleLine="true"
+            android:layout_marginLeft="4dp"
+            android:gravity="left|center_vertical"
+            android:text="Lifecycle"/>
+
+
+        <me.grantland.widget.AutofitTextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvPickupDate"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:maxLines="1"
+            autofit:minTextSize="8sp"
+            android:singleLine="true"
+            android:layout_marginLeft="8dp"
+            android:gravity="left|center_vertical"
+            android:text="Pickup"/>
+
+        <me.grantland.widget.AutofitTextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/tvDeliveryDate"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:maxLines="1"
+            autofit:minTextSize="8sp"
+            android:singleLine="true"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="2dp"
+            android:gravity="left|center_vertical"
+            android:text="Est. Del."/>
+
+    </LinearLayout>
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/layoutHeader"
+        android:id="@+id/jobsListView"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/layout_no_jobs"
+        android:layout_below="@id/layoutHeader"
+        android:visibility="invisible">
+
+        <TextView
+            android:text="@string/no_jobs_message"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/tvNoJobMessage"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_gravity="center_vertical|center_horizontal"/>
+    </LinearLayout>
+
+
+</RelativeLayout>

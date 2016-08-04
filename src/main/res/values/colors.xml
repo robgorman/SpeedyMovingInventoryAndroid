@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--<color name="colorPrimary">#989898 </color>-->
+    <color name="colorPrimary">#004489</color>
+    <color name="colorPrimaryDark">#003479</color>
+    <color name="colorAccent">#565656</color>
+    <color name="colorLightest">#E1E1D6</color>
+    <color name="colorAlmostLightest">#DBDBCE</color>
+    <color name="colorSchemeLightBlue">#d3d9df</color>
+    <color name="black_overlay">#66000000</color>
+    <color name="Yellow">#ffff00</color>
+    <color name="White">#FFFFFF</color>
+    <color name="almostWhite">#fcfcfc</color>
+
+    <color name="Red">#ff0000</color>
+    <color name="LightGrey">#D3D3D3</color>
+    <color name="DimGray">#696969</color>
+    <color name="DimerGray">#eeeeee</color>
+    <color name="Blue">#0000FF</color>
+    <color name="MediumBlue">#0000CD</color>
+    <color name="DarkBlue">#00008B</color>
+    <color name="Black">#000000</color>
+
+    <color name="transparentGray">#7b7b7b22</color>
+    <color name="GrayCheck">#7b7b7b</color>
+    <color name="GreenCheck">#9dc514</color>
+
+
+    <color name="DarkGray">#a9a9a9</color>
+
+    <color name="themeBlueDark">#101c59</color>
+    <color name="themeBlueMed">#5b778c</color>
+    <color name="themeBlueLight">#5b778c</color>
+    <color name="themeBrownLight">#ccd7d9</color>
+    <color name="themeBrownMed">#a69d81</color>
+
+</resources>
