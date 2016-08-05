@@ -45,7 +45,7 @@ public class SignOffActivity extends BaseActivity {
   private String companyKey;
   private String jobKey;
   private Job.Lifecycle entryLifecycle;
-  private String storageInTransit;
+  private Boolean storageInTransit;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,7 @@ public class SignOffActivity extends BaseActivity {
     companyKey = params.getString("companyKey");
     jobKey = params.getString("jobKey");
     entryLifecycle = Job.Lifecycle.valueOf(params.getString("lifecycle"));
-    storageInTransit = params.getString("storageInTransit");
+    storageInTransit = params.getBoolean("storageInTransit");
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     toolbar.setTitle("Sign Off");
     setSupportActionBar(toolbar);
@@ -188,9 +188,9 @@ public class SignOffActivity extends BaseActivity {
     }
   }
   private Job.Lifecycle getNextLifecyle(){
-    if (entryLifecycle == Job.Lifecycle.New && storageInTransit.equalsIgnoreCase("true")) {
+    if (entryLifecycle == Job.Lifecycle.New && storageInTransit) {
       return Job.Lifecycle.LoadedForStorage;
-    } else if (entryLifecycle == Job.Lifecycle.New && !storageInTransit.equalsIgnoreCase("true")) {
+    } else if (entryLifecycle == Job.Lifecycle.New && !storageInTransit) {
       return Job.Lifecycle.LoadedForDelivery;
     } else if (entryLifecycle == Job.Lifecycle.LoadedForStorage  ){
       return Job.Lifecycle.InStorage;

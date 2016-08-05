@@ -11,7 +11,7 @@ import org.joda.time.DateTime;
 public class Job {
 
   public enum Lifecycle {New, LoadedForStorage, InStorage, LoadedForDelivery, Delivered}
-  private String jobNumber;
+
   private String companyKey;
   private Long createDateTime;
   private String customerEmail;
@@ -21,17 +21,16 @@ public class Job {
   private Long deliveryEarliestDate;
   private Long deliveryLatestDate;
   private Address destinationAddress;
+  private String jobNumber;
   private String lifecycle;
   private Address originAddress;
   private Long pickupDateTime;
-  private String storageInTransit;
-
-  private Signature signatureNew; // can be null
-  private Signature signatureLoadedForStorage; // can be null
+  private Signature signatureDelivered; // can be null
   private Signature signatureInStorage; // can be null
   private Signature signatureLoadedForDelivery; // can be null
-  private Signature signatureDelivered; // can be null
-
+  private Signature signatureLoadedForStorage; // can be null
+  private Signature signatureNew; // can be null
+  private Boolean storageInTransit;
 
   // no-args constructor require for firebase
   public Job(){
@@ -51,7 +50,7 @@ public class Job {
           String lifecycle,
           Address originAddress,
           Long pickupDateTime,
-          String storageInTransit
+          Boolean storageInTransit
   ){
     this.jobNumber = jobNumber;
     this.companyKey = companyKey;
@@ -127,7 +126,7 @@ public class Job {
     return  new DateTime(pickupDateTime);
   }
 
-  public String getStorageInTransit() {
+  public Boolean getStorageInTransit() {
     return storageInTransit;
   }
 

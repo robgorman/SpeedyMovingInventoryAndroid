@@ -103,7 +103,7 @@ public class JobActivity extends BaseMenuActivity {
     } else {
       findTv(R.id.tvPhone).setText(PhoneNumberUtils.formatNumber(job.getCustomerPhone()));
     }
-    findTv(R.id.tvStorageInTransit).setText(job.getStorageInTransit());
+    findTv(R.id.tvStorageInTransit).setText(Boolean.toString(job.getStorageInTransit()));
     findTv(R.id.tvPickupDate).setText(formatter.print(job.getPickupDateTime()));
 
     Address origin = job.getOriginAddress();
@@ -472,7 +472,7 @@ public class JobActivity extends BaseMenuActivity {
     params.putString("companyKey", job.getCompanyKey());
     params.putString("jobKey", jobKey);;
     params.putString("lifecycle", job.getLifecycle().toString());
-    params.putString("storageInTransit", job.getStorageInTransit());
+    params.putBoolean("storageInTransit", job.getStorageInTransit());
     intent.putExtras(params);
     startActivityForResult(intent, SIGNOFF_REQUEST);
   }

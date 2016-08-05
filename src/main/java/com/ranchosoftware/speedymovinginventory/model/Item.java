@@ -26,25 +26,37 @@ public class Item {
 
   public enum Insurance { Released, Company, ThirdParty};
 
+  // note xxxInverse fields are just for sorting in reverse order in the
+  // web api. We can reverse sort in java using recylerview.
+
   private String category;
-  private String packedBy;
-  private Integer numberOfPads;
-  private String uidOfCreator;
-  private String description;
-  private Integer monetaryValue;
-  private Integer weightLbs;
-  private Integer volume;
-  private String specialHandling;
-  private String jobKey;
-  private Boolean hasClaim;
-  private Boolean isClaimActive;
   private String claimNumber;
+  private String damageDescription;
+  private String description;
+  private Boolean hasClaim;
+  private Boolean hasClaimInverse;
+  private Map<String, String> imageReferences;  // first string is timestamp second url
   private String insurance;
   private Boolean isBox;
+  private Boolean isClaimActive;
+  private Boolean isClaimActiveInverse;
   private Boolean isScanned;
-  private String damageDescription;
+  private Boolean isScannedInverse;
+  private String jobKey;
+  private Integer monetaryValue;
+  private Integer monetaryValueInverse;
+  private Integer numberOfPads;
+  private Integer numberOfPadsInverse;
+  private String packedBy;
+  private String specialHandling;
+  private String uidOfCreator;
+  private Integer volume;
+  private Integer volumeInverse;
+  private Integer weightLbs;
+  private Integer weightLbsInverse;
 
-  private Map<String, String> imageReferences;  // first string is timestamp second url
+
+
 
   public Item(){
     this.imageReferences = new TreeMap<>();
@@ -63,22 +75,29 @@ public class Item {
               Boolean isBox){
     this.category = category.toString();
     this.numberOfPads = numberOfPads;
+    this.numberOfPadsInverse = -numberOfPads;
     this.uidOfCreator = uidOfCreator;
 
     this.description = description ;
     this.monetaryValue = monetaryValue;
+    this.monetaryValueInverse = -this.monetaryValue;
     this.weightLbs = weightLbs;
+    this.weightLbsInverse = -this.weightLbs;
     this.volume = volume;
+    this.volumeInverse = - this.volume;
     this.specialHandling = specialHandling;
     this.jobKey = jobKey;
     this.packedBy = packedBy;
     this.imageReferences = new TreeMap<>();
     this.claimNumber = "";
     this.hasClaim = false;
+    this.hasClaimInverse = !this.hasClaim;
     this.isClaimActive = false;
+    this.isClaimActiveInverse = !this.isClaimActive;
     this.insurance = insurance;
     this.isBox = isBox ;
     this.isScanned = false;
+    this.isScannedInverse = !this.isScanned;
     this.damageDescription = "";
   }
 
@@ -163,6 +182,7 @@ public class Item {
 
   public void setNumberOfPads(Integer numberOfPads) {
     this.numberOfPads = numberOfPads;
+    this.numberOfPadsInverse = -this.numberOfPads;
   }
 
   public void setUidOfCreator(String uidOfCreator) {
@@ -174,15 +194,20 @@ public class Item {
   }
 
   public void setMonetaryValue(Integer monetaryValue) {
+
     this.monetaryValue = monetaryValue;
+    this.monetaryValueInverse = -this.monetaryValue;
   }
 
   public void setWeightLbs(Integer weightLbs) {
     this.weightLbs = weightLbs;
+    this.weightLbsInverse = -this.weightLbs;
   }
 
   public void setVolume(Integer volume) {
     this.volume = volume;
+    this.volumeInverse = -this.volume;
+
   }
 
   public void setSpecialHandling(String specialHandling) {
@@ -207,10 +232,12 @@ public class Item {
 
   public Boolean getIsClaimActive() {
     return isClaimActive;
+
   }
 
   public void setIsClaimActive(Boolean claimActive) {
     isClaimActive = claimActive;
+    this.isClaimActiveInverse = !this.isClaimActive;
   }
 
   public Boolean getHasClaim() {
@@ -219,6 +246,7 @@ public class Item {
 
   public void setHasClaim(Boolean hasClaim) {
     this.hasClaim = hasClaim;
+    this.hasClaimInverse = !this.hasClaim;
   }
 
   public String getInsurance() {
@@ -239,6 +267,7 @@ public class Item {
 
   public void setIsScanned(Boolean scanned) {
     this.isScanned = scanned;
+    this.isScannedInverse = !this.isScanned;
   }
 
   public String getDamageDescription() {
@@ -247,6 +276,30 @@ public class Item {
 
   public void setDamageDescription(String damageDescription) {
     this.damageDescription = damageDescription;
+  }
+
+  public Boolean getHasClaimInverse() {
+    return hasClaimInverse;
+  }
+
+  public Boolean getClaimActiveInverse() {
+    return isClaimActiveInverse;
+  }
+
+  public Integer getMonetaryValueInverse() {
+    return monetaryValueInverse;
+  }
+
+  public Integer getNumberOfPadsInverse() {
+    return numberOfPadsInverse;
+  }
+
+  public Integer getVolumeInverse() {
+    return volumeInverse;
+  }
+
+  public Integer getWeightLbsInverse() {
+    return weightLbsInverse;
   }
 }
 
