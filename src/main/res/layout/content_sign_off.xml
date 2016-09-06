@@ -16,7 +16,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
+        android:id="@+id/layoutTop">
 
         <TextView
             android:text="Some Text"
@@ -24,12 +24,142 @@
             android:layout_height="wrap_content"
             android:id="@+id/tvTitle"
             android:layout_weight="1"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="4dp"
             android:layout_gravity="center_horizontal"
             android:gravity="center_horizontal"
-            android:textSize="24sp"
+            android:textSize="20sp"
             android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"/>
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:text="@string/company_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView32"
+                    android:textColor="@color/Black"/>
+
+                <RelativeLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        app:srcCompat="@drawable/yourlogohere"
+                        android:layout_weight="1"
+                        android:layout_alignParentEnd="true"
+                        android:id="@+id/ivCompanyLogo"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginRight="12dp"/>
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="12dp"
+                        android:layout_toLeftOf="@id/ivCompanyLogo">
+
+                        <TextView
+                            android:text="--"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvCompanyName"/>
+
+                        <TextView
+                            android:text="--"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvCompanyAddress"/>
+
+                        <TextView
+                            android:text="--"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvCompanyPhone"/>
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:text="@string/shipper_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView40"
+                    android:textColor="@color/Black"/>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="12dp">
+
+                    <TextView
+                        android:text="--"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvShipperName"/>
+
+                    <TextView
+                        android:text="--"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvShipperEmail"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <TextView
+                    android:text="@string/move_summary_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView45"
+                    android:textColor="@color/Black"/>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="12dp">
+
+                    <TextView
+                        android:text="--"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvMoveSummary"
+                        android:lines="4"/>
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
     </LinearLayout>
 
 
@@ -37,7 +167,8 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true">
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
@@ -53,7 +184,8 @@
                 android:maxLines="1"
                 android:singleLine="true"
                 android:imeOptions="actionNext"
-                android:inputType="textCapWords"/>
+                android:inputType="textCapWords"
+                android:textColor="@color/Black"/>
 
         </android.support.design.widget.TextInputLayout>
 
@@ -70,7 +202,7 @@
                 android:layout_width="match_parent"
                 app:penColor="@android:color/black"
                 android:background="@color/DimerGray"
-                android:layout_height="200dp"/>
+                android:layout_height="150dp"/>
 
             <TextView
                 android:text="X"
@@ -103,7 +235,8 @@
                 android:layout_marginTop="4dp"
                 android:layout_gravity="center_horizontal"
                 android:gravity="center_horizontal"
-                android:layout_below="@id/separator"/>
+                android:layout_below="@id/separator"
+                android:visibility="invisible"/>
 
             <TextView
                 android:text="@string/sign_here"
@@ -132,7 +265,8 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
                     android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/button_two"/>
 
                 <Button
                     android:text="@string/accept"
@@ -143,7 +277,8 @@
                     android:layout_marginBottom="8dp"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
-                    android:layout_marginTop="8dp"/>
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_one"/>
             </LinearLayout>
         </RelativeLayout>
 

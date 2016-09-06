@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         app:srcCompat="@drawable/scan"
-        app:backgroundTint="@color/colorSchemeLightBlue"
+        app:backgroundTint="@color/themeGreenLightest"
         app:useCompatPadding="true"
         android:layout_marginBottom="18dp"
         android:layout_marginRight="18dp"
@@ -45,7 +45,7 @@
         android:visibility="visible"
         app:layout_anchor="@id/floatingActionScan"
         android:layout_gravity="bottom"
-        app:backgroundTint="@color/colorSchemeLightBlue"
+        app:backgroundTint="@color/themeGreenLightest"
         app:layout_anchorGravity="bottom|start|end"
         app:useCompatPadding="true"
         android:layout_width="80dp"/>

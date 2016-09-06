@@ -31,7 +31,7 @@
         android:layout_gravity="bottom|end"
         app:srcCompat="@drawable/camera_add"
         app:useCompatPadding="true"
-        app:backgroundTint="@color/colorSchemeLightBlue"
+        app:backgroundTint="@color/themeGreenLight"
         android:layout_margin="@dimen/fab_margin"/>
 
 </android.support.design.widget.CoordinatorLayout>

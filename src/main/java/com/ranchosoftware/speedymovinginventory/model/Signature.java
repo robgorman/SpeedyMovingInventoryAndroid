@@ -4,7 +4,7 @@ package com.ranchosoftware.speedymovinginventory.model;
  * Created by rob on 8/1/16.
  */
 
-public class Signature {
+public class Signature extends Model {
   private String name;
   private String imageUrl;
 

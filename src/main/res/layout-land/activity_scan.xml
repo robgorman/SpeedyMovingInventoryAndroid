@@ -16,7 +16,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/buttonEndScan"
         android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true"
+        android:background="@drawable/button_one"/>
 
     <LinearLayout
         android:orientation="vertical"

@@ -284,7 +284,7 @@ public class CameraSource {
         /**
          * Called when the camera auto focus completes.  If the camera
          * does not support auto-focus and autoFocus is called,
-         * onAutoFocus will be called immediately with a fake value of
+         * onAutoFocus will be called immediately with a  value of
          * <code>success</code> set to <code>true</code>.
          * <p/>
          * The auto-focus routine does not lock auto-exposure and auto-white

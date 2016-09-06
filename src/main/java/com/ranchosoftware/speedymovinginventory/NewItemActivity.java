@@ -18,7 +18,9 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.SpannableStringBuilder;
+import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
 import android.view.LayoutInflater;
@@ -56,8 +58,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
+import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
+import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.utility.Permissions;
+import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 import org.joda.time.DateTime;
 
@@ -65,6 +70,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -80,11 +86,11 @@ public class NewItemActivity extends BaseActivity {
   private CheckBox isBoxCheck;
   private View numberOfPadsLayout;
   private Spinner insuranceSpinner;
+  private Spinner packedBySpinner;
   private SeekBar numberOfPadsSeek;
   private TextView numberOfPadsTextView;
   private SeekBar monetaryValueSeek;
   private TextView monetaryValueTextView;
-  private ToggleButton syncWeightAndVolumeButton;
   private SeekBar weightSeek;
   private TextView weightTextView;
   private SeekBar volumeSeek;
@@ -96,34 +102,30 @@ public class NewItemActivity extends BaseActivity {
   private boolean syncWeightAndVolume;
   private TextView tvNoPhotosMessage;
 
-  DatabaseReference itemRef;
-  DatabaseReference qrcListRef;
+  DatabaseObject<Item> itemRef;
+  DatabaseObject<String> qrcListRef;
 
-  ToggleButton syncVolumeWeightButton;
+  private ToggleButton syncVolumeWeightButton;
   /**
    * ATTENTION: This was auto-generated to implement the App Indexing API.
    * See https://g.co/AppIndexing/AndroidStudio for more information.
    */
   private GoogleApiClient client;
 
-  private ValueEventListener itemRefEventListener = new ValueEventListener() {
+  private DatabaseObjectEventListener<Item> itemRefEventListener = new DatabaseObjectEventListener<Item>() {
     @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
-      if (dataSnapshot.getValue() == null){
+    public void onChange(String key, Item modelItem) {
+      if (modelItem == null){
         Item item = createNewItem();
         itemRef.setValue(item);
         qrcListRef.setValue(jobKey);
       } else {
-        item = dataSnapshot.getValue(Item.class);
+        item = modelItem;
         updateValuesFromItem();
         showProgress(false, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
       }
     }
 
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
   };
 
 
@@ -142,10 +144,9 @@ public class NewItemActivity extends BaseActivity {
 
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     showProgress(true, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
-    itemRef = FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items/" + qrcCode);
-    qrcListRef = FirebaseDatabase.getInstance().getReference("qrcList/" + qrcCode);
+    itemRef = new DatabaseObject<Item>(Item.class, jobKey, qrcCode);
+    qrcListRef = new DatabaseObject< String>(String.class, qrcCode);
 
-    //itemRef.addValueEventListener(itemRefEventListener);
 
     FloatingActionButton takePhoto = (FloatingActionButton) findViewById(R.id.fab_takePhoto);
     takePhoto.setOnClickListener(new View.OnClickListener() {
@@ -162,6 +163,7 @@ public class NewItemActivity extends BaseActivity {
     categorySpinner = (Spinner) findViewById(R.id.categorySpinner);
     isBoxCheck = (CheckBox) findViewById(R.id.cbIsBox);
     insuranceSpinner = (Spinner) findViewById(R.id.insuranceSpinner);
+    packedBySpinner = (Spinner) findViewById(R.id.packedBySpinner);
     numberOfPadsLayout = findViewById(R.id.padsLayout);
     numberOfPadsSeek = (SeekBar) findViewById(R.id.seekNumberOfPads);
     numberOfPadsTextView = (TextView) findViewById(R.id.tvNumberOfPads);
@@ -183,36 +185,68 @@ public class NewItemActivity extends BaseActivity {
           item.setIsBox(isChecked);
           if (isChecked){
             item.setNumberOfPads(0);
-          } else {
-
           }
         }
-        if (isChecked){
-          numberOfPadsLayout.setVisibility(View.GONE);
-        } else {
-          numberOfPadsLayout.setVisibility(View.VISIBLE);
-        }
+        updateValuesFromItem();
       }
     });
 
+    descriptionEdit.addTextChangedListener(new TextWatcher() {
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+
+        String newText = editable.toString();
+        item.setDescription(newText);
+      }
+    });
+
+    specialHandlingEdit.addTextChangedListener(new TextWatcher() {
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+        String newText = editable.toString();
+        item.setSpecialHandling(newText);
+      }
+    });
     adapter = new ImageAdapter(thisActivity, new ArrayList<String>());
     photoGridView.setAdapter(adapter);
     photoGridView.setVisibility(View.INVISIBLE);
 
     setupCategorySpinner();
     setupInsuranceSpinner();
+    setupPackedBySpinner();
     setupNumberOfPads();
     setupMonetaryValue();
-    setupWeightAndVolume();
-
+    setupWeightAndVolumeSliders();
 
     syncVolumeWeightButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
       public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (isChecked){
           syncWeightAndVolume = true;
+          item.setSyncWeightAndVolume(true);
         } else {
           syncWeightAndVolume = false;
+          item.setSyncWeightAndVolume(false);
         }
       }
     });
@@ -237,23 +271,31 @@ public class NewItemActivity extends BaseActivity {
     return item;
   }
 
-  private void updateItemFromControls(){
-    // keep item up to date, thats probably better than this
-    item.setDescription(descriptionEdit.getText().toString());
-    // skip spinners they keep item up to date
-    // box is already ond
-    item.setSpecialHandling(specialHandlingEdit.getText().toString());
+  private void updateInterfaceFromItem(){
+    if (item.getIsBox()){
+      numberOfPadsLayout.setVisibility(View.GONE);
 
+    } else {
+      numberOfPadsLayout.setVisibility(View.VISIBLE);
+    }
+    setupWeightAndVolumeSliders();
   }
 
+
   private void updateValuesFromItem(){
-    int volume = getVolumeProgessFromValue(item.getVolume());
-    volumeSeek.setProgress(volume);
 
-    int weight = getWeightProgessFromValue(item.getWeightLbs());
-    weightSeek.setProgress(weight);
+    updateInterfaceFromItem();
 
-    numberOfPadsSeek.setProgress(item.getNumberOfPads()-1);
+    syncWeightAndVolume = item.getSyncWeightAndVolume();
+    syncVolumeWeightButton.setChecked(syncWeightAndVolume);
+
+    int volumeProgress = getVolumeProgessFromValue(item.getVolume());
+    volumeSeek.setProgress(volumeProgress);
+
+    int weightProgress = getWeightProgessFromValue(item.getWeightLbs());
+    weightSeek.setProgress(weightProgress);
+
+    numberOfPadsSeek.setProgress(item.getNumberOfPads());
 
     int monetaryValue = getMonetaryValueProgessFromValue(item.getMonetaryValue());
     monetaryValueSeek.setProgress(monetaryValue);
@@ -264,21 +306,26 @@ public class NewItemActivity extends BaseActivity {
       if (categorySpinner.getAdapter().getItem(i).equals(item.getCategory())){
         categorySpinner.setSelection(i);
         break;
-
       }
     }
     descriptionEdit.setText(item.getDescription());
     specialHandlingEdit.setText(item.getSpecialHandling());
+
     for (int i = 0; i < insuranceSpinner.getAdapter().getCount(); i++){
       if (insuranceSpinner.getAdapter().getItem(i).equals(item.getInsurance())){
         insuranceSpinner.setSelection(i);
         break;
+      }
+    }
 
+    for (int i = 0; i < packedBySpinner.getAdapter().getCount(); i++){
+      if (packedBySpinner.getAdapter().getItem(i).equals(item.getPackedBy())){
+        packedBySpinner.setSelection(i);
+        break;
       }
     }
 
     isBoxCheck.setChecked(item.getIsBox());
-
 
     adapter.clear();
     for (String key : item.getImageReferences().keySet()){
@@ -341,28 +388,95 @@ public class NewItemActivity extends BaseActivity {
     }
   }
 
+  private int convertPoundsToProgress(float pounds){
+    for (int i = 0; i < possibleWeights.length; i++){
+      float next = possibleWeights[i];
+      if (next > pounds){
+        float delta1 = Math.abs(next - pounds);
+        if (i == 0){
+          return i;
+        }
+        float delta2 = Math.abs(next - possibleWeights[i-1] );
 
-  private static final int possibleWeights[] = {1, 2, 5, 10, 20, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
-  private void setupWeightAndVolume(){
-    // 1 thru 10 so 0..9
+        if (delta1 < delta2){
+          return i;
+        } else {
+          return i-1;
+        }
+      }
+    }
+
+    return possibleWeights.length - 1;
+  }
+
+  private int convertCubicFeetToProgess(float cubicFeet){
+    for (int i = 0; i < possibleVolumes.length; i++){
+      float next = possibleVolumes[i];
+      if (next > cubicFeet){
+        float delta1 =  Math.abs(next - cubicFeet);
+        if (i == 0){
+          return i;
+        }
+        float delta2 = Math.abs(next - cubicFeet);
+        if (delta1 < delta2){
+          return i;
+        } else {
+          return i-1;
+        }
+      }
+    }
+    return possibleVolumes.length - 1;
+  }
+
+
+  private static final float possibleWeights[] = {1, 2, 5, 10, 20, 50, 100, 200, 300, 400, 500, 700};
+  private void setupWeightAndVolumeSliders(){
+
+    if (item != null && item.getIsBox()){
+      possibleVolumes = boxVolumes;
+    } else {
+      possibleVolumes = normalVolumes;
+    }
+
+    int lbsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
+    assert(possibleWeights.length >= possibleVolumes.length);
+
+    for (int i = 0; i < possibleVolumes.length; i++){
+      possibleWeights[i] = possibleVolumes[i] * lbsPerCubicFoot;
+    }
     setupWeight();
     setupVolume();
   }
-  private static final int possibleVolumes[] = {1, 2, 3, 4, 5, 7, 10, 20, 30, 40, 50, 100, 150, 200, 300, 400, 500};
+  private static float possibleVolumes[] = {1, 3, 5, 7, 10, 20, 30, 40, 50, 60, 75, 100};
+  private static final float normalVolumes[] = {1, 3, 5, 7, 10, 20, 30, 40, 50, 60, 75, 100};
+  private static final float boxVolumes[] = {1.5f, 3.0f, 4.5f, 6.0f };
+  private static String boxNames[] = {"Small", "Medium", "Large", "XLarge"};
   private void setupVolume() {
+
+    // set out of range so on change fires for first value
+    if (item != null){
+      volumeSeek.setProgress(getVolumeProgessFromValue(item.getVolume()));
+    } else {
+      volumeSeek.setProgress(possibleVolumes.length);
+    }
     volumeSeek.setMax(possibleVolumes.length-1);
-    volumeSeek.setProgress(possibleVolumes.length);
+
+
     volumeSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-
-
-        String styled = Integer.toString(possibleVolumes[progress]) + " ft3" ;
+        float cubicFeet = possibleVolumes[progress];
+        String styled = String.format("%.1f",possibleVolumes[progress]) + " ft3" ;
 
         SpannableStringBuilder superScript = new SpannableStringBuilder(styled);
         superScript.setSpan(new SuperscriptSpan(),styled.length() -1, styled.length(), 0);
         superScript.setSpan(new RelativeSizeSpan(0.5f), styled.length() -1, styled.length(), 0);
+
+        // if the change is from the user and we are syching, change the weight seek
+        if (fromUser && syncWeightAndVolume){
+          weightSeek.setProgress(weightProgressFromVolume(cubicFeet));
+        }
 
         volumeTextView.setText(superScript);
         item.setVolume(possibleVolumes[progress]);
@@ -381,10 +495,31 @@ public class NewItemActivity extends BaseActivity {
 
   }
 
-  private int getVolumeProgessFromValue(Integer targetValue){
+  private int weightProgressFromVolume(float cubicFeet){
+
+    int lbsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
+    float pounds = cubicFeet * lbsPerCubicFoot;
+    // how to convert to
+    int progress = convertPoundsToProgress(pounds);
+    return progress;
+  }
+
+  private int volumeProgessFromWeight(float weight){
+    int lbsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
+    float cubicFeet = weight / lbsPerCubicFoot;
+    // how to convert to
+    int progress = convertCubicFeetToProgess(cubicFeet);
+    return progress;
+  }
+
+  boolean isClose(float left, float right){
+    float delta = Math.abs(left - right);
+    return delta < .5;
+  }
+  private int getVolumeProgessFromValue(float targetValue){
     int i = 0;
-    for (int next : possibleVolumes){
-      if (targetValue == next){
+    for (float next : possibleVolumes){
+      if (isClose(targetValue, next)){
         return i;
       }
       i += 1;
@@ -395,12 +530,25 @@ public class NewItemActivity extends BaseActivity {
 
   private void setupWeight() {
     weightSeek.setMax(possibleWeights.length-1);
-    weightSeek.setProgress(possibleWeights.length );
+    // set out of range so on change fires for first value
+    if (item != null){
+      weightSeek.setProgress(getWeightProgessFromValue(item.getWeightLbs()));
+    } else {
+      weightSeek.setProgress(possibleWeights.length);
+    }
+
     weightSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-        weightTextView.setText(Integer.toString(possibleWeights[progress]));
+        float weight = possibleWeights[progress];
+
+        // if the change is from the user and we are syching, change the weight seek
+        if (fromUser && syncWeightAndVolume){
+          volumeSeek.setProgress(volumeProgessFromWeight(weight));
+        }
+
+        weightTextView.setText(String.format("%.0f",weight) + " lbs.");
         item.setWeightLbs(possibleWeights[progress]);
       }
 
@@ -414,14 +562,12 @@ public class NewItemActivity extends BaseActivity {
 
       }
     });
-
-
   }
 
-  private int getWeightProgessFromValue(Integer targetValue){
+  private int getWeightProgessFromValue(float targetValue){
     int i = 0;
-    for (int next : possibleWeights){
-      if (targetValue == next){
+    for (float next : possibleWeights){
+      if (isClose(targetValue, next)){
         return i;
       }
       i += 1;
@@ -436,8 +582,8 @@ public class NewItemActivity extends BaseActivity {
     numberOfPadsSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        numberOfPadsTextView.setText(Integer.toString(progress+1));
-        item.setNumberOfPads(progress+1);
+        numberOfPadsTextView.setText(Integer.toString(progress));
+        item.setNumberOfPads(progress);
       }
 
       @Override
@@ -451,11 +597,8 @@ public class NewItemActivity extends BaseActivity {
       }
     });
 
-
   }
   private static final int monetaryValues[] = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
-
-
 
   private void setupMonetaryValue() {
     monetaryValueSeek.setProgress(monetaryValues.length);
@@ -482,19 +625,40 @@ public class NewItemActivity extends BaseActivity {
   }
 
   private void setupInsuranceSpinner() {
-    // fill category spinner
+    // fill insurance spinner
     final List<String> insuranceOptions = new ArrayList<String>();
     for (Item.Insurance ins : Item.Insurance.values())
     {
       insuranceOptions.add(ins.toString());
     }
-    ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(thisActivity, android.R.layout.simple_spinner_item, insuranceOptions );
-    insuranceSpinner.setAdapter(categoryAdapter);
+    ArrayAdapter<String> insuranceAdapter = new ArrayAdapter<String>(thisActivity, android.R.layout.simple_spinner_item, insuranceOptions );
+    insuranceSpinner.setAdapter(insuranceAdapter);
     insuranceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        //itemRef.child("category").setValue(categories.get(position));
         item.setInsurance(insuranceOptions.get(position));
+      }
+
+      @Override
+      public void onNothingSelected(AdapterView<?> parent) {
+
+      }
+    });
+
+  }
+
+  private void setupPackedBySpinner() {
+    final List<String> packedByOptions = new ArrayList<String>();
+    for (Item.PackedBy packedBy : Item.PackedBy.values())
+    {
+      packedByOptions.add(packedBy.toString());
+    }
+    ArrayAdapter<String> packedByAdapter = new ArrayAdapter<String>(thisActivity, android.R.layout.simple_spinner_item, packedByOptions );
+    packedBySpinner.setAdapter(packedByAdapter);
+    packedBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+      @Override
+      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        item.setPackedBy(packedByOptions.get(position));
       }
 
       @Override
@@ -514,12 +678,11 @@ public class NewItemActivity extends BaseActivity {
     }
     ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(thisActivity, android.R.layout.simple_spinner_item, categories );
     categorySpinner.setAdapter(categoryAdapter);
-    // TODO this might not work
     categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        //itemRef.child("category").setValue(categories.get(position));
         item.setCategory(categories.get(position));
+        app().setCurrentCategory(Item.Category.valueOf(categories.get(position)));
       }
 
       @Override
@@ -571,10 +734,10 @@ public class NewItemActivity extends BaseActivity {
   @Override
   public void onStop() {
     super.onStop();
-    updateItemFromControls();
+
     itemRef.setValue(item);
     qrcListRef.setValue(jobKey);
-    itemRef.removeEventListener(itemRefEventListener);
+    itemRef.removeValueEventListener(itemRefEventListener);
 
     // ATTENTION: This was auto-generated to implement the App Indexing API.
     // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -610,65 +773,33 @@ public class NewItemActivity extends BaseActivity {
         }
         return;
       }
-
-      // other 'case' lines to check for other
-      // permissions this app might request
     }
   }
 
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (requestCode == TAKE_PHOTO_CODE && resultCode == Activity.RESULT_OK) {
-
       handleTakePictureResult();
-
     }
-  }
-
-
-  private Bitmap rotateImage(Bitmap source, float angle){
-    Matrix matrix = new Matrix();
-    matrix.postRotate(angle);
-    return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
-
-  }
-
-
-  private Bitmap scaleBitmapIfNecessary(Bitmap bitmap){
-    int maxSize = Math.max(bitmap.getWidth(), bitmap.getHeight());
-    // bitmap to be at most 800
-    int newWidth = 0;
-    int newHeight = 0;
-    if (maxSize > 800){
-      if (bitmap.getWidth() > bitmap.getHeight()){
-        newWidth = 800;
-        newHeight = (int) (bitmap.getHeight() * (800.0/ (double)bitmap.getWidth()));
-      } else {
-        newHeight = 800;
-        newWidth = (int) (bitmap.getWidth() * (800.0/(double) bitmap.getHeight()));
-      }
-      bitmap = bitmap.createScaledBitmap(bitmap, newWidth, newHeight, false);
-    }
-    return bitmap;
   }
 
   private void handleTakePictureResult(){
     BitmapFactory.Options options = new BitmapFactory.Options();
     Bitmap bitmap = BitmapFactory.decodeFile(imageFile.toString());
-    bitmap = scaleBitmapIfNecessary(bitmap);
+    bitmap = Utility.scaleBitmapIfNecessary(bitmap);
     try {
       ExifInterface ei = new ExifInterface(imageFile.toString());
       int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
       switch(orientation) {
         case ExifInterface.ORIENTATION_ROTATE_90:
-          bitmap = rotateImage(bitmap, 90);
+          bitmap = Utility.rotateImage(bitmap, 90);
           break;
         case ExifInterface.ORIENTATION_ROTATE_180:
-          bitmap = rotateImage(bitmap, 180);
+          bitmap = Utility.rotateImage(bitmap, 180);
           break;
         case ExifInterface.ORIENTATION_ROTATE_270:
-          bitmap = rotateImage(bitmap, 270);
+          bitmap = Utility.rotateImage(bitmap, 270);
           break;
       }
       // etc.
@@ -678,9 +809,6 @@ public class NewItemActivity extends BaseActivity {
     if (bitmap != null) {
       //
       writeBitmapBackToFile(bitmap);
-      //photoGridView
-      //adapter.add(imageFile.toString());
-      //adapter.notifyDataSetChanged();
       FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
       StorageReference storageRef  = firebaseStorage.getReferenceFromUrl(app().getStorageUrl());
 
@@ -709,22 +837,11 @@ public class NewItemActivity extends BaseActivity {
           imageFile.delete();
         }
       });
-
-
-
     } else {
       Toast.makeText(this, "Take Before failed", Toast.LENGTH_SHORT).show();
     }
   }
 
-  private static class KeyValue{
-    String key;
-    String value;
-    public KeyValue(String key, String value){
-      this.key = key;
-      this.value = value;
-    }
-  }
 
   private void writeBitmapBackToFile(Bitmap bitmap){
     try {
@@ -750,9 +867,6 @@ public class NewItemActivity extends BaseActivity {
       inflater = LayoutInflater.from(context);
     }
 
-    // comment
-
-
     // create a new ImageView for each item referenced by the Adapter
     public View getView(int position, View convertView, ViewGroup parent) {
       photoGridView.setVisibility(View.VISIBLE);
@@ -760,7 +874,6 @@ public class NewItemActivity extends BaseActivity {
       if (convertView == null){
         convertView = inflater.inflate(R.layout.item_photo_grid_item, null);
       }
-
 
       ImageView imageView = (ImageView) convertView.findViewById(R.id.imageView);
 

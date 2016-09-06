@@ -5,16 +5,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     tools:context="com.ranchosoftware.speedymovinginventory.NewItemActivity"
     tools:showIn="@layout/activity_new_item"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/themeBlueLightest">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:id="@+id/progressLayout">
 
@@ -151,7 +152,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_weight="3">
+                android:layout_weight="3"
+                android:visibility="gone">
 
                 <TextView
                     android:text="@string/insurance_label_long"
@@ -175,6 +177,36 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView23"
+                    android:layout_weight="2"
+                    android:visibility="invisible"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <TextView
+                    android:text="Packed By:"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView30"
+                    android:layout_weight="2"
+                    android:textColor="@color/Black"
+                    android:layout_gravity="center_vertical"/>
+
+                <Spinner
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/packedBySpinner"
+                    android:layout_weight="3"/>
+
+                <TextView
+                    android:text="spacer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView27"
                     android:layout_weight="2"
                     android:visibility="invisible"/>
             </LinearLayout>
@@ -230,37 +262,6 @@
                         android:layout_weight="1">
 
                         <TextView
-                            android:text="@string/weight"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/textView7"
-                            android:layout_weight="1"
-                            android:gravity="left"
-                            android:paddingRight="4dp"
-                            android:layout_gravity="center_vertical"
-                            android:textColor="@color/Black"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/tvWeight"
-                            android:layout_weight="1"
-                            android:layout_gravity="center_vertical"/>
-
-                        <SeekBar
-                            android:layout_width="0dp"
-                            android:layout_height="40dp"
-                            android:layout_weight="3"
-                            android:id="@+id/seekWeight"
-                            android:progress="-1"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1">
-
-                        <TextView
                             android:text="@string/volume_label"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -282,24 +283,71 @@
                             android:layout_width="0dp"
                             android:layout_height="40dp"
                             android:id="@+id/seekVolume"
-                            android:layout_weight="3"
+                            android:layout_weight="2"
+                            android:progress="-1"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:text="@string/weight"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textView7"
+                            android:layout_weight="1"
+                            android:gravity="left"
+                            android:paddingRight="4dp"
+                            android:layout_gravity="center_vertical"
+                            android:textColor="@color/Black"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvWeight"
+                            android:layout_weight="1"
+                            android:layout_gravity="center_vertical"/>
+
+                        <SeekBar
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="2"
+                            android:id="@+id/seekWeight"
                             android:progress="-1"/>
                     </LinearLayout>
 
                 </LinearLayout>
 
-                <LinearLayout
+                <RelativeLayout
                     android:orientation="vertical"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="2"
+                    android:layout_gravity="center_vertical">
+
 
                     <ToggleButton
                         android:text="ToggleButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:id="@+id/weightVolumeSyncButton"/>
-                </LinearLayout>
+                        android:id="@+id/weightVolumeSyncButton"
+                        android:layout_gravity="center"
+                        android:layout_centerInParent="true"
+                        android:checked="true"
+                        android:background="@drawable/button_one"/>
+
+                    <TextView
+                        android:text="Sync."
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView31"
+                        android:layout_centerHorizontal="true"
+                        android:layout_above="@id/weightVolumeSyncButton"
+                        android:textColor="@color/Black"/>
+
+                </RelativeLayout>
 
             </LinearLayout>
 

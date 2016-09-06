@@ -8,7 +8,7 @@ import org.joda.time.DateTime;
  * Created by rob on 7/13/16.
  */
 
-public class Job {
+public class Job extends Model {
 
   public enum Lifecycle {New, LoadedForStorage, InStorage, LoadedForDelivery, Delivered}
 

@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -23,12 +24,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -43,6 +47,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 import com.ranchosoftware.speedymovinginventory.model.Item;
+import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.utility.Permissions;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
@@ -75,8 +80,9 @@ public class ItemClaimActivity extends BaseActivity {
   private TextView descriptionView;
   private TextView insuranceView;
   private CheckBox checkBoxActiveClaim;
+  private ToggleButton buttonScanOverride;
 
-
+  private MediaPlayer positivePlayer;
   private DatabaseReference itemRef;
   DatabaseReference qrcListRef;
 
@@ -117,6 +123,14 @@ public class ItemClaimActivity extends BaseActivity {
       adapter.add(new ImageAdapterItem(key, stringUri));
     }
 
+
+    if ( !app().userIsAtLeastForeman()){
+      buttonScanOverride.setVisibility(View.INVISIBLE);
+    } else {
+      buttonScanOverride.setVisibility(View.VISIBLE);
+    }
+
+    buttonScanOverride.setChecked(item.getIsScanned());
     adapter.notifyDataSetChanged();
   }
 
@@ -127,6 +141,9 @@ public class ItemClaimActivity extends BaseActivity {
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     toolbar.setTitle("Moving Item Claim Mgmt.");
     setSupportActionBar(toolbar);
+
+    positivePlayer = MediaPlayer.create(thisActivity, R.raw.positive_beep);
+    positivePlayer.setVolume(1.0f, 1.0f);
 
     Bundle params = getIntent().getExtras();
     companyKey = params.getString("companyKey");
@@ -148,6 +165,21 @@ public class ItemClaimActivity extends BaseActivity {
     checkBoxActiveClaim = (CheckBox) findViewById(R.id.cbActiveClaim);
     insuranceView = (TextView) findViewById(R.id.tvInsurance);
     descriptionView = (TextView) findViewById(R.id.tvDescription);
+    buttonScanOverride = (ToggleButton) findViewById(R.id.buttonScanOverride);
+
+    buttonScanOverride.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+      @Override
+      public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+        if (item != null){
+          if (checked) {
+            item.setIsScanned(checked);
+            positivePlayer.start();
+          } else {
+            item.setIsScanned(false);
+          }
+        }
+      }
+    });
 
     FloatingActionButton addPhotos = (FloatingActionButton) findViewById(R.id.fabAddPhotos);
     addPhotos.setOnClickListener(new View.OnClickListener() {
@@ -423,14 +455,11 @@ public class ItemClaimActivity extends BaseActivity {
 
       return convertView;
     }
-
   }
   @Override
   public void onStart() {
     super.onStart();
     itemRef.addValueEventListener(itemRefEventListener);
-
-
   }
 
   private void updateItemFromControls(){
@@ -439,6 +468,7 @@ public class ItemClaimActivity extends BaseActivity {
     item.setClaimNumber(claimNumber.getText().toString());
     item.setDamageDescription(damageDescription.getText().toString());
     item.setIsClaimActive(checkBoxActiveClaim.isChecked());
+
   }
 
   @Override
@@ -450,7 +480,5 @@ public class ItemClaimActivity extends BaseActivity {
     }
     qrcListRef.setValue(jobKey);
     itemRef.removeEventListener(itemRefEventListener);
-
-
   }
 }

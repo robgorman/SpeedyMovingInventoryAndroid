@@ -4,7 +4,7 @@ package com.ranchosoftware.speedymovinginventory.model;
  * Created by rob on 7/13/16.
  */
 
-public class Address {
+public class Address extends  Model {
   private String street;
   private String addressLine2; // may be null
   private String city;

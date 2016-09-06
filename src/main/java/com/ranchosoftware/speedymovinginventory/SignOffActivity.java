@@ -1,5 +1,6 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,8 +12,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.ImageLoader;
 import com.github.gcacace.signaturepad.views.SignaturePad;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,6 +28,11 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.ranchosoftware.speedymovinginventory.app.MyVolley;
+import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
+import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
+import com.ranchosoftware.speedymovinginventory.model.Address;
+import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.Signature;
@@ -47,6 +55,133 @@ public class SignOffActivity extends BaseActivity {
   private Job.Lifecycle entryLifecycle;
   private Boolean storageInTransit;
 
+  private ProgressDialog progressDialog;
+
+  private TextView tvCompanyName;
+  private TextView tvCompanyAddress;
+  private TextView tvCompanyPhone;
+  private TextView tvShipperName;
+  private TextView tvShipperEmail;
+  private TextView tvMoveSummary;
+  private ImageView ivCompanyLogo;
+
+  private int totalItems;
+  private int totalValue;
+  private int totalPads;
+  private float totalVolumeCubicFeet;
+  private float totalWeightLbs;
+  private int totalDamagedItems;
+
+  private ImageLoader imageLoader;
+  private Company company;
+  private Job job;
+
+  private void updateFromJob(){
+    if (job == null)
+      return; // this is an error
+
+    tvShipperName.setText( job.getCustomerFirstName() + " " + job.getCustomerLastName());
+    tvShipperEmail.setText(job.getCustomerEmail());
+  }
+  private void loadJob(){
+    DatabaseObject<Job> jobRef = new DatabaseObject<Job>(Job.class, jobKey);
+    jobRef.addValueEventListener(new DatabaseObjectEventListener<Job>() {
+      @Override
+      public void onChange(String key, Job job) {
+        SignOffActivity.this.job = job;
+        updateFromJob();
+        tvMoveSummary.setText(constructSummary());
+      }
+    });
+
+  }
+
+  private String formAddressString(Address address){
+    String result = address.getStreet() + " " + address.getAddressLine2() + ", " + address.getCity() + ", " + address.getState() + " " + address.getZip();
+    return result;
+  }
+
+  private void updateFromCompany(){
+    if (company == null){
+      return; // this is an error
+    }
+    tvCompanyName.setText(company.getName());
+    String address = formAddressString(company.getAddress());
+    tvCompanyAddress.setText(address);
+    tvCompanyPhone.setText(company.getPhoneNumber());
+
+    String logoImage = app().getCompanyLogoUrl();
+    if (logoImage != null && logoImage.length() > 0){
+      imageLoader.get(logoImage, ImageLoader.getImageListener(ivCompanyLogo,
+              R.drawable.yourlogohere, R.drawable.yourlogohere));
+    }
+
+  }
+
+  private String moveDestination(){
+    String result = "";
+    switch (job.getLifecycle()){
+      case New:
+        if (job.getStorageInTransit()){
+          result = "Storage";
+        } else {
+          result =  formAddressString(job.getDestinationAddress());
+        }
+        break;
+      case LoadedForStorage:
+        result =  "Storage";
+        break;
+      case InStorage:
+        result =  formAddressString(job.getDestinationAddress());
+        break;
+      case LoadedForDelivery:
+        result =  formAddressString(job.getDestinationAddress());
+        break;
+      case Delivered:
+        result =  formAddressString(job.getDestinationAddress());
+        break;
+    }
+    return result;
+  }
+
+  private String deliveryWindow() {
+    String result = "";
+    switch (job.getLifecycle()) {
+      case New:
+        if (job.getStorageInTransit()) {
+          result = "";
+        } else {
+          result = formAddressString(job.getDestinationAddress());
+        }
+        break;
+      case LoadedForStorage:
+        result = "";
+        break;
+      case InStorage:
+        result = formAddressString(job.getDestinationAddress());
+        break;
+      case LoadedForDelivery:
+        result = formAddressString(job.getDestinationAddress());
+        break;
+      case Delivered:
+        result = formAddressString(job.getDestinationAddress());
+        break;
+    }
+    if (result.length() == 0) {
+      return result;
+    } else {
+      return "• " + result;
+     }
+  }
+
+  private String constructSummary(){
+    String summary =
+                    "• " + Integer.toString(totalItems) + " Items valued at $" + totalValue + "\n" +
+                    "• " + "Move destination is " + moveDestination() + "\n" +
+                    deliveryWindow();
+    return summary;
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -57,6 +192,31 @@ public class SignOffActivity extends BaseActivity {
     jobKey = params.getString("jobKey");
     entryLifecycle = Job.Lifecycle.valueOf(params.getString("lifecycle"));
     storageInTransit = params.getBoolean("storageInTransit");
+
+    imageLoader = MyVolley.getImageLoader();
+
+    totalItems = params.getInt("totalItems");
+    totalValue = params.getInt("totalValue");
+    totalPads = params.getInt("totalPads");
+    totalVolumeCubicFeet = params.getFloat("totalVolumeCubicFeet");
+    totalWeightLbs = params.getFloat("totalWeightLbs");
+    totalDamagedItems = params.getInt("totalDamagedItems");
+
+    tvCompanyName = (TextView) findViewById(R.id.tvCompanyName);
+    tvCompanyAddress = (TextView) findViewById(R.id.tvCompanyAddress);
+    tvCompanyPhone = (TextView) findViewById(R.id.tvCompanyPhone);
+    tvShipperName = (TextView) findViewById(R.id.tvShipperName);
+    tvShipperEmail = (TextView) findViewById(R.id.tvShipperEmail);
+    tvMoveSummary = (TextView) findViewById(R.id.tvMoveSummary);
+    ivCompanyLogo = (ImageView) findViewById(R.id.ivCompanyLogo);
+
+    // we have to load both the company and job
+    loadJob();
+
+    company = app().getCurrentCompany();
+
+    updateFromCompany();
+
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     toolbar.setTitle("Sign Off");
     setSupportActionBar(toolbar);
@@ -112,15 +272,13 @@ public class SignOffActivity extends BaseActivity {
           tvName.setError("Please Enter Your Name");
           return;
         }
-
         tvName.setError(null);
+        progressDialog  = ProgressDialog.show(thisActivity, "Saving Signature", "");
+        progressDialog.show();
 
+        Bitmap signaturePage = getScreenShot(getRootView());
+        saveChanges(signaturePage, tvName.getText().toString());
 
-        Bitmap signatureBitmap = signaturePad.getSignatureBitmap();
-
-        Bitmap tranparent = signaturePad.getTransparentSignatureBitmap(true);
-        Log.d(TAG, "got bitmap");
-        saveChanges(signatureBitmap, tvName.getText().toString());
       }
     });
     clearPad.setOnClickListener(new View.OnClickListener() {
@@ -133,6 +291,13 @@ public class SignOffActivity extends BaseActivity {
 
   }
 
+  public  Bitmap getScreenShot(View view) {
+    View screenView = view.getRootView();
+    screenView.setDrawingCacheEnabled(true);
+    Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
+    screenView.setDrawingCacheEnabled(false);
+    return bitmap;
+  }
 
 
   private void saveChanges(Bitmap signatureBitmap, final String name){
@@ -149,9 +314,9 @@ public class SignOffActivity extends BaseActivity {
     uploadTask.addOnFailureListener(new OnFailureListener() {
       @Override
       public void onFailure(@NonNull Exception e) {
-        // TODO handl
         Log.d(TAG, "upload failed");
         Utility.error(getRootView(), thisActivity, "Signature upload failed. Try again");
+        progressDialog.hide();
       }
     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
 
@@ -161,10 +326,12 @@ public class SignOffActivity extends BaseActivity {
 
         Job.Lifecycle nextState = getNextLifecyle();
 
-        FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/lifecycle").setValue(getNextLifecyle().toString());
+        new DatabaseObject<Job>(Job.class, jobKey).child("lifecycle").setValue(getNextLifecyle().toString());
+        //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/lifecycle").setValue(getNextLifecyle().toString());
         Uri downloadUrl = taskSnapshot.getDownloadUrl();
-        FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
-
+        //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
+        new DatabaseObject<Job>(Job.class, jobKey).child("signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
+        progressDialog.hide();
         setResult(RESULT_OK);
         finish();
       }

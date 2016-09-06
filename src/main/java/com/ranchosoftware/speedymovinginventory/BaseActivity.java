@@ -16,7 +16,7 @@ import com.ranchosoftware.speedymovinginventory.app.RanchoApp;
  */
 
 public class BaseActivity extends AppCompatActivity {
-  protected Activity thisActivity;
+  protected BaseActivity thisActivity;
   @Override
   protected void onCreate(Bundle bundle){
     super.onCreate(bundle);

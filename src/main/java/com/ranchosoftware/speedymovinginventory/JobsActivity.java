@@ -2,8 +2,10 @@ package com.ranchosoftware.speedymovinginventory;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.vision.text.Text;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.ranchosoftware.speedymovinginventory.model.Job;
@@ -36,6 +39,15 @@ public class JobsActivity extends BaseMenuActivity {
     setSupportActionBar(toolbar);
     formatter = app().getDateTimeFormatter();
 
+    FirebaseAuth auth = FirebaseAuth.getInstance();
+    auth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+      @Override
+      public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+        if (firebaseAuth.getCurrentUser() == null){
+          finish();
+        }
+      }
+    });
 
     FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
     fab.setOnClickListener(new View.OnClickListener() {
@@ -53,7 +65,6 @@ public class JobsActivity extends BaseMenuActivity {
     jobsListView.setVisibility(View.INVISIBLE);
 
     Query ref = FirebaseDatabase.getInstance().getReference("/jobs");
-
     User user = app().getCurrentUser();
     if (user != null){
       ref = ref.orderByChild("companyKey").startAt(user.getCompanyKey()).endAt(user.getCompanyKey());
@@ -95,6 +106,17 @@ public class JobsActivity extends BaseMenuActivity {
       }
     });
   }
+
+  @Override
+  public void onStart(){
+    super.onStart();
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
+  }
+
 
   @Override
   protected void onDestroy() {

@@ -1,6 +1,8 @@
 package com.ranchosoftware.speedymovinginventory.utility;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 
@@ -36,5 +38,28 @@ public class Utility {
       return false;
     }
 
+  }
+
+  public static Bitmap rotateImage(Bitmap source, float angle){
+    Matrix matrix = new Matrix();
+    matrix.postRotate(angle);
+    return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+  }
+  public static  Bitmap scaleBitmapIfNecessary(Bitmap bitmap){
+    int maxSize = Math.max(bitmap.getWidth(), bitmap.getHeight());
+    // bitmap to be at most 800
+    int newWidth = 0;
+    int newHeight = 0;
+    if (maxSize > 800){
+      if (bitmap.getWidth() > bitmap.getHeight()){
+        newWidth = 800;
+        newHeight = (int) (bitmap.getHeight() * (800.0/ (double)bitmap.getWidth()));
+      } else {
+        newHeight = 800;
+        newWidth = (int) (bitmap.getWidth() * (800.0/(double) bitmap.getHeight()));
+      }
+      bitmap = bitmap.createScaledBitmap(bitmap, newWidth, newHeight, false);
+    }
+    return bitmap;
   }
 }

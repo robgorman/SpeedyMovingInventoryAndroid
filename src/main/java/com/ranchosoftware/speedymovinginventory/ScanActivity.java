@@ -82,6 +82,8 @@ public class ScanActivity extends BaseActivity {
   private String companyKey;
   private View topView;
   private TextView scannerMessage;
+
+  private boolean processingCode = false;
   /**
    * Initializes the UI and creates the detector pipeline.
    */
@@ -203,7 +205,12 @@ public class ScanActivity extends BaseActivity {
       @Override
       public void itemRecognized(String code) {
 
+        // no new scans accepted if we are already processing
+        if (processingCode){
+          return;
+        }
         if (job != null) {
+
           barcodeScanned(code);
         } else {
 
@@ -468,6 +475,7 @@ public class ScanActivity extends BaseActivity {
     if (!Utility.isQrcCodeValid(code)){
       negativePlayer.start();
       scannerMessage.setText("Invalid QRC Code: " + code);
+      processingCode = false;
       return;
     }
 
@@ -481,6 +489,7 @@ public class ScanActivity extends BaseActivity {
         if (dataSnapshot.getValue() == null){
           // item is new
           createNewItem(job, code);
+          processingCode = false;
         } else {
           // item exists see if it is this job
           String itemJobKey = dataSnapshot.getValue(String.class);
@@ -488,6 +497,7 @@ public class ScanActivity extends BaseActivity {
             scannerMessage.setText("This item belongs to another Job. JobKey = " + itemJobKey);
             negativePlayer.start();
             Log.d(TAG, "Item does not belong to this job");
+            processingCode = false;
           } else {
             positivePlayer.start();
             DatabaseReference itemRef = FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/" + code);
@@ -507,6 +517,7 @@ public class ScanActivity extends BaseActivity {
                   }
 
                 }
+                processingCode = false;
               }
 
               @Override

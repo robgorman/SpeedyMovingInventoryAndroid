@@ -79,6 +79,7 @@ public class BaseMenuActivity extends BaseActivity {
     FirebaseAuth auth = FirebaseAuth.getInstance();
     auth.signOut();
 
+
     Intent intent = new Intent(this, LoginActivity.class);
     // send no autologin param
     Bundle b = new Bundle();

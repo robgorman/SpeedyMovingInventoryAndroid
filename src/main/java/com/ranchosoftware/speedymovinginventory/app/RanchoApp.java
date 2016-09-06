@@ -2,11 +2,20 @@ package com.ranchosoftware.speedymovinginventory.app;
 
 import android.content.SharedPreferences;
 import android.support.multidex.MultiDexApplication;
-import android.view.View;
+import android.util.Log;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
+import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
+import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.Item;
-import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.User;
+import com.ranchosoftware.speedymovinginventory.server.Server;
+
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -17,9 +26,14 @@ import org.joda.time.format.DateTimeFormatter;
 
 public class RanchoApp extends MultiDexApplication {
 
+  private static final String TAG = RanchoApp.class.getSimpleName();
+
   private static final String PreferencesName = "SpeedyMovingInventoryPrefs";
 
   private static final String storageUrl ="gs://speedymovinginventory.appspot.com";
+
+  private Server mailServer;
+  private String appServerIpAddress = "mybc.work";
 
   public static class LoginCredential{
     public String email;
@@ -35,17 +49,25 @@ public class RanchoApp extends MultiDexApplication {
   private final DateTimeFormatter imageDateTimeFormatter = DateTimeFormat.forPattern("MM/dd/yy HH:mm:ss");
 
   private User currentUser;
-  private Job currentJob;
-  private String currentJobKey;
+  private Company currentCompany;
 
   private Item currentItem;
   private Item.Category currentCategory;
+
+ // private Configuration mailgunConfiguration;
 
   @Override
   public void onCreate() {
     super.onCreate();
 
     init();
+    mailServer = new Server("https://speedymovinginventory.appspot.com");
+    //mailServer = new Server("http://localhost:8080");
+//
+//    mailgunConfiguration = new Configuration()
+//            .domain("ranchosoftware.com")
+//            .apiKey("key-c90fa773c9d000ce3cd38a903368ee7b")
+//            .from("Speedy Moving Inventory", "speedy@ranchosoftware.com");
   }
 
 
@@ -79,7 +101,6 @@ public class RanchoApp extends MultiDexApplication {
   }
 
 
-
   private void init(){
     MyVolley.init(this);
   }
@@ -90,15 +111,16 @@ public class RanchoApp extends MultiDexApplication {
 
   public void setCurrentUser(User currentUser) {
     this.currentUser = currentUser;
-  }
+    String companyKey = currentUser.getCompanyKey();
 
-//  public Job getCurrentJob() {
-//    return currentJob;
-//  }
-//
-//  public void setCurrentJob(Job currentJob) {
-//    this.currentJob = currentJob;
-//  }
+    DatabaseObject<Company> companyObject = new DatabaseObject<>(Company.class, companyKey);
+    companyObject.addValueEventListener(new DatabaseObjectEventListener<Company>() {
+      @Override
+      public void onChange(String key, Company company) {
+        currentCompany = company;
+      }
+    });
+  }
 
   public DateTimeFormatter getDateTimeFormatter() {
     return dateTimeFormatter;
@@ -128,15 +150,39 @@ public class RanchoApp extends MultiDexApplication {
     this.currentCategory = currentCategory;
   }
 
-//  public String getCurrentJobKey() {
-//    return currentJobKey;
-//  }
-//
-//  public void setCurrentJobKey(String currentJobKey) {
-//    this.currentJobKey = currentJobKey;
-//  }
-
   public java.lang.String getStorageUrl() {
     return storageUrl;
   }
+
+  public int getCompanyPoundsPerCubicFoot(){
+    if (currentCompany != null){
+      return Integer.valueOf(currentCompany.getPoundsPerCubicFoot());
+    }
+
+    return 7;
+  }
+
+  public Company getCurrentCompany(){return currentCompany;}
+
+  // may return null
+  public String getCompanyLogoUrl(){
+    if (currentCompany != null){
+      return currentCompany.getLogoUrl();
+    }
+    return null;
+  }
+
+  public boolean userIsAtLeastForeman(){
+    User.Role role = currentUser.getRoleAsEnum();
+    return role == User.Role.AgentForeman ||
+            role == User.Role.CompanyAdmin ||
+            role == User.Role.ServiceAdmin ||
+            role == User.Role.Foreman;
+
+  }
+  public Server getMailServer(){return mailServer;}
+//
+//  public Configuration getMailgunConfiguration() {
+//    return mailgunConfiguration;
+//  }
 }

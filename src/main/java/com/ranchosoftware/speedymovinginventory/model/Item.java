@@ -9,13 +9,13 @@ import java.util.TreeMap;
  * Created by rob on 7/15/16.
  */
 
-public class Item {
+public class Item extends Model {
 
   public static class Defaults{
     public static Integer monetaryValue(){return 20;}
     public static Integer numberOfPads(){return 0;}
-    public static Integer weightLbs(){return 5;}
-    public static Integer volume(){return 1;}
+    public static Float weightLbs(){return 5.0f;}
+    public static Float volume(){return 1.0f;}
     public static String packedBy(){ return "Owner";}
   }
 
@@ -50,24 +50,26 @@ public class Item {
   private String packedBy;
   private String specialHandling;
   private String uidOfCreator;
-  private Integer volume;
-  private Integer volumeInverse;
-  private Integer weightLbs;
-  private Integer weightLbsInverse;
+  private Float volume;
+  private Float volumeInverse;
+  private Float weightLbs;
+  private Float weightLbsInverse;
+  private Boolean syncWeightAndVolume;
 
 
 
 
   public Item(){
     this.imageReferences = new TreeMap<>();
+    syncWeightAndVolume = true;
   }
 
   public Item(Category category, Integer numberOfPads,
               String uidOfCreator,
               String description,
               Integer monetaryValue,
-              Integer weightLbs,
-              Integer volume,
+              Float weightLbs,
+              Float volume,
               String specialHandling,
               String jobKey,
               String packedBy,
@@ -99,6 +101,7 @@ public class Item {
     this.isScanned = false;
     this.isScannedInverse = !this.isScanned;
     this.damageDescription = "";
+    this.syncWeightAndVolume = true;
   }
 
 
@@ -157,11 +160,11 @@ public class Item {
     return monetaryValue;
   }
 
-  public Integer getWeightLbs() {
+  public Float getWeightLbs() {
     return weightLbs;
   }
 
-  public Integer getVolume() {
+  public float getVolume() {
     return volume;
   }
 
@@ -199,12 +202,12 @@ public class Item {
     this.monetaryValueInverse = -this.monetaryValue;
   }
 
-  public void setWeightLbs(Integer weightLbs) {
+  public void setWeightLbs(Float weightLbs) {
     this.weightLbs = weightLbs;
     this.weightLbsInverse = -this.weightLbs;
   }
 
-  public void setVolume(Integer volume) {
+  public void setVolume(Float volume) {
     this.volume = volume;
     this.volumeInverse = -this.volume;
 
@@ -294,12 +297,20 @@ public class Item {
     return numberOfPadsInverse;
   }
 
-  public Integer getVolumeInverse() {
+  public Float getVolumeInverse() {
     return volumeInverse;
   }
 
-  public Integer getWeightLbsInverse() {
+  public Float getWeightLbsInverse() {
     return weightLbsInverse;
+  }
+
+  public Boolean getSyncWeightAndVolume() {
+    return syncWeightAndVolume;
+  }
+
+  public void setSyncWeightAndVolume(Boolean syncWeightAndVolume) {
+    this.syncWeightAndVolume = syncWeightAndVolume;
   }
 }
 

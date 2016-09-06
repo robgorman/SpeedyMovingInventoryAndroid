@@ -10,10 +10,11 @@
     tools:showIn="@layout/activity_item_claim"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:orientation="vertical"
-    android:layout_marginLeft="6dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="4dp"
-    android:layout_marginRight="6dp">
+    android:layout_marginLeft="0dp"
+    android:layout_marginTop="0dp"
+    android:layout_marginBottom="0dp"
+    android:layout_marginRight="0dp"
+    android:background="@color/themeBlueLightest">
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -34,7 +35,8 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:layout_margin="8dp">
 
         <LinearLayout
             android:orientation="vertical"
@@ -138,6 +140,33 @@
                 android:orientation="vertical"
                 android:id="@+id/layoutClaimNumber">
 
+                <RelativeLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <CheckBox
+                        android:text="@string/active_claim_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/cbActiveClaim"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentLeft="true"/>
+
+                    <ToggleButton
+                        android:text="@string/scan_override_button_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/buttonScanOverride"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:textOff="@string/scan_override_button_label"
+                        android:textOn="@string/unscan"
+                        android:checked="true"/>
+
+                </RelativeLayout>
+
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
@@ -151,30 +180,30 @@
                         android:id="@+id/textView25"
                         android:layout_weight="1"/>
 
-                    <CheckBox
-                        android:text="@string/active_claim_label"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/cbActiveClaim"
-                        android:layout_weight="1"
-                       />
                 </LinearLayout>
 
-                <android.support.design.widget.TextInputLayout
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
 
-                    <AutoCompleteTextView
-                        android:id="@+id/tvClaimNumber"
+                    <android.support.design.widget.TextInputLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent">
 
-                        android:maxLines="1"
-                        android:singleLine="true"
-                        android:imeOptions="actionNext"
-                        />
+                        <AutoCompleteTextView
+                            android:id="@+id/tvClaimNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
 
-                </android.support.design.widget.TextInputLayout>
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:imeOptions="actionNext"
+                            />
+
+                    </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
 
             </LinearLayout>
 

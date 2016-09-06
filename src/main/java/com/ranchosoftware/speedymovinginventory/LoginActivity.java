@@ -37,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.ranchosoftware.speedymovinginventory.app.RanchoApp;
 import com.ranchosoftware.speedymovinginventory.model.User;
+import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -184,7 +185,20 @@ public class LoginActivity extends BaseActivity {
     ref.addValueEventListener(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
+        if (dataSnapshot.getValue() == null){
+          Utility.error(thisActivity.getRootView(), thisActivity, "Unexpected error user is null; Was user deleted?");
+
+          return;
+        }
         User user = dataSnapshot.getValue(User.class);
+        if (user.getRoleAsEnum() == User.Role.Customer){
+          Utility.error(thisActivity.getRootView(), thisActivity, "We're sorry, but we presently do not support Customer logins to the Speedy Moving Inventory App.");
+          auth.signOut();
+          showProgress(false);
+          fired = false;
+          return;
+        }
+
         String s1 = user.getCompanyKey();
         app().setCurrentUser(user);
         if (rememberMe.isChecked()){

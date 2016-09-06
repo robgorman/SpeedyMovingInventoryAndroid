@@ -6,7 +6,7 @@ import com.google.firebase.database.Exclude;
  * Created by rob on 7/14/16.
  */
 
-public class User {
+public class User extends Model {
 
 
   public enum Role {ServiceAdmin, CompanyAdmin, Foreman, AgentForeman, CrewMember, AgentCrewMember, Customer}
@@ -15,21 +15,27 @@ public class User {
 
   private String companyKey;
   private String firstName;
+  private Boolean isDisabled;
   private String lastName;
   private String role;
   private String uid;
+  private String emailAddress;
 
-  public User(String companyKey, String firstName, String lastName, String role, String uid){
+  public User(String companyKey, String firstName, String lastName, String role, String uid, String emailAddress){
     this.companyKey = companyKey;
     this.firstName = firstName;
     this.lastName = lastName;
     this.role = role;
     this.uid = uid;
+    this.isDisabled = false;
+
+    this.emailAddress = emailAddress;
   }
 
   // no args ctor required for firebase
   public User(){
 
+    this.isDisabled = false;
   }
 
   public String getCompanyKey() {
@@ -60,5 +66,17 @@ public class User {
 
   public String getUid() {
     return uid;
+  }
+
+  public Boolean getDisabled() {
+    return isDisabled;
+  }
+
+  public void setDisabled(Boolean disabled) {
+    isDisabled = disabled;
+  }
+
+  public String getEmailAddress() {
+    return emailAddress;
   }
 }
