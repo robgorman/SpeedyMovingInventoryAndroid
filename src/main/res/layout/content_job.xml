@@ -60,7 +60,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvLifecycle"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+
                     autofit:minTextSize="3sp"
 
                     android:gravity="center_horizontal"
@@ -118,6 +118,60 @@
             </LinearLayout>
 
         </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp">
+
+            <TextView
+                android:text="@string/label_scanned"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:id="@+id/tvScannedLabel"
+                android:textColor="@color/White"
+                android:layout_marginRight="3dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvScanned"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/White"
+                android:layout_marginRight="3dp"/>
+
+            <TextView
+                android:text="@string/label_of"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvOfLabel"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/White"
+                android:layout_marginRight="3dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvTotalItems"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/White"
+                android:layout_marginRight="3dp"/>
+
+            <TextView
+                android:text="@string/label_items"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView19"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/White"
+                android:layout_marginRight="3dp"/>
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <TabHost
@@ -249,27 +303,6 @@
                         android:layout_marginLeft="8dp"
                         android:layout_marginTop="8dp"
                         android:layout_marginRight="8dp">
-
-                        <LinearLayout
-                            android:orientation="horizontal"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent">
-
-                            <TextView
-                                android:text="@string/total_number_items"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/textView33"
-                                android:layout_weight="1"
-                                />
-
-                            <TextView
-                                android:text="--"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/tvTotalItems"
-                                android:layout_weight="1"/>
-                        </LinearLayout>
 
                         <LinearLayout
                             android:orientation="horizontal"

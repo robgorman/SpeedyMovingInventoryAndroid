@@ -14,8 +14,8 @@ android {
         applicationId "com.ranchosoftware.speedymovinginventory"
         minSdkVersion 18
         targetSdkVersion 24
-        versionCode 5
-        versionName "1.2.2"
+        versionCode 6
+        versionName "2.0"
         multiDexEnabled true
     }
     buildTypes {
@@ -23,6 +23,17 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    productFlavors {
+        dev {
+
+        }
+
+        prod {
+
+        }
+
     }
 }
 

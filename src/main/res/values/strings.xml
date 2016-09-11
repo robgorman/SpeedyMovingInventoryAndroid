@@ -128,7 +128,7 @@
     <string name="speedy_moving_inventory">Speedy Moving Inventory</string>
     <string name="welcome_to">Welcome to</string>
     <string name="please_sign_in">Please sign in</string>
-    <string name="activity_status_label">Activity Status:</string>
+    <string name="activity_status_label">Activity:</string>
     <string name="description_label">Desc:</string>
     <string name="value_label">Value:</string>
     <string name="insurance_label">Ins:</string>
@@ -169,4 +169,7 @@
     <string name="move_summary_label">Moving Item Summary:</string>
     <string name="scan_override_button_label">Scan Override</string>
     <string name="unscan">Unscan</string>
+    <string name="label_scanned">Scanned</string>
+    <string name="label_of">of</string>
+    <string name="label_items">Items</string>
 </resources>

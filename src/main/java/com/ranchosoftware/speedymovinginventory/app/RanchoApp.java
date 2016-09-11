@@ -9,6 +9,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.ranchosoftware.speedymovinginventory.R;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
 import com.ranchosoftware.speedymovinginventory.model.Company;
@@ -30,10 +31,10 @@ public class RanchoApp extends MultiDexApplication {
 
   private static final String PreferencesName = "SpeedyMovingInventoryPrefs";
 
-  private static final String storageUrl ="gs://speedymovinginventory.appspot.com";
+  private String storageUrl;
 
   private Server mailServer;
-  private String appServerIpAddress = "mybc.work";
+
 
   public static class LoginCredential{
     public String email;
@@ -68,7 +69,9 @@ public class RanchoApp extends MultiDexApplication {
 //            .domain("ranchosoftware.com")
 //            .apiKey("key-c90fa773c9d000ce3cd38a903368ee7b")
 //            .from("Speedy Moving Inventory", "speedy@ranchosoftware.com");
+    storageUrl = "gs://" + getString(R.string.google_storage_bucket);
   }
+
 
 
   public void resetCredentials(){

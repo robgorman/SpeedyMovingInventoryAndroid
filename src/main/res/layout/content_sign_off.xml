@@ -62,100 +62,109 @@
                         android:layout_weight="1"
                         android:layout_alignParentEnd="true"
                         android:id="@+id/ivCompanyLogo"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:layout_marginRight="12dp"/>
+                        android:layout_width="100dp"
+                        android:layout_marginRight="12dp"
+                        android:layout_height="100dp"/>
 
                     <LinearLayout
                         android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="12dp"
-                        android:layout_toLeftOf="@id/ivCompanyLogo">
+                        android:layout_alignParentTop="true">
 
-                        <TextView
-                            android:text="--"
+                        <LinearLayout
+                            android:orientation="vertical"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/tvCompanyName"/>
+                            android:layout_marginLeft="12dp"
+                            android:layout_toLeftOf="@id/ivCompanyLogo"
+                            android:layout_weight="1">
 
-                        <TextView
-                            android:text="--"
+                            <TextView
+                                android:text="--"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tvCompanyName"/>
+
+                            <TextView
+                                android:text="--"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tvCompanyAddress"/>
+
+                            <TextView
+                                android:text="--"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tvCompanyPhone"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:text="@string/shipper_label"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/textView40"
+                                android:textColor="@color/Black"/>
+
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginLeft="12dp">
+
+                                <TextView
+                                    android:text="--"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/tvShipperName"/>
+
+                                <TextView
+                                    android:text="--"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/tvShipperEmail"/>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:orientation="vertical"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/tvCompanyAddress"/>
+                            android:layout_weight="1">
 
-                        <TextView
-                            android:text="--"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/tvCompanyPhone"/>
+                            <TextView
+                                android:text="@string/move_summary_label"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/textView45"
+                                android:textColor="@color/Black"/>
+
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginLeft="12dp">
+
+                                <TextView
+                                    android:text="--"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/tvMoveSummary"
+                                    android:lines="4"/>
+                            </LinearLayout>
+                        </LinearLayout>
+
                     </LinearLayout>
 
                 </RelativeLayout>
 
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:text="@string/shipper_label"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/textView40"
-                    android:textColor="@color/Black"/>
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="12dp">
-
-                    <TextView
-                        android:text="--"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/tvShipperName"/>
-
-                    <TextView
-                        android:text="--"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/tvShipperEmail"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <TextView
-                    android:text="@string/move_summary_label"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/textView45"
-                    android:textColor="@color/Black"/>
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="12dp">
-
-                    <TextView
-                        android:text="--"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/tvMoveSummary"
-                        android:lines="4"/>
-                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>

@@ -2,6 +2,7 @@ package com.ranchosoftware.speedymovinginventory;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -117,7 +118,7 @@ public class JobRecyclerAdapter extends FirebaseRecyclerAdapter<Item, JobRecycle
   }
 
   private void highlight(TextView label){
-    label.setTextColor(context.getResources().getColor(R.color.themeGreenBase));
+    label.setTextColor(Color.WHITE);
   }
 
   private void highlightSortByLabel(MovingItemViewHolder holder){

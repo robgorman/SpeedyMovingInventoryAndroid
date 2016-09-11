@@ -1,6 +1,7 @@
 package com.ranchosoftware.speedymovinginventory;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -27,6 +28,7 @@ public class JobsActivity extends BaseMenuActivity {
   // only one of these two below is visible at once
   private ListView jobsListView;
   private View noJobsView;
+  private String companyKey;
 
   FirebaseListAdapter<Job> adapter;
   DateTimeFormatter formatter;
@@ -35,6 +37,11 @@ public class JobsActivity extends BaseMenuActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_jobs);
+
+    Bundle b = getIntent().getExtras();
+
+    companyKey = b.getString("companyKey");
+
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
     formatter = app().getDateTimeFormatter();
@@ -59,16 +66,21 @@ public class JobsActivity extends BaseMenuActivity {
     });
 
     jobsListView = (ListView) findViewById(R.id.jobsListView);
+    if (BuildConfig.FLAVOR.equalsIgnoreCase("dev")){
+      // change the background colo
+      jobsListView.setBackgroundColor(Color.RED);
+    }
     noJobsView = findViewById(R.id.layout_no_jobs);
 
     noJobsView.setVisibility(View.VISIBLE);
     jobsListView.setVisibility(View.INVISIBLE);
 
-    Query ref = FirebaseDatabase.getInstance().getReference("/jobs");
-    User user = app().getCurrentUser();
-    if (user != null){
-      ref = ref.orderByChild("companyKey").startAt(user.getCompanyKey()).endAt(user.getCompanyKey());
-    }
+    Query ref = FirebaseDatabase.getInstance().getReference("/joblists/" + companyKey + "/jobs");
+    // Todo; we certainly don't need this order by any more
+    //User user = app().getCurrentUser();
+    //if (user != null){
+    //  ref = ref.orderByChild("companyKey").startAt(user.getCompanyKey()).endAt(user.getCompanyKey());
+    //}
 
     adapter = new FirebaseListAdapter<Job>(thisActivity, Job.class, R.layout.job_item, ref) {
       @Override

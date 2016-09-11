@@ -84,7 +84,7 @@ public class SignOffActivity extends BaseActivity {
     tvShipperEmail.setText(job.getCustomerEmail());
   }
   private void loadJob(){
-    DatabaseObject<Job> jobRef = new DatabaseObject<Job>(Job.class, jobKey);
+    DatabaseObject<Job> jobRef = new DatabaseObject<Job>(Job.class, companyKey, jobKey);
     jobRef.addValueEventListener(new DatabaseObjectEventListener<Job>() {
       @Override
       public void onChange(String key, Job job) {
@@ -305,6 +305,7 @@ public class SignOffActivity extends BaseActivity {
     // add the customer signature
     FirebaseStorage storage = FirebaseStorage.getInstance();
 
+
     StorageReference customerSignature = storage.getReferenceFromUrl(app().getStorageUrl()).child("signatures/" + companyKey + "/" + jobKey + "/" + entryLifecycle);
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -326,11 +327,11 @@ public class SignOffActivity extends BaseActivity {
 
         Job.Lifecycle nextState = getNextLifecyle();
 
-        new DatabaseObject<Job>(Job.class, jobKey).child("lifecycle").setValue(getNextLifecyle().toString());
+        new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("lifecycle").setValue(getNextLifecyle().toString());
         //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/lifecycle").setValue(getNextLifecyle().toString());
         Uri downloadUrl = taskSnapshot.getDownloadUrl();
         //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
-        new DatabaseObject<Job>(Job.class, jobKey).child("signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
+        new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
         progressDialog.hide();
         setResult(RESULT_OK);
         finish();

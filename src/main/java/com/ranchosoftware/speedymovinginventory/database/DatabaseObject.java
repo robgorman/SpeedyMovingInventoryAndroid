@@ -32,6 +32,10 @@ public class DatabaseObject<T>{
     this.c = c;
 
     String object = "companies/";
+    if (c == Job.class){
+      object = "joblists/" + key1 + "/jobs/"+ key2;
+    }
+
     if (c == Item.class){
       object = "itemlists/" + key1 + "/items/" + key2;
     }

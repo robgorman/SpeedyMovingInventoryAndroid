@@ -67,8 +67,8 @@ public class InitialRouterActivity extends BaseActivity {
     ref.addValueEventListener(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
-        User user = dataSnapshot.getValue(User.class);
-        String s1 = user.getCompanyKey();
+        final User user = dataSnapshot.getValue(User.class);
+        String companyKey = user.getCompanyKey();
         app().setCurrentUser(user);
 
         Handler mainHandler = new Handler(thisActivity.getMainLooper());
@@ -77,6 +77,9 @@ public class InitialRouterActivity extends BaseActivity {
           @Override
           public void run() {
             Intent intent = new Intent(thisActivity, JobsActivity.class);
+            Bundle params = new Bundle();
+            params.putString("companyKey", user.getCompanyKey());
+            intent.putExtras(params);
             startActivity(intent);
             finish();
           }

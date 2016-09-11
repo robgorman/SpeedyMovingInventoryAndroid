@@ -103,7 +103,7 @@ public class ScanActivity extends BaseActivity {
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     scannerMessage.setText("QRC Scanner initializing...");
-    database.getReference("jobs/" + jobKey).addValueEventListener(new ValueEventListener() {
+    database.getReference("joblists/" + companyKey + "/jobs/" + jobKey).addValueEventListener(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
         job = dataSnapshot.getValue(Job.class);

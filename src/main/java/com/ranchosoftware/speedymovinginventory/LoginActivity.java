@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -72,6 +73,12 @@ public class LoginActivity extends BaseActivity {
 
     Bundle params = getIntent().getExtras();
 
+    if (BuildConfig.FLAVOR.equalsIgnoreCase("dev")){
+      // change the background color
+      View backgroundView = findViewById(R.id.backgroundLayout);
+      backgroundView.setBackgroundColor(Color.RED);
+    }
+
     boolean allowAutoLogin = true;
     if (params != null) {
       allowAutoLogin = params.getBoolean("allowAutoLogin", true);
@@ -124,9 +131,8 @@ public class LoginActivity extends BaseActivity {
       }
     });
 
-    // TODO remove
-    emailView.setText("rob@ranchosoftware.com");
-    passwordView.setText("aaaaaaaa");
+    //emailView.setText("rob@ranchosoftware.com");
+    //passwordView.setText("aaaaaaaa");
 
     progressView = findViewById(R.id.login_progress);
     progressView.setVisibility(View.GONE);
@@ -190,7 +196,7 @@ public class LoginActivity extends BaseActivity {
 
           return;
         }
-        User user = dataSnapshot.getValue(User.class);
+        final User user = dataSnapshot.getValue(User.class);
         if (user.getRoleAsEnum() == User.Role.Customer){
           Utility.error(thisActivity.getRootView(), thisActivity, "We're sorry, but we presently do not support Customer logins to the Speedy Moving Inventory App.");
           auth.signOut();
@@ -213,6 +219,9 @@ public class LoginActivity extends BaseActivity {
           @Override
           public void run() {
             Intent intent = new Intent(thisActivity, JobsActivity.class);
+            Bundle params = new Bundle();
+            params.putString("companyKey", user.getCompanyKey());
+            intent.putExtras(params);
             startActivity(intent);
             finish();
           }

@@ -84,6 +84,7 @@ public class JobActivity extends BaseMenuActivity {
   private Spinner filterBySpinner;
 
   private TextView tvTotalItems;
+  private TextView tvScannedItems;
   private TextView tvTotalValue;
   private TextView tvTotalPads;
   private TextView tvTotalVolume;
@@ -125,7 +126,7 @@ public class JobActivity extends BaseMenuActivity {
     companyKey = b.getString("companyKey");
 
     final FirebaseDatabase database = FirebaseDatabase.getInstance();
-    jobRef = new DatabaseObject<>(Job.class, jobKey);
+    jobRef = new DatabaseObject<>(Job.class, companyKey, jobKey);
     recipientListQuery = FirebaseDatabase.getInstance().getReference("users/").orderByChild("companyKey").startAt(companyKey).endAt(companyKey);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
@@ -204,6 +205,7 @@ public class JobActivity extends BaseMenuActivity {
 
   private void setupSummaryItems(){
     tvTotalItems = (TextView) findViewById(R.id.tvTotalItems);
+    tvScannedItems = (TextView) findViewById(R.id.tvScanned);
     tvTotalValue = (TextView) findViewById(R.id.tvTotalValue);
     tvTotalPads = (TextView) findViewById(R.id.tvTotalPads);
     tvTotalVolume = (TextView) findViewById(R.id.tvTotalVolume);
@@ -263,7 +265,8 @@ public class JobActivity extends BaseMenuActivity {
     sortByCriteria.add("By Weight");
     sortByCriteria.add("By Claim");
 
-    ArrayAdapter<String> sortByAdapter = new ArrayAdapter<>(thisActivity, android.R.layout.simple_spinner_item, sortByCriteria);
+    ArrayAdapter<String> sortByAdapter = new ArrayAdapter<>(thisActivity, R.layout.spinner_item, sortByCriteria);
+    sortByAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
     sortBySpinner.setAdapter(sortByAdapter);
     sortBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
@@ -292,6 +295,7 @@ public class JobActivity extends BaseMenuActivity {
   private float totalVolumeCubicFeet;
   private float totalWeightLbs;
   private int totalDamagedItems;
+  private int totalScannedItems;
 
   private void updateTotals(){
     totalItems = 0;
@@ -300,6 +304,7 @@ public class JobActivity extends BaseMenuActivity {
     totalVolumeCubicFeet = 0;
     totalWeightLbs = 0;
     totalDamagedItems = 0;
+    totalScannedItems = 0;
 
     totalItems = children.size();
     for (String key : children.keySet()){
@@ -311,9 +316,26 @@ public class JobActivity extends BaseMenuActivity {
       if (next.getHasClaim()){
         totalDamagedItems++;
       }
+      if (next.getIsScanned()){
+        totalScannedItems++;
+      }
     }
 
     tvTotalItems.setText(Integer.toString(totalItems));
+    tvScannedItems.setText(Integer.toString(totalScannedItems));
+
+    if (job.getLifecycle() == Job.Lifecycle.New){
+      // only show # items, scannded doesn't matter
+      findViewById(R.id.tvScannedLabel).setVisibility(View.GONE);
+      findViewById(R.id.tvOfLabel).setVisibility(View.GONE);
+      tvScannedItems.setVisibility(View.GONE);
+    } else {
+      // only show # items, scannded doesn't matter
+      findViewById(R.id.tvScannedLabel).setVisibility(View.VISIBLE);
+      findViewById(R.id.tvOfLabel).setVisibility(View.VISIBLE);
+      tvScannedItems.setVisibility(View.VISIBLE);
+    }
+
     tvTotalValue.setText("$" + Integer.toString(totalValue));
     tvTotalPads.setText(Integer.toString(totalPads));
     String styled = String.format("%.1f", (float) totalVolumeCubicFeet) + " ft3";
