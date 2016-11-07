@@ -4,6 +4,9 @@ import com.ranchosoftware.speedymovinginventory.BuildConfig;
 
 import org.joda.time.DateTime;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by rob on 7/13/16.
  */
@@ -19,18 +22,20 @@ public class Job extends Model {
   private String customerLastName;
   private String customerPhone;
   private Long deliveryEarliestDate;
+  private String deliveryInstructions;
   private Long deliveryLatestDate;
   private Address destinationAddress;
   private String jobNumber;
   private String lifecycle;
   private Address originAddress;
   private Long pickupDateTime;
+  private String pickupInstructions;
   private Signature signatureDelivered; // can be null
   private Signature signatureInStorage; // can be null
   private Signature signatureLoadedForDelivery; // can be null
   private Signature signatureLoadedForStorage; // can be null
-  private Signature signatureNew; // can be null
   private Boolean storageInTransit;
+  private Map<String, UserIdMapEntry> users; // can be null
 
   // no-args constructor require for firebase
   public Job(){
@@ -66,11 +71,13 @@ public class Job extends Model {
     this.originAddress  = originAddress;
     this.pickupDateTime  = pickupDateTime;
     this.storageInTransit = storageInTransit;
-    this.signatureNew = null;
     this.signatureLoadedForStorage = null;
     this.signatureInStorage = null;
     this.signatureLoadedForDelivery = null;
     this.signatureDelivered = null;
+    this.users = new HashMap<String, UserIdMapEntry>();
+    this.deliveryInstructions = "";
+    this.pickupInstructions = "";
 
   }
 
@@ -130,10 +137,6 @@ public class Job extends Model {
     return storageInTransit;
   }
 
-  public Signature getSignatureNew() {
-    return signatureNew;
-  }
-
   public Signature getSignatureLoadedForStorage() {
     return signatureLoadedForStorage;
   }
@@ -152,5 +155,26 @@ public class Job extends Model {
 
   public String getJobNumber() {
     return jobNumber;
+  }
+
+  public Map<String, UserIdMapEntry> getUsers() {
+    if (users == null){
+      users = new HashMap<>();
+    }
+    return users;
+  }
+
+  public String getDeliveryInstructions() {
+    if (deliveryInstructions == null){
+      deliveryInstructions = "";
+    }
+    return deliveryInstructions;
+  }
+
+  public String getPickupInstructions() {
+    if (pickupInstructions == null){
+      pickupInstructions = "";
+    }
+    return pickupInstructions;
   }
 }

@@ -2,6 +2,7 @@ package com.ranchosoftware.speedymovinginventory;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,22 +18,28 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.Toolbar;
+import android.text.SpannableStringBuilder;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.SuperscriptSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -47,7 +54,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 import com.ranchosoftware.speedymovinginventory.model.Item;
-import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.utility.Permissions;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
@@ -62,9 +68,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class ItemClaimActivity extends BaseActivity {
+public class ItemDetailsActivity extends BaseActivity {
 
-  private static final String TAG = ItemClaimActivity.class.getSimpleName();
+  private static final String TAG = ItemDetailsActivity.class.getSimpleName();
 
   private String companyKey;
   private String jobKey;
@@ -78,13 +84,11 @@ public class ItemClaimActivity extends BaseActivity {
   private EditText damageDescription;
   private CheckBox checkBoxIsBox;
   private TextView descriptionView;
-  private TextView insuranceView;
   private CheckBox checkBoxActiveClaim;
-  private ToggleButton buttonScanOverride;
+  private Switch scanOverrideSwitch;
 
   private MediaPlayer positivePlayer;
   private DatabaseReference itemRef;
-  DatabaseReference qrcListRef;
 
   private ValueEventListener itemRefEventListener = new ValueEventListener() {
     @Override
@@ -95,7 +99,13 @@ public class ItemClaimActivity extends BaseActivity {
         Utility.error(getRootView(), thisActivity, "Error: Item Detail Activity, unexpected null.");
 
       } else {
-        item = dataSnapshot.getValue(Item.class);
+        try {
+          item = dataSnapshot.getValue(Item.class);
+        } catch (Exception e){
+          // err pulling the item out
+          Utility.error(getRootView(), thisActivity, "Error retrieving item, contact support. ErrorCode=" + "ItemDetailsActivity:"+e.getMessage());
+          return;
+        }
         updateValuesFromItem();
         showProgress(false, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
       }
@@ -114,7 +124,6 @@ public class ItemClaimActivity extends BaseActivity {
     descriptionView.setText(item.getDescription());
     checkBoxDamaged.setChecked(item.getHasClaim());
     damageDescription.setText(item.getDamageDescription());
-    insuranceView.setText(item.getInsurance());
     claimNumber.setText(item.getClaimNumber());
     checkBoxActiveClaim.setChecked(item.getIsClaimActive());
     adapter.clear();
@@ -125,24 +134,41 @@ public class ItemClaimActivity extends BaseActivity {
 
 
     if ( !app().userIsAtLeastForeman()){
-      buttonScanOverride.setVisibility(View.INVISIBLE);
+      scanOverrideSwitch.setVisibility(View.INVISIBLE);
     } else {
-      buttonScanOverride.setVisibility(View.VISIBLE);
+      scanOverrideSwitch.setVisibility(View.VISIBLE);
     }
 
-    buttonScanOverride.setChecked(item.getIsScanned());
+    ((TextView)findViewById(R.id.tvValue)).setText("$" + String.format("%.2f",item.getMonetaryValue()));
+    ((TextView)findViewById(R.id.tvNumberOfPads)).setText(String.valueOf(item.getNumberOfPads()));
+    ((TextView)findViewById(R.id.tvCategory)).setText(item.getCategory());
+    ((TextView)findViewById(R.id.tvPackedBy)).setText(item.getPackedBy());
+    ((EditText)findViewById(R.id.editSpecialHandling)).setText(item.getSpecialHandling());
+
+    ((CheckBox)findViewById(R.id.cbDisassembled)).setChecked(item.getIsDisassembled());
+
+    String styled = String.format("%.1f", (float) item.getVolume()) + " ft3";
+    SpannableStringBuilder superScript = new SpannableStringBuilder(styled);
+    superScript.setSpan(new SuperscriptSpan(), styled.length() - 1, styled.length(), 0);
+    superScript.setSpan(new RelativeSizeSpan(0.5f), styled.length() - 1, styled.length(), 0);
+    ((TextView)findViewById(R.id.tvVolume)).setText(superScript);
+
+    ((TextView)findViewById(R.id.tvWeight)).setText(String.format("%.0f",item.getWeightLbs()) + " lbs");
+
+
+    scanOverrideSwitch.setChecked(item.getIsScanned());
     adapter.notifyDataSetChanged();
   }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_item_claim);
+    setContentView(R.layout.activity_item_details);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-    toolbar.setTitle("Moving Item Claim Mgmt.");
+    toolbar.setTitle("Item Details");
     setSupportActionBar(toolbar);
 
-    positivePlayer = MediaPlayer.create(thisActivity, R.raw.positive_beep);
+    positivePlayer = MediaPlayer.create(thisActivity, R.raw.checkout_beep);
     positivePlayer.setVolume(1.0f, 1.0f);
 
     Bundle params = getIntent().getExtras();
@@ -153,27 +179,34 @@ public class ItemClaimActivity extends BaseActivity {
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     showProgress(true, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
     itemRef = FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items/" + qrcCode);
-    qrcListRef = FirebaseDatabase.getInstance().getReference("qrcList/" + qrcCode);
 
     photoGridView = (GridView) findViewById(R.id.photoGridView);
     tvNoPhotosMessage = (TextView) findViewById(R.id.tvNoPhotosMessage);
     checkBoxDamaged = (CheckBox) findViewById(R.id.cbDamaged);
 
     claimNumber = (EditText) findViewById(R.id.tvClaimNumber);
-    damageDescription = (EditText) findViewById(R.id.tvDamageDescription);
+    damageDescription = (EditText) findViewById(R.id.editDamageDescription);
     checkBoxIsBox = (CheckBox) findViewById(R.id.cbIsBox);
     checkBoxActiveClaim = (CheckBox) findViewById(R.id.cbActiveClaim);
-    insuranceView = (TextView) findViewById(R.id.tvInsurance);
     descriptionView = (TextView) findViewById(R.id.tvDescription);
-    buttonScanOverride = (ToggleButton) findViewById(R.id.buttonScanOverride);
+    scanOverrideSwitch = (Switch) findViewById(R.id.scanOverrideSwitch);
 
-    buttonScanOverride.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+    scanOverrideSwitch.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        Log.d(TAG, "sttf");
+        if (scanOverrideSwitch.isChecked()){
+          positivePlayer.start();
+        }
+      }
+    });
+    scanOverrideSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
       public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
         if (item != null){
           if (checked) {
             item.setIsScanned(checked);
-            positivePlayer.start();
+            //positivePlayer.start();
           } else {
             item.setIsScanned(false);
           }
@@ -197,6 +230,7 @@ public class ItemClaimActivity extends BaseActivity {
 
   private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 4;
   private static final int TAKE_PHOTO_CODE = 5;
+  private static final int QRC_CODE_REPLACEMENT = 234;
 
   private void attemptTakePhoto() {
     if (Permissions.hasPermission(thisActivity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -222,7 +256,8 @@ public class ItemClaimActivity extends BaseActivity {
       }
       // Continue only if the File was successfully created
       if (photoFile != null) {
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+        Uri photoUri = FileProvider.getUriForFile(thisActivity, BuildConfig.APPLICATION_ID + ".provider", photoFile);
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         startActivityForResult(takePictureIntent, TAKE_PHOTO_CODE);
       }
     }
@@ -284,6 +319,8 @@ public class ItemClaimActivity extends BaseActivity {
 
       handleTakePictureResult();
 
+    } else if (requestCode == QRC_CODE_REPLACEMENT && resultCode == Activity.RESULT_OK){
+      handleCodeReplacementResult(data);
     }
   }
 
@@ -311,6 +348,11 @@ public class ItemClaimActivity extends BaseActivity {
       bitmap = bitmap.createScaledBitmap(bitmap, newWidth, newHeight, false);
     }
     return bitmap;
+  }
+
+  private void handleCodeReplacementResult(Intent data){
+    String newCode = data.getStringExtra("newCode");
+    changeQrcCodeTo(newCode);
   }
 
   private void handleTakePictureResult(){
@@ -478,7 +520,91 @@ public class ItemClaimActivity extends BaseActivity {
     if (item != null) {
       itemRef.setValue(item);
     }
-    qrcListRef.setValue(jobKey);
     itemRef.removeEventListener(itemRefEventListener);
   }
+
+  @Override
+  public void onSaveInstanceState(Bundle state) {
+    super.onSaveInstanceState(state);
+    if (imageFile != null){
+      String path = imageFile.getPath();
+      state.putString("imageFile", path);
+    }
+  }
+
+  @Override
+  protected void onRestoreInstanceState(Bundle state) {
+
+    super.onRestoreInstanceState(state);
+    String path = state.getString("imageFile");
+    if (path != null){
+      imageFile = new File(path);
+    }
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.item_details_menu, menu);
+    return true;
+  }
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle item selection
+    switch (item.getItemId()) {
+
+      case R.id.change_qrc_code:
+        reassignScannerCode();
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+
+
+  private void reassignScannerCode(){
+    Log.d(TAG, "stuff");
+    // launch the scanner and tell him this is reassignment
+    Intent intent = new Intent(thisActivity, ScanActivity.class);
+    Bundle params = new Bundle();
+    params.putString("companyKey", companyKey);
+    params.putString("jobKey", jobKey);
+    params.putBoolean("isReplacementCode", true);
+
+    intent.putExtras(params);
+    startActivityForResult(intent, QRC_CODE_REPLACEMENT);
+  }
+
+  private void changeQrcCodeTo(final String newCode){
+    // QRC codes exist in 2 places in the database:
+    //      itemlists/<JobKey>/items/<QrcCode>/itemdata
+    // and in the lookup
+    //      qrcList/< <QrcCode>:<JobKey> >
+
+    // For replacement we need to change both.
+    // remove the old
+
+    DatabaseReference newQrcCode = FirebaseDatabase.getInstance().getReference("qrcList/" + newCode);
+    newQrcCode.setValue(jobKey, new DatabaseReference.CompletionListener(){
+      @Override
+      public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+        // remove old code
+        itemRef.removeEventListener(itemRefEventListener);
+        // reassign to new item
+        itemRef = FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items/" + newCode);
+        DatabaseReference oldQrcCode = FirebaseDatabase.getInstance().getReference("qrcList/" + qrcCode);
+        oldQrcCode.removeValue();
+
+        // replace in the item
+        DatabaseReference oldItemReference = FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items/" + qrcCode);
+        oldItemReference.removeValue();
+
+        itemRef.setValue(item);
+
+
+      }
+    });
+
+  }
+
 }

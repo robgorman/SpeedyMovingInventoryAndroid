@@ -1,4 +1,6 @@
+/*
 package com.ranchosoftware.speedymovinginventory;
+
 
 import android.content.Context;
 import android.content.Intent;
@@ -29,9 +31,8 @@ import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 import java.util.Map;
 
-/**
- * Created by rob on 8/11/16.
- */
+
+ * Created by rob on 8/11/16
 
 public class JobRecyclerAdapter extends FirebaseRecyclerAdapter<Item, JobRecyclerAdapter.MovingItemViewHolder> {
 
@@ -118,7 +119,9 @@ public class JobRecyclerAdapter extends FirebaseRecyclerAdapter<Item, JobRecycle
   }
 
   private void highlight(TextView label){
-    label.setTextColor(Color.WHITE);
+
+     int color = this.context.getResources().getColor(R.color.speedyMed);
+    label.setTextColor(color);
   }
 
   private void highlightSortByLabel(MovingItemViewHolder holder){
@@ -165,7 +168,7 @@ public class JobRecyclerAdapter extends FirebaseRecyclerAdapter<Item, JobRecycle
     setClaimInfo(model, holder);
 
     holder.description.setText(item.getDescription());
-    holder.monetaryValue.setText("$" + item.getMonetaryValue());
+    holder.monetaryValue.setText("$" + String.format("%.2f",item.getMonetaryValue()));
     holder.insurance.setText(item.getInsurance());
     holder.numberOfPads.setText(Integer.toString(item.getNumberOfPads()));
     holder.category.setText(item.getCategory());
@@ -256,3 +259,5 @@ public class JobRecyclerAdapter extends FirebaseRecyclerAdapter<Item, JobRecycle
     }
   }
 }
+
+*/

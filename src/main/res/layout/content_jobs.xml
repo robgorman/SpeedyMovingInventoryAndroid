@@ -100,7 +100,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/layoutHeader"
         android:id="@+id/jobsListView"
-        android:background="@color/themeBlueLightest"/>
+        android:background="@color/White"/>
 
     <LinearLayout
         android:orientation="vertical"
@@ -108,7 +108,8 @@
         android:layout_height="match_parent"
         android:id="@+id/layout_no_jobs"
         android:layout_below="@id/layoutHeader"
-        android:visibility="invisible">
+        android:visibility="invisible"
+        android:background="@color/White">
 
         <TextView
             android:text="@string/no_jobs_message"

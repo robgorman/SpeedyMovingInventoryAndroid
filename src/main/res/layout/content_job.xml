@@ -37,7 +37,7 @@
                 android:autoLink="email"
                 android:lines="1"
                 android:textColor="@color/White"
-                android:textColorLink="@color/themeBlueDark"/>
+                android:textColorLink="@color/textColorLinked2"/>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -89,7 +89,7 @@
                 autofit:minTextSize="3sp"
                 android:autoLink="phone"
                 android:textColor="@color/White"
-                android:textColorLink="@color/themeBlueDark"/>
+                android:textColorLink="@color/textColorLinked2"/>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -134,7 +134,8 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:id="@+id/tvScannedLabel"
                 android:textColor="@color/White"
-                android:layout_marginRight="3dp"/>
+                android:layout_marginRight="3dp"
+                android:visibility="gone"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -142,7 +143,8 @@
                 android:id="@+id/tvScanned"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@color/White"
-                android:layout_marginRight="3dp"/>
+                android:layout_marginRight="3dp"
+                android:visibility="visible"/>
 
             <TextView
                 android:text="@string/label_of"
@@ -151,7 +153,8 @@
                 android:id="@+id/tvOfLabel"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@color/White"
-                android:layout_marginRight="3dp"/>
+                android:layout_marginRight="3dp"
+                android:visibility="gone"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -159,7 +162,8 @@
                 android:id="@+id/tvTotalItems"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@color/White"
-                android:layout_marginRight="3dp"/>
+                android:layout_marginRight="3dp"
+                android:text="No"/>
 
             <TextView
                 android:text="@string/label_items"
@@ -178,7 +182,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/summaryDetailsTabHost"
-        android:background="@color/themeBlueLightest">
+        android:background="@color/White">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -188,7 +192,7 @@
             <TabWidget
                 android:id="@android:id/tabs"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:background="@color/themeBlueLight"/>
 
             <FrameLayout
@@ -196,6 +200,75 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 >
+
+                <LinearLayout
+                    android:id="@+id/tab2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <me.grantland.widget.AutofitTextView
+                            android:text="@string/no_items_message"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvNoItemsMessage"
+                            android:layout_marginTop="50dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginRight="15dp"
+                            autofit:minTextSize="3sp"
+                            android:gravity="center_horizontal"
+                            android:visibility="visible"/>
+
+                        <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/llSortByGroup"
+                            android:layout_alignParentRight="true">
+
+                            <TextView
+                                android:text="Sort By:"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/textView18"
+                                android:layout_weight="3"
+                                android:gravity="right|center_vertical"
+                                android:layout_gravity="center_vertical"
+                                android:textColor="@color/Black"/>
+
+                            <Button
+                                android:text="Sort By"
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:id="@+id/sortByButton"
+                                android:layout_alignParentRight="true"
+                                android:layout_marginBottom="0dp"
+                                android:layout_marginRight="12dp"
+                                android:background="@drawable/button_link"
+                                android:textColor="@color/themeBlueLightest"
+                                android:textAllCaps="false"
+                                android:layout_marginTop="0dp"
+                                android:minWidth="125dp"
+                                android:layout_weight="1"
+                                android:textAlignment="textEnd"/>
+
+                        </LinearLayout>
+
+                        <android.support.v7.widget.RecyclerView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/itemsList"
+                            android:visibility="visible"
+                            android:layout_below="@+id/llSortByGroup">
+
+                        </android.support.v7.widget.RecyclerView>
+
+                    </RelativeLayout>
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/tab1"
@@ -251,6 +324,13 @@
                                 android:autoLink="all"
                                 android:textColorLink="@color/themeBlueDark"/>
 
+                            <me.grantland.widget.AutofitTextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tvPickupInstructions"
+                                android:lines="5"
+                                android:paddingTop="6dp"/>
+
                         </LinearLayout>
                         <LinearLayout
                             android:orientation="vertical"
@@ -293,6 +373,13 @@
                                 android:autoLink="all"
                                 android:textColorLink="@color/themeBlueDark"/>
 
+                            <me.grantland.widget.AutofitTextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tvDeliveryInstructions"
+                                android:lines="5"
+                                android:paddingTop="6dp"/>
+
                         </LinearLayout>
                     </LinearLayout>
 
@@ -317,7 +404,7 @@
                                 android:layout_weight="1"/>
 
                             <TextView
-                                android:text="--"
+                                android:text="$0"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/tvTotalValue"
@@ -337,7 +424,7 @@
                                 android:layout_weight="1"/>
 
                             <TextView
-                                android:text="--"
+                                android:text="0"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/tvTotalPads"
@@ -359,7 +446,7 @@
                                 android:layout_weight="1"/>
 
                             <TextView
-                                android:text="--"
+                                android:text="0"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/tvTotalVolume"
@@ -379,7 +466,7 @@
                                 android:layout_weight="1"/>
 
                             <TextView
-                                android:text="--"
+                                android:text="0"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/tvTotalWeight"
@@ -399,7 +486,7 @@
                                 android:layout_weight="1"/>
 
                             <TextView
-                                android:text="--"
+                                android:text="0"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/tvTotalNumberDamagedItems"
@@ -407,70 +494,6 @@
                         </LinearLayout>
 
                     </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/tab2"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-
-                        <me.grantland.widget.AutofitTextView
-                            android:text="@string/no_items_message"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/tvNoItemsMessage"
-                            android:layout_marginTop="50dp"
-                            android:layout_marginLeft="15dp"
-                            android:layout_marginRight="15dp"
-                            autofit:minTextSize="3sp"
-                            android:gravity="center_horizontal"
-                            android:visibility="visible"/>
-
-                        <LinearLayout
-                            android:orientation="horizontal"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/spinnerLayout"
-                            android:layout_marginBottom="6dp"
-                            android:layout_marginTop="10dp"
-                            android:visibility="invisible">
-
-                            <TextView
-                                android:text="Sort By: "
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/textView15"
-                                android:layout_weight="1"
-                                android:gravity="right"
-                                android:textSize="20sp"/>
-
-                            <Spinner
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/sortBySpinner"
-                                android:layout_weight="2"/>
-
-                            <Spinner
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:id="@+id/filterBySpinner"
-                                android:layout_weight="1"
-                                android:visibility="gone"/>
-                        </LinearLayout>
-
-                        <android.support.v7.widget.RecyclerView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:id="@+id/itemsList"
-                            android:visibility="visible"
-                            android:layout_below="@id/spinnerLayout"/>
-
-                    </RelativeLayout>
                 </LinearLayout>
 
 

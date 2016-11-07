@@ -13,6 +13,7 @@ import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -52,7 +53,6 @@ import java.io.IOException;
 
 public class ScanActivity extends BaseActivity {
 
-
   private static final String TAG = "Barcode-reader";
 
   // intent request code to handle updating play services if needed.
@@ -76,10 +76,13 @@ public class ScanActivity extends BaseActivity {
 
   private MediaPlayer positivePlayer;
   private MediaPlayer negativePlayer;
+  private MediaPlayer invalidCodePlayer;
+  private Vibrator vibrator;
   private Job job;
 
   private String jobKey;
   private String companyKey;
+  private Boolean isReplacementCode = false;
   private View topView;
   private TextView scannerMessage;
 
@@ -95,10 +98,19 @@ public class ScanActivity extends BaseActivity {
     Bundle b = getIntent().getExtras();
     jobKey = b.getString("jobKey");
     companyKey = b.getString("companyKey");
-    positivePlayer = MediaPlayer.create(thisActivity, R.raw.positive_beep);
+    isReplacementCode = b.getBoolean("isReplacementCode",false);
+
+
+
+    positivePlayer = MediaPlayer.create(thisActivity, R.raw.checkout_beep);
     positivePlayer.setVolume(1.0f, 1.0f);
     negativePlayer = MediaPlayer.create(thisActivity, R.raw.negative_beep);
     negativePlayer.setVolume(1.0f, 1.0f);
+
+    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+    invalidCodePlayer = MediaPlayer.create(thisActivity, R.raw.negative_beep_2);
+    invalidCodePlayer.setVolume(1.0f, 1.0f);
     scannerMessage = (TextView) findViewById(R.id.tvScannerMessage);
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -106,9 +118,18 @@ public class ScanActivity extends BaseActivity {
     database.getReference("joblists/" + companyKey + "/jobs/" + jobKey).addValueEventListener(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
-        job = dataSnapshot.getValue(Job.class);
-        scannerMessage.setText("Point camera at a QRC Code");
-        enableControlsForJob();
+        try {
+          job = dataSnapshot.getValue(Job.class);
+          if (isReplacementCode){
+            scannerMessage.setText("Point camera at QRC Label Replacement");
+          } else {
+            scannerMessage.setText("Point camera at a QRC Code");
+          }
+          enableControlsForJob();
+        } catch (Exception e){
+          Utility.error(getRootView(), thisActivity, "Unable to read job from database. Contact support. ErrorCode=" + "ScanActivity:" + e.getMessage());
+          finish();
+        }
       }
 
       @Override
@@ -134,7 +155,6 @@ public class ScanActivity extends BaseActivity {
     } else {
       requestCameraPermission();
     }
-
     gestureDetector = new GestureDetector(this, new CaptureGestureListener());
     scaleGestureDetector = new ScaleGestureDetector(this, new ScaleListener());
 
@@ -143,8 +163,14 @@ public class ScanActivity extends BaseActivity {
       @Override
       public void onClick(View v) {
         finish();
+        // this only necessary when we were launched in activityForResult
+        // which only occurs for QRC code replacement
+        setResult(RESULT_CANCELED);
       }
     });
+    if (isReplacementCode){
+      endScan.setText("Cancel");
+    }
 
   }
 
@@ -203,7 +229,7 @@ public class ScanActivity extends BaseActivity {
 
     BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(graphicOverlay, new BarcodeGraphicTracker.Callback() {
       @Override
-      public void itemRecognized(String code) {
+      public void itemRecognized(final String code) {
 
         // no new scans accepted if we are already processing
         if (processingCode){
@@ -211,7 +237,13 @@ public class ScanActivity extends BaseActivity {
         }
         if (job != null) {
 
-          barcodeScanned(code);
+          thisActivity.runOnUiThread(new Runnable(){
+            public void run(){
+              barcodeScanned(code);
+            }
+
+          });
+
         } else {
 
         }
@@ -338,7 +370,7 @@ public class ScanActivity extends BaseActivity {
     };
 
     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setTitle("Multitracker sample")
+    builder.setTitle("Speedy Moving Inventory")
             .setMessage(R.string.no_camera_permission)
             .setPositiveButton(R.string.ok, listener)
             .show();
@@ -473,13 +505,14 @@ public class ScanActivity extends BaseActivity {
 
 
     if (!Utility.isQrcCodeValid(code)){
-      negativePlayer.start();
-      scannerMessage.setText("Invalid QRC Code: " + code);
+      invalidCodePlayer.start();
+      vibrator.vibrate(200);
+      scannerMessage.setText("Invalid QRC Code -- Not a Speedy Moving Inventory Code");
       processingCode = false;
       return;
     }
 
-
+    //scannerMessage.setText("Point camera at a QRC Code");
     // lookup or create item based on scan
     //final Job job = app().getCurrentJob();
     DatabaseReference ref = FirebaseDatabase.getInstance().getReference("qrcList/" + code);
@@ -488,14 +521,20 @@ public class ScanActivity extends BaseActivity {
       public void onDataChange(DataSnapshot dataSnapshot) {
         if (dataSnapshot.getValue() == null){
           // item is new
-          createNewItem(job, code);
+          if (isReplacementCode){
+            // if its a replament code do one thing
+            replaceCode(job, code);
+          } else {
+            createNewItem(job, code);
+          }
           processingCode = false;
         } else {
           // item exists see if it is this job
           String itemJobKey = dataSnapshot.getValue(String.class);
           if (!itemJobKey.equals(jobKey)){
-            scannerMessage.setText("This item belongs to another Job. JobKey = " + itemJobKey);
+            scannerMessage.setText("This item belongs to another job.");
             negativePlayer.start();
+            vibrator.vibrate(200);
             Log.d(TAG, "Item does not belong to this job");
             processingCode = false;
           } else {
@@ -504,13 +543,21 @@ public class ScanActivity extends BaseActivity {
             itemRef.addListenerForSingleValueEvent(new ValueEventListener() {
               @Override
               public void onDataChange(DataSnapshot dataSnapshot) {
-                Item item = dataSnapshot.getValue(Item.class);
+                Item item;
+                try {
+                  item = dataSnapshot.getValue(Item.class);
+                } catch (Exception e){
+                  scannerMessage.setText("Unable to read item from database; Contact support. ErrorCode=" + e.getMessage());
+                  processingCode = false;
+                  return;
+                }
                 if (job.getLifecycle() == Job.Lifecycle.New) {
                   editItem(job, code, item);
                 } else {   // for any other job lifecycle just mark as scanned
                   // check to see if already scanned if so note
                   if (item.getIsScanned()){
                     scannerMessage.setText("This item has already been scanned.");
+                    vibrator.vibrate(50);
                   } else {
                     // set the item as scanned
                     FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/" + code + "/isScanned").setValue(true);
@@ -550,12 +597,24 @@ public class ScanActivity extends BaseActivity {
 
   }
 
+  private void replaceCode(Job job, String newCode){
+    // This is a special case. Not sure its a great design, but when
+    // we are replacing a a code we have been invoked via startActivityForResult()
+    // and we need just return the new code. No other work to dod
+    positivePlayer.start();
+    Intent returnData = new Intent();
+    returnData.putExtra("newCode", newCode);
+    setResult(RESULT_OK, returnData);
+    finish();
+  }
+
   private void createNewItem(Job job, String code){
     // the job has to be in status New for additional items to be created
     if (job.getLifecycle() != Job.Lifecycle.New){
       // its an error
       Utility.error(topView, this, R.string.item_not_found);
       negativePlayer.start();
+      vibrator.vibrate(200);
     } else {
       positivePlayer.start();
       Intent intent = new Intent(thisActivity, NewItemActivity.class);

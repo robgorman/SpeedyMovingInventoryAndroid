@@ -1,5 +1,6 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -63,7 +64,9 @@ public class BaseMenuActivity extends BaseActivity {
         return true;
       case R.id.about:
 
-        Toast.makeText(this, "Version :" + version(),Toast.LENGTH_LONG).show();
+        AboutDialog dialog = new AboutDialog(this);
+        Dialog d = dialog.getDialog();
+        d.show();
         return true;
       default:
         return super.onOptionsItemSelected(item);

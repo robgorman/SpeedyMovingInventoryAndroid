@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.ranchosoftware.speedymovinginventory.app.RanchoApp;
 
 /**
@@ -17,10 +18,12 @@ import com.ranchosoftware.speedymovinginventory.app.RanchoApp;
 
 public class BaseActivity extends AppCompatActivity {
   protected BaseActivity thisActivity;
+  private FirebaseAnalytics firebaseAnalytics;
   @Override
   protected void onCreate(Bundle bundle){
     super.onCreate(bundle);
     thisActivity = this;
+    firebaseAnalytics = FirebaseAnalytics.getInstance(this);
   }
 
   public RanchoApp app(){

@@ -1,27 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="themeBlueDark">#125ba6</color>
-    <color name="themeBlueMed">#3375b9</color>
+    <!--<color name="themeBlueDark">#125ba6</color>
+    <color name="themeBlueMed">#78aade</color>
     <color name="themeBase">#5283cc</color>
     <color name="themeBlueLight">#78aade</color>
-    <color name="themeBlueLightest">#a9cbef</color>
+    <color name="themeBlueLightest">#cfe1fb</color>-->
+
+
+    <color name="speedyDark">#003399</color>
+    <color name="speedyMed">#0033ff</color>
+    <color name="speedyLight">#0099ff</color>
+    <color name="speedyLightest">#99ccff</color>
+
+    <color name="themeBlueDark">#001a50</color>
+    <color name="themeBlueMed">#002471</color>
+    <color name="themeBase">#063796</color>
+    <color name="themeBlueLight">#0039b2</color>
+    <color name="themeBlueLightest">#004ff6</color>
+
+    <color name="textColorLinked2">#99CCFF</color>
+
+    <color name="textColorLinked">#b0f4eb</color>
+
+
+    <!--<color name="themeGreenDark">#06aa74</color>
+    <color name="themeGreenMed">#29bc8c</color>
+    <color name="themeGreenBase">#49cea1</color>
+    <color name="themeGreenLight">#70e0bb</color>
+    <color name="themeGreenLightest">#a4f0d7</color>-->
 
     <color name="buttonRedBright">#ff0700</color>
     <color name="buttonRedLight">#E00600</color>
     <color name="buttonRed">#b80500</color>
     <color name="buttonRedDark">#830400</color>
 
-    <color name="themeGreenDark">#06aa74</color>
-    <color name="themeGreenMed">#29bc8c</color>
-    <color name="themeGreenBase">#49cea1</color>
-    <color name="themeGreenLight">#70e0bb</color>
-    <color name="themeGreenLightest">#a4f0d7</color>
+
 
     <!--<color name="colorPrimary">#989898 </color>-->
     <color name="colorPrimary">#004489</color>
     <color name="colorPrimaryDark">#003479</color>
-    <color name="colorAccent">#29bc8c</color>
+    <color name="colorAccent">#004ff6</color>
     <color name="colorLightest">#E1E1D6</color>
     <color name="colorAlmostLightest">#DBDBCE</color>
     <color name="colorSchemeLightBlue">#d3d9df</color>
@@ -39,6 +58,7 @@
     <color name="DarkBlue">#00008B</color>
     <color name="Black">#000000</color>
 
+    <color name="transparent">#00000000</color>
     <color name="transparentGray">#7b7b7b22</color>
     <color name="GrayCheck">#7b7b7b</color>
     <color name="GreenCheck">#9dc514</color>

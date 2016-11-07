@@ -3,12 +3,14 @@ package com.ranchosoftware.speedymovinginventory;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +21,7 @@ import com.android.volley.toolbox.ImageLoader;
 import com.github.gcacace.signaturepad.views.SignaturePad;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.vision.text.Text;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,9 +39,15 @@ import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.Signature;
+import com.ranchosoftware.speedymovinginventory.utility.TextUtility;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import java.io.ByteArrayOutputStream;
+import java.util.Date;
 
 public class SignOffActivity extends BaseActivity {
 
@@ -49,11 +58,14 @@ public class SignOffActivity extends BaseActivity {
   private Button accept;
   private TextView signHere;
   private TextView tvName;
-  private TextView tvTitle;
   private String companyKey;
   private String jobKey;
   private Job.Lifecycle entryLifecycle;
   private Boolean storageInTransit;
+  private Toolbar toolbar;
+  private TextView tvDate;
+  private TextView tvForeman;
+
 
   private ProgressDialog progressDialog;
 
@@ -61,9 +73,12 @@ public class SignOffActivity extends BaseActivity {
   private TextView tvCompanyAddress;
   private TextView tvCompanyPhone;
   private TextView tvShipperName;
+  private TextView tvShipperPhone;
+  private TextView tvShipperAddress;
   private TextView tvShipperEmail;
   private TextView tvMoveSummary;
-  private ImageView ivCompanyLogo;
+
+  //private ImageView ivCompanyLogo;
 
   private int totalItems;
   private int totalValue;
@@ -81,7 +96,20 @@ public class SignOffActivity extends BaseActivity {
       return; // this is an error
 
     tvShipperName.setText( job.getCustomerFirstName() + " " + job.getCustomerLastName());
+
+    if (Integer.valueOf(Build.VERSION.SDK_INT) >= 21) {
+      tvShipperPhone.setText(PhoneNumberUtils.formatNumber(job.getCustomerPhone(), "US" ));
+    } else {
+      tvShipperPhone.setText(PhoneNumberUtils.formatNumber(job.getCustomerPhone()));
+    }
+
+    Address dest = job.getDestinationAddress();
+    tvShipperAddress.setText(TextUtility.formSingleLineAddress(dest));
+
     tvShipperEmail.setText(job.getCustomerEmail());
+
+    toolbar.setTitle("Job Number: " + job.getJobNumber() + "  " + determineSignoffTitle());
+
   }
   private void loadJob(){
     DatabaseObject<Job> jobRef = new DatabaseObject<Job>(Job.class, companyKey, jobKey);
@@ -96,9 +124,21 @@ public class SignOffActivity extends BaseActivity {
 
   }
 
-  private String formAddressString(Address address){
-    String result = address.getStreet() + " " + address.getAddressLine2() + ", " + address.getCity() + ", " + address.getState() + " " + address.getZip();
-    return result;
+
+  private void makeGone(int id){
+    View v = findViewById(id);
+    v.setVisibility(View.GONE);
+  }
+
+  private void show(int id){
+    View v = findViewById(id);
+    v.setVisibility(View.VISIBLE);
+  }
+
+
+  private TextView getTextView(int id){
+    TextView tv = (TextView) findViewById(id);
+    return tv;
   }
 
   private void updateFromCompany(){
@@ -106,16 +146,49 @@ public class SignOffActivity extends BaseActivity {
       return; // this is an error
     }
     tvCompanyName.setText(company.getName());
-    String address = formAddressString(company.getAddress());
+    String address = TextUtility.formSingleLineAddress(company.getAddress());
     tvCompanyAddress.setText(address);
-    tvCompanyPhone.setText(company.getPhoneNumber());
 
+    if (Integer.valueOf(Build.VERSION.SDK_INT) >= 21) {
+      tvCompanyPhone.setText(PhoneNumberUtils.formatNumber(company.getPhoneNumber(), "US" ));
+    } else {
+      tvCompanyPhone.setText(PhoneNumberUtils.formatNumber(company.getPhoneNumber()));
+    }
+
+    if (TextUtility.isBlank(company.getUsDot())){
+      makeGone(R.id.tvUsDot);
+      makeGone(R.id.tvUsDotLabel);
+    } else {
+      show(R.id.tvUsDot);
+      show(R.id.tvUsDotLabel);
+      getTextView(R.id.tvUsDot).setText(company.getUsDot());
+    }
+
+    if (TextUtility.isBlank(company.getIccMc())){
+      makeGone(R.id.tvIccMc);
+      makeGone(R.id.tvIccMcLabel);
+    } else {
+      show(R.id.tvIccMc);
+      show(R.id.tvIccMcLabel);
+      getTextView(R.id.tvIccMc).setText(company.getIccMc());
+    }
+
+    if (TextUtility.isBlank(company.getCalT())){
+      makeGone(R.id.tvCalT);
+      makeGone(R.id.tvCalTLabel);
+    } else {
+      show(R.id.tvCalT);
+      show(R.id.tvCalTLabel);
+      getTextView(R.id.tvCalT).setText(company.getCalT());
+    }
+
+/*
     String logoImage = app().getCompanyLogoUrl();
     if (logoImage != null && logoImage.length() > 0){
       imageLoader.get(logoImage, ImageLoader.getImageListener(ivCompanyLogo,
               R.drawable.yourlogohere, R.drawable.yourlogohere));
     }
-
+*/
   }
 
   private String moveDestination(){
@@ -125,60 +198,30 @@ public class SignOffActivity extends BaseActivity {
         if (job.getStorageInTransit()){
           result = "Storage";
         } else {
-          result =  formAddressString(job.getDestinationAddress());
+          result =  TextUtility.formSingleLineAddress(job.getDestinationAddress());
         }
         break;
       case LoadedForStorage:
         result =  "Storage";
         break;
       case InStorage:
-        result =  formAddressString(job.getDestinationAddress());
+        result =  TextUtility.formSingleLineAddress(job.getDestinationAddress());
         break;
       case LoadedForDelivery:
-        result =  formAddressString(job.getDestinationAddress());
+        result =  TextUtility.formSingleLineAddress(job.getDestinationAddress());
         break;
       case Delivered:
-        result =  formAddressString(job.getDestinationAddress());
+        result =  TextUtility.formSingleLineAddress(job.getDestinationAddress());
         break;
     }
     return result;
   }
 
-  private String deliveryWindow() {
-    String result = "";
-    switch (job.getLifecycle()) {
-      case New:
-        if (job.getStorageInTransit()) {
-          result = "";
-        } else {
-          result = formAddressString(job.getDestinationAddress());
-        }
-        break;
-      case LoadedForStorage:
-        result = "";
-        break;
-      case InStorage:
-        result = formAddressString(job.getDestinationAddress());
-        break;
-      case LoadedForDelivery:
-        result = formAddressString(job.getDestinationAddress());
-        break;
-      case Delivered:
-        result = formAddressString(job.getDestinationAddress());
-        break;
-    }
-    if (result.length() == 0) {
-      return result;
-    } else {
-      return "• " + result;
-     }
-  }
 
   private String constructSummary(){
     String summary =
                     "• " + Integer.toString(totalItems) + " Items valued at $" + totalValue + "\n" +
-                    "• " + "Move destination is " + moveDestination() + "\n" +
-                    deliveryWindow();
+                    "• " + "Move destination is " + moveDestination() + "\n";
     return summary;
   }
 
@@ -202,13 +245,24 @@ public class SignOffActivity extends BaseActivity {
     totalWeightLbs = params.getFloat("totalWeightLbs");
     totalDamagedItems = params.getInt("totalDamagedItems");
 
+    tvDate = (TextView) findViewById(R.id.tvDate);
+    DateTimeFormatter fmt = DateTimeFormat.forPattern("EEE, MMM d yyyy, h:m a");
+    DateTime now = new DateTime();
+    tvDate.setText(fmt.print(now));
+    tvForeman = (TextView) findViewById(R.id.tvForeman);
+    tvForeman.setText(app().getCurrentUser().getFirstName() + " " + app().getCurrentUser().getLastName());
+
     tvCompanyName = (TextView) findViewById(R.id.tvCompanyName);
     tvCompanyAddress = (TextView) findViewById(R.id.tvCompanyAddress);
     tvCompanyPhone = (TextView) findViewById(R.id.tvCompanyPhone);
     tvShipperName = (TextView) findViewById(R.id.tvShipperName);
+    tvShipperPhone = (TextView) findViewById(R.id.tvShipperPhone);
+    tvShipperAddress = (TextView) findViewById(R.id.tvShipperAddress);
     tvShipperEmail = (TextView) findViewById(R.id.tvShipperEmail);
     tvMoveSummary = (TextView) findViewById(R.id.tvMoveSummary);
-    ivCompanyLogo = (ImageView) findViewById(R.id.ivCompanyLogo);
+   // ivCompanyLogo = (ImageView) findViewById(R.id.ivCompanyLogo);
+
+
 
     // we have to load both the company and job
     loadJob();
@@ -217,7 +271,7 @@ public class SignOffActivity extends BaseActivity {
 
     updateFromCompany();
 
-    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+    toolbar = (Toolbar) findViewById(R.id.toolbar);
     toolbar.setTitle("Sign Off");
     setSupportActionBar(toolbar);
 
@@ -236,8 +290,6 @@ public class SignOffActivity extends BaseActivity {
     signHere = (TextView) findViewById(R.id.tvSignHere);
     tvName = (TextView) findViewById(R.id.tvCustomerName);
 
-    tvTitle = (TextView) findViewById(R.id.tvTitle);
-    tvTitle.setText(determineSignoffTitle());
 
     signaturePad.setOnSignedListener(new SignaturePad.OnSignedListener() {
       @Override
@@ -331,7 +383,8 @@ public class SignOffActivity extends BaseActivity {
         //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/lifecycle").setValue(getNextLifecyle().toString());
         Uri downloadUrl = taskSnapshot.getDownloadUrl();
         //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
-        new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
+        new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("signature" + getNextLifecyle().toString())
+                .setValue(new Signature(name, downloadUrl.toString(), new DateTime().getMillis()));
         progressDialog.hide();
         setResult(RESULT_OK);
         finish();
@@ -343,16 +396,16 @@ public class SignOffActivity extends BaseActivity {
   }
   private String determineSignoffTitle(){
     if (entryLifecycle == Job.Lifecycle.New){
-      return "Please sign off for items loaded.";
+      return "Pickup";
     } else if (entryLifecycle == Job.Lifecycle.LoadedForStorage ){
-      return "Please sign off for items unloaded to warehouse.";
+      return "Unload Warehouse";
     } else if (entryLifecycle == Job.Lifecycle.InStorage){
-      return "Please sign off for items loaded to truck for delivery";
+      return "Loaded on Truck";
     } else if (entryLifecycle == Job.Lifecycle.LoadedForDelivery){
-      return "Please sign off for items unloaded at destination.";
+      return "Delivery";
     } else {
       // this case shouldn't occure
-      return null;
+      return "";
     }
   }
   private Job.Lifecycle getNextLifecyle(){

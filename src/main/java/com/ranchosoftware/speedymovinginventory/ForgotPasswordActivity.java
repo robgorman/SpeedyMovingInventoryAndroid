@@ -98,7 +98,7 @@ public class ForgotPasswordActivity extends BaseActivity {
       @Override
       public void onSuccess(Void aVoid) {
 
-        String message = "Reset succeeded; Check " + email + " for instructions.";
+        String message = "Reset succeeded! Check " + email + " for instructions.";
         textSentMessage.setText(message);
       }
     });

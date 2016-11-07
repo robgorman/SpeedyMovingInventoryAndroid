@@ -29,9 +29,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        app:srcCompat="@drawable/camera_add"
+        app:srcCompat="@drawable/camera_add_white"
         app:useCompatPadding="true"
-        app:backgroundTint="@color/themeGreenLight"
+        app:backgroundTint="@color/speedyDark"
         android:layout_margin="@dimen/fab_margin"/>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -18,7 +18,11 @@
         android:id="@+id/buttonEndScan"
         android:layout_centerInParent="true"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/button_one"/>
+        android:background="@drawable/button_square_one"
+        android:textColor="@color/White"
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp"
+        android:textAllCaps="false"/>
 
     <LinearLayout
         android:orientation="vertical"
@@ -48,6 +52,11 @@
         android:layout_marginRight="20dp"
         android:gravity="center_horizontal"
         android:layout_centerInParent="true"
-        android:textColor="@color/White"/>
+        android:textColor="@color/White"
+        android:textSize="20sp"
+        android:lines="2"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        />
 
 </RelativeLayout>

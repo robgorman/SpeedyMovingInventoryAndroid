@@ -23,7 +23,7 @@
             autofit:srcCompat="@drawable/noimage"/>
 
         <ImageView
-            autofit:srcCompat="@drawable/damage_warning"
+            autofit:srcCompat="@drawable/damage_warning_red"
             android:id="@+id/ivInactiveClaim"
             android:layout_alignParentBottom="false"
             android:layout_alignParentRight="false"
@@ -35,7 +35,7 @@
             android:layout_height="30dp"/>
 
         <ImageView
-            autofit:srcCompat="@drawable/damage_warning"
+            autofit:srcCompat="@drawable/damage_warning_red"
             android:id="@+id/ivActiveClaim"
             android:layout_centerInParent="true"
             android:layout_width="60dp"
@@ -76,7 +76,7 @@
             >
 
             <me.grantland.widget.AutofitTextView
-                android:text="@string/description_label"
+                android:text="@string/desc_label"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView14"

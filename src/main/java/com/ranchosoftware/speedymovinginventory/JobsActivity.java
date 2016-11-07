@@ -1,29 +1,39 @@
 package com.ranchosoftware.speedymovinginventory;
 
 import android.content.Intent;
+import android.content.pm.LabeledIntent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.view.ActionMode;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.firebase.ui.database.FirebaseListAdapter;
-import com.google.android.gms.vision.text.Text;
+
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.ranchosoftware.speedymovinginventory.firebase.FirebaseListAdapter;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.User;
+import com.ranchosoftware.speedymovinginventory.model.UserIdMapEntry;
 
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Weeks;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.Map;
+
 public class JobsActivity extends BaseMenuActivity {
+
+  private static final String TAG = BaseMenuActivity.class.getSimpleName();
 
   // only one of these two below is visible at once
   private ListView jobsListView;
@@ -44,7 +54,7 @@ public class JobsActivity extends BaseMenuActivity {
 
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
-    formatter = app().getDateTimeFormatter();
+    formatter = app().getDateFormatter();
 
     FirebaseAuth auth = FirebaseAuth.getInstance();
     auth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
@@ -68,21 +78,76 @@ public class JobsActivity extends BaseMenuActivity {
     jobsListView = (ListView) findViewById(R.id.jobsListView);
     if (BuildConfig.FLAVOR.equalsIgnoreCase("dev")){
       // change the background colo
-      jobsListView.setBackgroundColor(Color.RED);
+      //jobsListView.setBackgroundColor(Color.RED);
     }
     noJobsView = findViewById(R.id.layout_no_jobs);
 
     noJobsView.setVisibility(View.VISIBLE);
     jobsListView.setVisibility(View.INVISIBLE);
 
-    Query ref = FirebaseDatabase.getInstance().getReference("/joblists/" + companyKey + "/jobs");
+    Query ref = FirebaseDatabase.getInstance().getReference("/joblists/" + companyKey + "/jobs")
+            .orderByChild("jobNumber");
+
+
     // Todo; we certainly don't need this order by any more
     //User user = app().getCurrentUser();
     //if (user != null){
     //  ref = ref.orderByChild("companyKey").startAt(user.getCompanyKey()).endAt(user.getCompanyKey());
     //}
 
-    adapter = new FirebaseListAdapter<Job>(thisActivity, Job.class, R.layout.job_item, ref) {
+    FirebaseListAdapter.IFilter filter = new FirebaseListAdapter.IFilter(){
+      @Override
+      public boolean filter(DataSnapshot dataSnapshot) {
+        Job job = dataSnapshot.getValue(Job.class);
+        User user = app().getCurrentUser();
+        User.Role role = user.getRoleAsEnum();
+
+        // don't show Delivered jobs that are older than 2 weeks
+
+        if (job.getLifecycle() == Job.Lifecycle.Delivered){
+          if (job.getSignatureDelivered() != null){
+
+            int days = Days.daysBetween(new DateTime(job.getSignatureDelivered().getSignOffDateTime()), new DateTime()).getDays();
+
+            if (Math.abs(days) > 14){
+              return true;
+            }
+
+            ///Weeks weeks = Weeks.weeksBetween(new DateTime(job.getSignatureDelivered().getSignOffDateTime()), new DateTime());
+            //if (weeks.isGreaterThan(Weeks.TWO)){
+            //  return true;
+            //}
+          }
+        }
+
+        if (role == User.Role.AgentCrewMember || role == User.Role.AgentForeman || role == User.Role.CrewMember
+          || role == User.Role.Foreman){
+          Map<String, UserIdMapEntry> map = job.getUsers();
+          if (map.containsKey(app().getCurrentUser().getUid())) {
+            return false;
+          }
+        }
+        if (role == User.Role.Customer){
+          if (user.getCustomerJobKey() != null && user.getCustomerJobKey().equals(dataSnapshot.getKey())){
+            return false;
+          }
+        }
+
+
+
+        if (role == User.Role.CompanyAdmin || role == User.Role.ServiceAdmin) {
+          return false;
+        }
+
+
+        return true;
+      }
+
+
+    };
+
+    adapter = new FirebaseListAdapter<Job>(thisActivity, Job.class, R.layout.job_item, ref, filter){
+
       @Override
       protected void populateView(View v, Job job, int position) {
         // if there is at least one job hide the no jobs messae
@@ -102,6 +167,7 @@ public class JobsActivity extends BaseMenuActivity {
         deliveryDateView.setText(formatter.print(job.getDeliveryEarliestDate()));
       }
     };
+
 
     jobsListView.setAdapter(adapter);
 

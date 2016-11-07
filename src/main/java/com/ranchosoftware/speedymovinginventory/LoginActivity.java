@@ -73,10 +73,10 @@ public class LoginActivity extends BaseActivity {
 
     Bundle params = getIntent().getExtras();
 
-    if (BuildConfig.FLAVOR.equalsIgnoreCase("dev")){
+    if (!BuildConfig.FLAVOR.equalsIgnoreCase("prod")){
       // change the background color
       View backgroundView = findViewById(R.id.backgroundLayout);
-      backgroundView.setBackgroundColor(Color.RED);
+      //backgroundView.setBackgroundColor(Color.RED);
     }
 
     boolean allowAutoLogin = true;
@@ -99,15 +99,9 @@ public class LoginActivity extends BaseActivity {
         //auth.removeAuthStateListener(authListener);
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
-        if (user == null) {
-          //Intent intent = new Intent(thisActivity, LoginActivity.class);
-          //startActivity(intent);
-
-        } else {
+        if (user != null) {
           fired = true;
           lookupDatabaseUser(user);
-
-
         }
 
 
@@ -158,7 +152,7 @@ public class LoginActivity extends BaseActivity {
     rememberMe.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
       public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        // nothing to do yet
+        // TODO this is an issue
       }
     });
 
@@ -196,12 +190,18 @@ public class LoginActivity extends BaseActivity {
 
           return;
         }
-        final User user = dataSnapshot.getValue(User.class);
-        if (user.getRoleAsEnum() == User.Role.Customer){
-          Utility.error(thisActivity.getRootView(), thisActivity, "We're sorry, but we presently do not support Customer logins to the Speedy Moving Inventory App.");
-          auth.signOut();
-          showProgress(false);
-          fired = false;
+        User user = null;
+        try {
+          user = dataSnapshot.getValue(User.class);
+          if (user.getRoleAsEnum() == User.Role.Customer) {
+            Utility.error(thisActivity.getRootView(), thisActivity, "We're sorry, but we presently do not support Customer logins to the Speedy Moving Inventory App.");
+            auth.signOut();
+            showProgress(false);
+            fired = false;
+            return;
+          }
+        } catch (Exception e){
+          Utility.error(thisActivity.getRootView(), thisActivity, "Unexpected error; cant read user. Contact Support ErrorCode=" + e.getMessage());
           return;
         }
 
@@ -213,6 +213,7 @@ public class LoginActivity extends BaseActivity {
           app().saveCredentials(new RanchoApp.LoginCredential(email, password));
         }
 
+        final User userFinal = user;
         Handler mainHandler = new Handler(thisActivity.getMainLooper());
         mainHandler.post(new Runnable() {
 
@@ -220,7 +221,7 @@ public class LoginActivity extends BaseActivity {
           public void run() {
             Intent intent = new Intent(thisActivity, JobsActivity.class);
             Bundle params = new Bundle();
-            params.putString("companyKey", user.getCompanyKey());
+            params.putString("companyKey", userFinal.getCompanyKey());
             intent.putExtras(params);
             startActivity(intent);
             finish();

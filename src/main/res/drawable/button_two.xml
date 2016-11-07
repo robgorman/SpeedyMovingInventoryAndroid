@@ -10,7 +10,7 @@
                 android:angle="270" />
             <stroke
                 android:width="2dp"
-                android:color="@color/themeGreenBase" />
+                android:color="@color/themeBase" />
             <corners
                 android:radius="3dp" />
             <padding
@@ -29,7 +29,7 @@
                 android:angle="270" />
             <stroke
                 android:width="2dp"
-                android:color="@color/themeGreenDark" />
+                android:color="@color/themeBase" />
             <corners
                 android:radius="3dp" />
             <padding
@@ -48,7 +48,7 @@
                 android:angle="270" />
             <stroke
                 android:width="2dp"
-                android:color="@color/themeGreenBase" />
+                android:color="@color/themeBase" />
             <corners
                 android:radius="3dp" />
             <padding

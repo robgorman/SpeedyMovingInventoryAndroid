@@ -1,5 +1,6 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -11,9 +12,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.print.PrintHelper;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -23,15 +24,16 @@ import android.text.SpannableStringBuilder;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.Spinner;
+import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.TextView;
 
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -40,17 +42,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.ranchosoftware.speedymovinginventory.app.Configuration;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
 import com.ranchosoftware.speedymovinginventory.model.Address;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.Job;
-import com.ranchosoftware.speedymovinginventory.model.Model;
-import com.ranchosoftware.speedymovinginventory.model.Signature;
 import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.server.Server;
 import com.ranchosoftware.speedymovinginventory.uiutility.SimpleDividerItemDecoration;
@@ -62,10 +59,8 @@ import com.ranchosoftware.speedymovinginventory.utility.Utility;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 public class JobActivity extends BaseMenuActivity {
@@ -73,16 +68,15 @@ public class JobActivity extends BaseMenuActivity {
 
   private RecyclerView itemRecyclerView;
   private TextView noItemsMessage;
-  private View spinnerLayout;
+
   private LinearLayoutManager listLayoutManager;
   private TextView findTv(int tv){
     return (TextView) findViewById(tv);
   }
-  private JobRecyclerAdapter  adapter;
+  private JobRecyclerGridAdapter  adapter;
 
-  private Spinner sortBySpinner;
-  private Spinner filterBySpinner;
-
+  private View sortByGroup;
+  private Button sortByButton;
   private TextView tvTotalItems;
   private TextView tvScannedItems;
   private TextView tvTotalValue;
@@ -91,6 +85,13 @@ public class JobActivity extends BaseMenuActivity {
   private TextView tvTotalWeight;
   private TextView tvTotalDamagedItems;
   private TabHost tabHost;
+
+  String[] sortByLabels ={"Value", "Volume", "Category", "Scanned", "Weight", "Claim"};
+
+  private FloatingActionButton printActionButton;
+
+  private int sortByPosition = 0;
+  private int tabIndex = 0;
 
   public static class SortBy{
     public Query query;
@@ -132,6 +133,7 @@ public class JobActivity extends BaseMenuActivity {
     setSupportActionBar(toolbar);
     setupQueries();
 
+
     FirebaseAuth auth = FirebaseAuth.getInstance();
     auth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
       @Override
@@ -146,7 +148,7 @@ public class JobActivity extends BaseMenuActivity {
     setupRecyclerView();
 
     noItemsMessage = (TextView) findViewById(R.id.tvNoItemsMessage);
-    spinnerLayout = findViewById(R.id.spinnerLayout);
+
 
     // create the item and subscribe
     FloatingActionButton scan = (FloatingActionButton) findViewById(R.id.floatingActionScan);
@@ -190,6 +192,7 @@ public class JobActivity extends BaseMenuActivity {
       }
     });
 
+
     User.Role userRole = app().getCurrentUser().getRoleAsEnum();
     if (userRole == User.Role.ServiceAdmin || userRole == User.Role.CompanyAdmin
             || userRole == User.Role.Foreman || userRole == User.Role.AgentForeman){
@@ -198,9 +201,83 @@ public class JobActivity extends BaseMenuActivity {
       signOff.setEnabled(false);
     }
 
-    setupSpinners();
+    sortByGroup = findViewById(R.id.llSortByGroup);
+    sortByButton = (Button) findViewById(R.id.sortByButton);
+    sortByButton.setText(sortByLabels[sortByPosition] + "  >");
+    sortByButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        launchSortBySpinner();
+      }
+    });
+    sortByGroup.setVisibility(View.INVISIBLE);
     setupTabs();
     setupSummaryItems();
+  }
+
+  private static final int  PICK_SORT_BY = 565;
+
+  private void launchSortBySpinner(){
+
+    Intent intent = new Intent(this, SpinnerActivity.class);
+    Bundle b = new Bundle();
+    b.putInt(SpinnerActivity.paramSelectedIndex,  sortByPosition);
+    b.putStringArray(SpinnerActivity.paramLabels, sortByLabels);
+    b.putString(SpinnerActivity.paramTitle, "Choose A Sort");
+    intent.putExtras(b);
+
+    startActivityForResult(intent, PICK_SORT_BY);
+    overridePendingTransition(R.xml.slide_in_from_right,R.xml.slide_out_to_left);
+  }
+  private void printSignOff(){
+    final PrintHelper photoPrinter = new PrintHelper((thisActivity));
+    photoPrinter.setScaleMode(PrintHelper.SCALE_MODE_FIT);
+
+    ImageLoader loader = MyVolley.getImageLoader();
+    // just print the most recent sign off sheet
+    String url = "";
+    Job.Lifecycle lifecycle = initialJobLifecycle;
+    if (lifecycle == Job.Lifecycle.Delivered){
+      // this case cant occur
+      if (job.getSignatureDelivered() != null) {
+        url = job.getSignatureDelivered().getImageUrl();
+      } else {
+        Utility.error(getRootView(), this, "Error: Missing delivery signoff, it can't be printed.");
+        return;
+      }
+      loader.get(job.getSignatureDelivered().getImageUrl(), new ImageLoader.ImageListener(){
+        @Override
+        public void onErrorResponse(VolleyError error) {
+          Utility.error(getRootView(), JobActivity.this, "Failed to load Signoff Image: " + error.getLocalizedMessage());
+        }
+
+        @Override
+        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+          photoPrinter.printBitmap("speedyPrinting", response.getBitmap());
+        }
+      });
+
+    } else {
+      if (job.getSignatureLoadedForStorage() != null) {
+        url = job.getSignatureLoadedForStorage().getImageUrl();
+      } else {
+        Utility.error(getRootView(), this, "Error: Missing new job signoff, it can't be printed.");
+        return;
+      }
+      loader.get(job.getSignatureLoadedForStorage().getImageUrl(), new ImageLoader.ImageListener(){
+        @Override
+        public void onErrorResponse(VolleyError error) {
+          Utility.error(getRootView(), JobActivity.this, "Failed to load Signoff Image: " + error.getLocalizedMessage());
+        }
+
+        @Override
+        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+          photoPrinter.printBitmap("speedyPrinting", response.getBitmap());
+        }
+      });
+    }
+
+
   }
 
   private void setupSummaryItems(){
@@ -237,6 +314,7 @@ public class JobActivity extends BaseMenuActivity {
       }
     });
     setTabTitleColors(tabHost);
+    tabHost.setCurrentTab(tabIndex);
 
   }
 
@@ -253,39 +331,6 @@ public class JobActivity extends BaseMenuActivity {
     tv.setTextColor(Color.WHITE);
   }
 
-  private void setupSpinners(){
-    sortBySpinner = (Spinner) findViewById(R.id.sortBySpinner);
-    filterBySpinner = (Spinner) findViewById(R.id.filterBySpinner);
-
-    final List<String> sortByCriteria = new ArrayList<>();
-    sortByCriteria.add("By Value");
-    sortByCriteria.add("By Volume");
-    sortByCriteria.add("By Category");
-    sortByCriteria.add("By Scanned");
-    sortByCriteria.add("By Weight");
-    sortByCriteria.add("By Claim");
-
-    ArrayAdapter<String> sortByAdapter = new ArrayAdapter<>(thisActivity, R.layout.spinner_item, sortByCriteria);
-    sortByAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-    sortBySpinner.setAdapter(sortByAdapter);
-    sortBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-      @Override
-      public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-        onChangeSortBy(position);
-        resetFilterBy(position);
-      }
-
-      @Override
-      public void onNothingSelected(AdapterView<?> adapterView) {
-
-      }
-    });
-  }
-
-  private void resetFilterBy(int position){
-    // TBD
-    filterBySpinner.setVisibility(View.INVISIBLE);
-  }
 
   private Map<String, Item> children = new TreeMap<String, Item>();
 
@@ -349,28 +394,38 @@ public class JobActivity extends BaseMenuActivity {
   }
 
   private ChildEventListener childEventListener = new ChildEventListener() {
+
+    private void readItem(DataSnapshot dataSnapshot){
+      try {
+        Item child = dataSnapshot.getValue(Item.class);
+        String key = dataSnapshot.getKey();
+        children.put(key, child);
+        updateTotals();
+      } catch (Exception e){
+        Utility.error(getRootView(), thisActivity, "Error reading item, contact support. ErrorCode=" + "JobActivity:"+ e.getMessage());
+      }
+    }
+
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
       Log.d(TAG, "onChildAdded");
-      Item child = dataSnapshot.getValue(Item.class);
-      String key = dataSnapshot.getKey();
-      children.put(key, child);
-      updateTotals();
+      readItem(dataSnapshot);
     }
 
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-      Log.d(TAG, "onChildChanged");
-      Item child = dataSnapshot.getValue(Item.class);
-      String key = dataSnapshot.getKey();
-      children.put(key, child);
-      updateTotals();
+      readItem(dataSnapshot);
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
       Log.d(TAG, "onChildRemoved");
-      children.remove(dataSnapshot.getKey());
+      try {
+        children.remove(dataSnapshot.getKey());
+      } catch (Exception e){
+        Log.d(TAG,"Tried to remove non-existent item. Probably due to previous exception reading item");
+      }
+
       updateTotals();
     }
 
@@ -406,17 +461,17 @@ public class JobActivity extends BaseMenuActivity {
       adapterDataObserver.reset();
       adapter.registerAdapterDataObserver(adapterDataObserver);
     }
-    adapter = new JobRecyclerAdapter(thisActivity, allowDelete, companyKey, jobKey,
-            allowDelete ? NewItemActivity.class : ItemClaimActivity.class, sortBy);
+    adapter = new JobRecyclerGridAdapter(thisActivity, allowDelete, companyKey, jobKey,
+            allowDelete ? NewItemActivity.class : ItemDetailsActivity.class, sortBy);
     itemRecyclerView.setAdapter(adapter);
     adapterDataObserver.reset();
     adapter.registerAdapterDataObserver(adapterDataObserver);
-    listLayoutManager.setReverseLayout(sortReverse[position]);
-    listLayoutManager.setStackFromEnd(sortReverse[position]);
+    //listLayoutManager.setReverseLayout(sortReverse[position]);
+    //listLayoutManager.setStackFromEnd(sortReverse[position]);
   }
 
   private void updateFromJob(){
-    DateTimeFormatter formatter = app().getDateTimeFormatter();
+
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
     toolbar.setTitle("(" + job.getJobNumber() + ") " + job.getCustomerFirstName() + " " + job.getCustomerLastName());
@@ -428,10 +483,11 @@ public class JobActivity extends BaseMenuActivity {
       findTv(R.id.tvPhone).setText(PhoneNumberUtils.formatNumber(job.getCustomerPhone()));
     }
     findTv(R.id.tvStorageInTransit).setText(Boolean.toString(job.getStorageInTransit()));
-    findTv(R.id.tvPickupDate).setText(formatter.print(job.getPickupDateTime()));
+    DateTimeFormatter dateTimeFormatter = app().getDateTimeFormatter();
+    findTv(R.id.tvPickupDate).setText(dateTimeFormatter.print(job.getPickupDateTime()));
 
     Address origin = job.getOriginAddress();
-    String pickupAddress = TextUtility.synthesizeAddress(origin.getStreet(),
+    String pickupAddress = TextUtility.formMultiLineAddress(origin.getStreet(),
             origin.getAddressLine2(),
             origin.getCity(),
             origin.getState(),
@@ -439,14 +495,17 @@ public class JobActivity extends BaseMenuActivity {
     findTv(R.id.tvPickupAddress).setText(pickupAddress);
 
     Address destination = job.getDestinationAddress();
-    String deliveryAddress = TextUtility.synthesizeAddress(destination.getStreet(),
+    String deliveryAddress = TextUtility.formMultiLineAddress(destination.getStreet(),
             destination.getAddressLine2(),
             destination.getCity(),
             destination.getState(),
             destination.getZip());
     findTv(R.id.tvDeliveryAddress).setText(deliveryAddress);
 
-    String deliveryWindow = formatter.print(job.getDeliveryEarliestDate()) + " - " + formatter.print(job.getDeliveryLatestDate());
+    findTv(R.id.tvPickupInstructions).setText(job.getPickupInstructions());
+    findTv(R.id.tvDeliveryInstructions).setText(job.getDeliveryInstructions());
+    DateTimeFormatter dateFormatter = app().getDateFormatter();
+    String deliveryWindow = dateFormatter.print(job.getDeliveryEarliestDate()) + " - " + dateFormatter.print(job.getDeliveryLatestDate());
     findTv(R.id.tvDeliveryDateWindow).setText(deliveryWindow);
 
     boolean allowDelete = (job.getLifecycle() == Job.Lifecycle.New);
@@ -454,9 +513,11 @@ public class JobActivity extends BaseMenuActivity {
     if (adapter != null){
       adapter.unregisterAdapterDataObserver(adapterDataObserver);
     }
-    queries.get(0).query.addChildEventListener(childEventListener);
-    adapter = new JobRecyclerAdapter(thisActivity, allowDelete, companyKey, jobKey,
-            allowDelete ? NewItemActivity.class : ItemClaimActivity.class, queries.get(0));
+    removeAllChildEventListenersAndClearData();
+    queries.get(sortByPosition).query.addChildEventListener(childEventListener);
+    adapter = new JobRecyclerGridAdapter(thisActivity, allowDelete, companyKey, jobKey,
+            allowDelete ? NewItemActivity.class : ItemDetailsActivity.class, queries.get(sortByPosition));
+
     adapterDataObserver.reset();
     adapter.registerAdapterDataObserver(adapterDataObserver);
     itemRecyclerView.setAdapter(adapter);
@@ -465,6 +526,12 @@ public class JobActivity extends BaseMenuActivity {
     if (initialJobLifecycle == null){
       initialJobLifecycle = job.getLifecycle();
     }
+
+    printActionButton.setVisibility(job.getLifecycle() == Job.Lifecycle.New ? View.GONE : View.VISIBLE);
+
+
+    onChangeSortBy(sortByPosition);
+
   }
 
   DatabaseObjectEventListener<Job> jobChangeListener = new DatabaseObjectEventListener<Job> () {
@@ -477,15 +544,15 @@ public class JobActivity extends BaseMenuActivity {
 
   };
 
-  private boolean sortReverse[] = {true, true, false, false, true, true};
+ // private boolean sortReverse[] = {true, true, false, false, true, true};
 
   private void setupQueries(){
 
     queries.add(new SortBy(
-            FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("monetaryValue"),
+            FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("monetaryValueInverse"),
             "By Value"));
     queries.add(new SortBy(
-            FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("volume"),
+            FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("volumeInverse"),
             "By Volume"));
     queries.add(new SortBy(
             FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("category"),
@@ -494,10 +561,10 @@ public class JobActivity extends BaseMenuActivity {
             FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("isScanned"),
             "By Scanned"));
     queries.add(new SortBy(
-            FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("weightLbs"),
+            FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("weightLbsInverse"),
             "By Weight"));
     queries.add( new SortBy(
-            FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("isClaimActive"),
+            FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items").orderByChild("isClaimActiveInverse"),
             "By Claim"));
   }
 
@@ -510,11 +577,11 @@ public class JobActivity extends BaseMenuActivity {
       if (adapter.getItemCount() > 0){
         itemRecyclerView.setVisibility(View.VISIBLE);
         noItemsMessage.setVisibility(View.INVISIBLE);
-        spinnerLayout.setVisibility(View.VISIBLE);
+        sortByGroup.setVisibility(View.VISIBLE);
       } else {
         itemRecyclerView.setVisibility(View.INVISIBLE);
         noItemsMessage.setVisibility(View.VISIBLE);
-        spinnerLayout.setVisibility(View.INVISIBLE);
+        sortByGroup.setVisibility(View.INVISIBLE);
       }
     }
 
@@ -552,11 +619,13 @@ public class JobActivity extends BaseMenuActivity {
   };
 
 
+
   private void setupRecyclerView(){
     //itemRecyclerView.setHasFixedSize(true);
-    listLayoutManager = new LinearLayoutManager(this);
-    listLayoutManager.setReverseLayout(true);
-    listLayoutManager.setStackFromEnd(true);
+    listLayoutManager = new GridLayoutManager(this, 3);
+    //listLayoutManager.setReverseLayout(true);
+    //listLayoutManager.setStackFromEnd(true);
+    //listLayoutManager.
 
     itemRecyclerView.setLayoutManager(listLayoutManager);
     itemRecyclerView.addItemDecoration(new SimpleDividerItemDecoration(thisActivity));
@@ -734,14 +803,6 @@ public class JobActivity extends BaseMenuActivity {
     params.putString("companyKey", job.getCompanyKey());
     params.putString("jobKey", jobKey);
 
-    params.putInt("totalItems", totalItems);
-    params.putInt("totalValue", totalValue);
-    params.putInt("totalPads", totalPads);
-    params.putFloat("totalVolumeCubicFeet", totalVolumeCubicFeet);
-    params.putFloat("totalWeightLbs", totalWeightLbs);
-    params.putInt("totalDamagedItems", totalDamagedItems);
-
-
     intent.putExtras(params);
     startActivity(intent);
   }
@@ -811,6 +872,8 @@ public class JobActivity extends BaseMenuActivity {
     startActivityForResult(intent, SIGNOFF_REQUEST);
   }
 
+
+
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     // Check which request we're responding to
@@ -822,12 +885,21 @@ public class JobActivity extends BaseMenuActivity {
         SendEmailTask task = new SendEmailTask();
         task.execute();
 
+
         // The user picked a contact.
         // The Intent's data Uri identifies which contact was selected.
         // Do something with the contact here (bigger example below)
       } else {
         // no signoff so no changes
       }
+    } else if (requestCode == PICK_SORT_BY){
+        if (resultCode == Activity.RESULT_OK){
+          // extract selected index
+          int selectedIndex = data.getIntExtra(SpinnerActivity.paramSelectedIndex, 0);
+          sortByPosition = selectedIndex;
+          sortByButton.setText(sortByLabels[sortByPosition] + "  >");
+          onChangeSortBy(selectedIndex);
+        }
     }
   }
 
@@ -848,19 +920,20 @@ public class JobActivity extends BaseMenuActivity {
     String result = "";
     switch (job.getLifecycle()){
       case New:
-        result =  job.getSignatureNew().getImageUrl();
+        result =  job.getSignatureLoadedForStorage().getImageUrl();
         break;
       case LoadedForStorage:
-        result = job.getSignatureLoadedForStorage().getImageUrl();
-        break;
-      case InStorage:
         result = job.getSignatureInStorage().getImageUrl();
         break;
-      case LoadedForDelivery:
+      case InStorage:
         result = job.getSignatureLoadedForDelivery().getImageUrl();
         break;
-      case Delivered:
+      case LoadedForDelivery:
         result = job.getSignatureDelivered().getImageUrl();
+        break;
+      case Delivered:
+        //result = job.getSignatureDelivered().getImageUrl();
+        assert(false)    ;
         break;
     }
     return result;
@@ -875,15 +948,21 @@ public class JobActivity extends BaseMenuActivity {
         Utility.error(getRootView(), thisActivity, "Error: Job Activity, unexpected null.");
       } else {
         for (DataSnapshot nextSnapshot : dataSnapshot.getChildren()){
-          User user = nextSnapshot.getValue(User.class);
-          if (!recipientList.contains(user.getEmailAddress())){
-            if (user.getRoleAsEnum() == User.Role.CompanyAdmin){
-              if (recipientList.length() == 0){
-                recipientList = recipientList + user.getEmailAddress();
-              } else {
-                recipientList = recipientList + "," + user.getEmailAddress();
+
+          try {
+            User user = nextSnapshot.getValue(User.class);
+            if (!recipientList.contains(user.getEmailAddress())) {
+              if (user.getRoleAsEnum() == User.Role.CompanyAdmin) {
+                if (recipientList.length() == 0) {
+                  recipientList = recipientList + user.getEmailAddress();
+                } else {
+                  recipientList = recipientList + "," + user.getEmailAddress();
+                }
               }
             }
+          } catch (Exception e){
+            // just skip a user that we can't read
+            Log.d(TAG, "Unreadable user skipped");
           }
         }
 
@@ -900,8 +979,8 @@ public class JobActivity extends BaseMenuActivity {
     String recipients = job.getCustomerEmail() + "," + recipientList;
     String companyName = app().getCurrentCompany().getName();
     String companyPhone = app().getCurrentCompany().getPhoneNumber();
-    String linkUrl = Configuration.getInstance().getInviteSignupUrl();
-    //String linkUrl = "http://localhost:4200/user-signup";
+
+    String linkUrl = getResources().getString(R.string.firebase_database_url) + "/user-sign-up";
     String customerName = job.getCustomerFirstName() + " " + job.getCustomerLastName();
     String lifecycle = job.getLifecycle().toString();
     String jobNumber = job.getJobNumber();
@@ -926,8 +1005,8 @@ public class JobActivity extends BaseMenuActivity {
     String recipients =  recipientList;
     String companyName = app().getCurrentCompany().getName();
     String companyPhone = app().getCurrentCompany().getPhoneNumber();
-    String linkUrl = Configuration.getInstance().getFirebaseHost();
-    //String linkUrl = "http://localhost:4200/signin";
+
+    String linkUrl = getResources().getString(R.string.firebase_database_url);
     String customerName = job.getCustomerFirstName() + " " + job.getCustomerLastName();
     String lifecycle = job.getLifecycle().toString();
     String jobNumber = job.getJobNumber();
@@ -957,4 +1036,40 @@ public class JobActivity extends BaseMenuActivity {
       sendLifecycleSignOffEmail();
     }
   }
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    outState.putInt("sortByPosition", sortByPosition);
+    outState.putInt("tabIndex", tabIndex);
+  }
+
+  @Override
+  protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    super.onRestoreInstanceState(savedInstanceState);
+    sortByPosition = savedInstanceState.getInt("sortByPosition", 0);
+    tabIndex = savedInstanceState.getInt("tabIndex", 0);
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    super.onCreateOptionsMenu(menu);
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.job_activity_menu, menu);
+    return true;
+  }
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle item selection
+    switch (item.getItemId()) {
+      case R.id.print_signoff_sheet:
+        printSignOff();
+        return true;
+
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+
+
 }

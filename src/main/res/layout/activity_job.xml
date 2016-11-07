@@ -30,22 +30,22 @@
         android:id="@+id/floatingActionScan"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        app:srcCompat="@drawable/scan"
-        app:backgroundTint="@color/themeGreenLightest"
+        app:srcCompat="@drawable/qrc_scan_white"
+        app:backgroundTint="@color/speedyDark"
         app:useCompatPadding="true"
         android:layout_marginBottom="18dp"
         android:layout_marginRight="18dp"
         android:layout_marginLeft="8dp"
-        android:layout_width="80dp"/>
+        android:layout_width="89dp"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingActionSignOff"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/sign_off"
+        app:srcCompat="@drawable/sign_off_white"
         android:visibility="visible"
         app:layout_anchor="@id/floatingActionScan"
         android:layout_gravity="bottom"
-        app:backgroundTint="@color/themeGreenLightest"
+        app:backgroundTint="@color/speedyDark"
         app:layout_anchorGravity="bottom|start|end"
         app:useCompatPadding="true"
         android:layout_width="80dp"/>

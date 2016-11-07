@@ -12,16 +12,18 @@ import java.util.TreeMap;
 public class Item extends Model {
 
   public static class Defaults{
-    public static Integer monetaryValue(){return 20;}
+    public static Float monetaryValue(){return 5.0f * 0.6f;}
     public static Integer numberOfPads(){return 0;}
     public static Float weightLbs(){return 5.0f;}
     public static Float volume(){return 1.0f;}
     public static String packedBy(){ return "Owner";}
   }
 
-  public enum Category {Bedroom1, Bedroom2, Bedroom3, Bedroom4, Bedroom5,
-                        Garage, DiningRoom, Den, LivingRoom, Kitchen, Bathroom, Patio,
-                        Yard, BonusRoom, Other}
+  public enum Category {Basement, Bedroom1, Bedroom2, Bedroom3, Bedroom4, Bedroom5,
+    Garage, DiningRoom, Den, Office, LivingRoom, Kitchen, Bathroom, Patio,
+    Sunroom, Laundry, Nursery, Other}
+
+
   public enum PackedBy{Owner, Mover, ThirdParty}
 
   public enum Insurance { Released, Company, ThirdParty};
@@ -40,11 +42,12 @@ public class Item extends Model {
   private Boolean isBox;
   private Boolean isClaimActive;
   private Boolean isClaimActiveInverse;
+  private Boolean isDisassembled;
   private Boolean isScanned;
   private Boolean isScannedInverse;
   private String jobKey;
-  private Integer monetaryValue;
-  private Integer monetaryValueInverse;
+  private Float monetaryValue;
+  private Float monetaryValueInverse;
   private Integer numberOfPads;
   private Integer numberOfPadsInverse;
   private String packedBy;
@@ -67,7 +70,7 @@ public class Item extends Model {
   public Item(Category category, Integer numberOfPads,
               String uidOfCreator,
               String description,
-              Integer monetaryValue,
+              Float monetaryValue,
               Float weightLbs,
               Float volume,
               String specialHandling,
@@ -102,6 +105,7 @@ public class Item extends Model {
     this.isScannedInverse = !this.isScanned;
     this.damageDescription = "";
     this.syncWeightAndVolume = true;
+    this.isDisassembled = false;
   }
 
 
@@ -156,7 +160,7 @@ public class Item extends Model {
     return description;
   }
 
-  public Integer getMonetaryValue() {
+  public Float getMonetaryValue() {
     return monetaryValue;
   }
 
@@ -196,7 +200,7 @@ public class Item extends Model {
     this.description = description;
   }
 
-  public void setMonetaryValue(Integer monetaryValue) {
+  public void setMonetaryValue(Float monetaryValue) {
 
     this.monetaryValue = monetaryValue;
     this.monetaryValueInverse = -this.monetaryValue;
@@ -285,11 +289,11 @@ public class Item extends Model {
     return hasClaimInverse;
   }
 
-  public Boolean getClaimActiveInverse() {
+  public Boolean getIsClaimActiveInverse() {
     return isClaimActiveInverse;
   }
 
-  public Integer getMonetaryValueInverse() {
+  public Float getMonetaryValueInverse() {
     return monetaryValueInverse;
   }
 
@@ -311,6 +315,17 @@ public class Item extends Model {
 
   public void setSyncWeightAndVolume(Boolean syncWeightAndVolume) {
     this.syncWeightAndVolume = syncWeightAndVolume;
+  }
+
+  public void setIsDisassembled(boolean value){
+    isDisassembled = value;
+  }
+
+  public Boolean getIsDisassembled() {
+    if (isDisassembled == null){
+      isDisassembled = false;
+    }
+    return isDisassembled;
   }
 }
 

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="horizontal"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              xmlns:autofit="http://schemas.android.com/apk/res-auto"
+              android:layout_marginBottom="1dp"
+              android:padding="2dp"
+              android:background="@color/LightGrey">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp">
+
+        <me.grantland.widget.AutofitTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvTextTop"
+            android:layout_weight="1"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/themeBlueLightest"
+            android:textStyle="normal|bold"/>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            >
+
+            <ImageView
+                android:layout_width="120dp"
+                android:id="@+id/ivItemImage"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:layout_height="120dp"
+                autofit:srcCompat="@drawable/noimage"/>
+
+            <ImageView
+                autofit:srcCompat="@drawable/damage_warning_red"
+                android:id="@+id/ivInactiveClaim"
+                android:layout_alignParentBottom="false"
+                android:layout_alignParentRight="false"
+                android:layout_alignRight="@id/ivItemImage"
+                android:layout_alignBottom="@id/ivItemImage"
+                android:paddingRight="10dp"
+                android:paddingBottom="10dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+
+            <ImageView
+                autofit:srcCompat="@drawable/damage_warning_red"
+                android:id="@+id/ivActiveClaim"
+                android:layout_centerInParent="true"
+                android:layout_width="60dp"
+                android:layout_height="60dp"/>
+
+            <me.grantland.widget.AutofitTextView
+                android:text="2 more images"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/ivItemImage"
+                android:paddingBottom="4dp"
+                android:gravity="center_horizontal"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/tvMoreImages"
+                android:textColor="@color/White"/>
+
+            <ImageView
+                autofit:srcCompat="@drawable/checkmark"
+                android:id="@+id/ivScannedCheck"
+                android:layout_height="30dp"
+                android:layout_width="30dp"
+                android:layout_alignBottom="@id/ivItemImage"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="10dp"/>
+
+        </RelativeLayout>
+
+        <me.grantland.widget.AutofitTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvDescription"
+            android:layout_weight="1"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:textColor="@color/Black"/>
+
+    </LinearLayout>
+
+</LinearLayout>

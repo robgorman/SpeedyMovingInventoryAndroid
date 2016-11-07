@@ -10,22 +10,7 @@
     tools:showIn="@layout/activity_new_item"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:orientation="vertical"
-    android:background="@color/themeBlueLightest">
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:id="@+id/progressLayout">
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/progressBar2"
-            android:visibility="gone"/>
-    </LinearLayout>
+    android:background="@color/White">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -59,18 +44,60 @@
                     android:layout_marginBottom="2dp"
                     android:textColor="@color/Black"/>
 
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <EditText
+                        android:ems="10"
+                        android:id="@+id/etDescription"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|left"
+                        android:layout_weight="5"
+                        android:hint="Item Description"
+                        android:inputType="textCapSentences|textAutoCorrect|textAutoComplete|textMultiLine"
+                        android:layout_width="0dp"/>
+
+                    <Button
+                        android:text="Pick >"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/assistButton"
+                        android:layout_weight="2"
+                        android:textColor="@color/themeBlueLightest"
+                        android:background="@drawable/button_link"
+                        android:textAlignment="textEnd"
+                        android:textAllCaps="false"
+                        android:layout_gravity="center_vertical"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <TextView
+                    android:text="@string/damage_description_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView24"
+                    android:layout_weight="1"
+                    android:textColor="@color/Black"/>
+
                 <EditText
                     android:layout_width="match_parent"
-                    android:ems="10"
-                    android:id="@+id/etDescription"
                     android:layout_height="wrap_content"
-                    android:gravity="top|left"
+                    android:inputType="textMultiLine"
+                    android:ems="10"
+                    android:id="@+id/editDamageDescription"
                     android:layout_weight="1"
-                    android:hint="Type A Description"
-                    android:inputType="textCapSentences|textAutoCorrect|textAutoComplete|textMultiLine"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginLeft="20dp"/>
-
+                    android:hint="Damage Description"/>
             </LinearLayout>
 
             <LinearLayout
@@ -81,39 +108,95 @@
                 android:paddingBottom="4dp"
                 android:id="@+id/categoryLayout">
 
-                <TextView
-                    android:text="@string/category_label_long"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/textView4"
-                    android:layout_weight="2"
-                    android:gravity="left"
-                    android:layout_gravity="center_vertical"
-                    android:textColor="@color/Black"/>
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
 
-                <Spinner
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/categorySpinner"
-                    android:layout_weight="3"
-                    android:minWidth="140dp"
-                    android:layout_gravity="center_vertical"/>
+                    <CheckBox
+                        android:text="@string/is_box"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/cbIsBox"
+                        android:layout_weight="1"
+                        android:layout_gravity="right|center_horizontal"
+                        android:gravity="center_vertical"/>
 
-                <TextView
-                    android:text="spacer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/textView16"
-                    android:layout_weight="1"
-                    android:visibility="invisible"/>
+                    <CheckBox
+                        android:text="Disassembled"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/cbDisassembled"
+                        android:layout_weight="1"/>
+                </LinearLayout>
 
-                <CheckBox
-                    android:text="@string/is_box"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/cbIsBox"
-                    android:layout_weight="1"
-                    android:layout_gravity="right"/>
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="2">
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="3">
+
+                        <TextView
+                            android:text="Category:"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textView15"
+                            android:layout_weight="1"
+                            android:gravity="right|center_vertical"
+                            android:layout_gravity="center_vertical"
+                            android:textColor="@color/Black"/>
+
+                        <Button
+                            android:text="Button"
+                            android:layout_width="0dp"
+                            android:id="@+id/categoryButton"
+                            android:layout_weight="2.00"
+                            android:layout_gravity="center_vertical"
+                            android:background="@drawable/button_link"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/themeBlueLightest"
+                            android:textAllCaps="false"
+                            android:layout_marginRight="0dp"
+                            android:textAlignment="textEnd"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="3">
+
+                        <TextView
+                            android:text="Packed By:"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textView16"
+                            android:layout_weight="1"
+                            android:layout_gravity="center_vertical"
+                            android:gravity="right|center_vertical"
+                            android:textColor="@color/Black"/>
+
+                        <Button
+                            android:text="Packed:"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:id="@+id/packedByButton"
+                            android:layout_weight="2"
+                            android:layout_marginRight="0dp"
+                            android:background="@drawable/button_link"
+                            android:textColor="@color/themeBlueLightest"
+                            android:textAllCaps="false"
+                            android:textAlignment="textEnd"/>
+                    </LinearLayout>
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -121,7 +204,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:id="@+id/valueLayout">
+                android:id="@+id/valueLayout"
+                android:visibility="gone">
 
                 <TextView
                     android:text="@string/value"
@@ -182,36 +266,6 @@
             </LinearLayout>
 
             <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-                <TextView
-                    android:text="Packed By:"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/textView30"
-                    android:layout_weight="2"
-                    android:textColor="@color/Black"
-                    android:layout_gravity="center_vertical"/>
-
-                <Spinner
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/packedBySpinner"
-                    android:layout_weight="3"/>
-
-                <TextView
-                    android:text="spacer"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/textView27"
-                    android:layout_weight="2"
-                    android:visibility="invisible"/>
-            </LinearLayout>
-
-            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -254,7 +308,8 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:layout_weight="8">
+                    android:layout_weight="8"
+                    >
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -284,7 +339,8 @@
                             android:layout_height="40dp"
                             android:id="@+id/seekVolume"
                             android:layout_weight="2"
-                            android:progress="-1"/>
+                            android:progress="-1"
+                            android:background="@color/DimerGray"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -315,7 +371,8 @@
                             android:layout_height="40dp"
                             android:layout_weight="2"
                             android:id="@+id/seekWeight"
-                            android:progress="-1"/>
+                            android:progress="-1"
+                            android:background="@color/DimerGray"/>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -325,18 +382,16 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="2"
-                    android:layout_gravity="center_vertical">
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/DimerGray">
 
 
-                    <ToggleButton
-                        android:text="ToggleButton"
-                        android:layout_width="match_parent"
+                    <Switch
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/weightVolumeSyncButton"
-                        android:layout_gravity="center"
-                        android:layout_centerInParent="true"
-                        android:checked="true"
-                        android:background="@drawable/button_one"/>
+                        android:id="@+id/weightVolumeSynchSwitch"
+                        android:gravity="center_vertical|center_horizontal"
+                        android:layout_centerInParent="true"/>
 
                     <TextView
                         android:text="Sync."
@@ -344,7 +399,7 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/textView31"
                         android:layout_centerHorizontal="true"
-                        android:layout_above="@id/weightVolumeSyncButton"
+                        android:layout_above="@id/weightVolumeSynchSwitch"
                         android:textColor="@color/Black"/>
 
                 </RelativeLayout>
@@ -358,7 +413,7 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:text="Special Handling:"
+                    android:text="@string/special_handling_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/textView3"
@@ -369,7 +424,6 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:id="@+id/etSpecialHandling"
-                    android:layout_marginLeft="20dp"
                     android:inputType="textCapSentences"/>
             </LinearLayout>
 
@@ -398,5 +452,20 @@
             android:gravity="center"/>
 
     </RelativeLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:id="@+id/progressLayout">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar2"
+            android:visibility="gone"/>
+    </LinearLayout>
 
 </LinearLayout>

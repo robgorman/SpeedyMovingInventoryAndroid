@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
+import com.google.android.gms.fitness.data.Value;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,6 +25,7 @@ public class InitialRouterActivity extends BaseActivity {
   private FirebaseAuth auth;
 
   private boolean fired = false;
+  private boolean foundUser = false;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +36,7 @@ public class InitialRouterActivity extends BaseActivity {
 
 
     auth = FirebaseAuth.getInstance();
-    auth.signOut();
+    //auth.signOut();
     authListener = new FirebaseAuth.AuthStateListener() {
       @Override
       public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -45,9 +48,7 @@ public class InitialRouterActivity extends BaseActivity {
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
         if (user == null){
-          Intent intent = new Intent(thisActivity, LoginActivity.class);
-          startActivity(intent);
-          finish();
+          launchLogin();
 
         } else {
           lookupDatabaseUser(user);
@@ -60,19 +61,24 @@ public class InitialRouterActivity extends BaseActivity {
 
   }
 
-  private void lookupDatabaseUser(FirebaseUser firebaseUser){
-    String uid = firebaseUser.getUid();
-    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/users/"+uid);
+  private void launchLogin(){
+    Intent intent = new Intent(thisActivity, LoginActivity.class);
+    startActivity(intent);
+    finish();
+  }
 
-    ref.addValueEventListener(new ValueEventListener() {
-      @Override
-      public void onDataChange(DataSnapshot dataSnapshot) {
+  ValueEventListener listener = new ValueEventListener() {
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+
+      try {
         final User user = dataSnapshot.getValue(User.class);
         String companyKey = user.getCompanyKey();
         app().setCurrentUser(user);
 
+        foundUser = true;
         Handler mainHandler = new Handler(thisActivity.getMainLooper());
-        mainHandler.post(new Runnable(){
+        mainHandler.post(new Runnable() {
 
           @Override
           public void run() {
@@ -84,14 +90,37 @@ public class InitialRouterActivity extends BaseActivity {
             finish();
           }
         });
-
+      } catch (Exception e) {
+        // if we get an exception trying to pull the user out of the dataSnapshot
+        launchLogin();
       }
 
+    }
+
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+
+    }
+
+  };
+
+  private void lookupDatabaseUser(FirebaseUser firebaseUser){
+    String uid = firebaseUser.getUid();
+    final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/users/"+uid);
+
+    // set a timeout because if the user has been deleted there will be no event occurring
+    new Handler().postDelayed(new Runnable() {
       @Override
-      public void onCancelled(DatabaseError databaseError) {
-
+      public void run() {
+        if (!foundUser) {
+          ref.removeEventListener(listener);
+          FirebaseAuth.getInstance().signOut();
+          launchLogin();
+        }
       }
-    });
+    }, 10000);
+
+    ref.addValueEventListener(listener);
     //ref.addChildEventListener(childEventListener);
 
   }

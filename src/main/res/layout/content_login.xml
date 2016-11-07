@@ -1,14 +1,37 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:gravity="center_horizontal"
-              android:orientation="vertical"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              app:layout_behavior="@string/appbar_scrolling_view_behavior"
-              tools:context="com.ranchosoftware.speedymovinginventory.LoginActivity"
-              android:background="@color/themeBlueLightest"
-              android:id="@+id/backgroundLayout">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            tools:context="com.ranchosoftware.speedymovinginventory.LoginActivity"
+            android:background="@color/White"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:tools="http://schemas.android.com/tools"
+                  android:layout_width="match_parent"
+                  android:gravity="center_horizontal"
+                  android:orientation="vertical"
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                  tools:context="com.ranchosoftware.speedymovinginventory.LoginActivity"
+                  android:background="@color/White"
+                  android:id="@+id/backgroundLayout"
+                  android:layout_height="match_parent">
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+
+
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="match_parent"
@@ -24,12 +47,13 @@
     <!-- Login progress -->
 
         <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="bottom"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/signup_form">
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:layout_alignParentBottom="false"
+            android:id="@+id/signup_form"
+            android:layout_below="@+id/login_form_lower">
 
         <Button
             android:id="@+id/forgot_password_button"
@@ -37,7 +61,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/button_two"/>
+            android:background="@drawable/button_link"
+            android:textAllCaps="false"/>
     </LinearLayout>
 
 
@@ -136,7 +161,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:background="@drawable/button_one"/>
+                    android:background="@drawable/button_square_one"
+                    android:textColor="@color/White"
+                    android:textAllCaps="false"/>
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -146,7 +173,7 @@
                     android:layout_alignParentBottom="true"
                     android:id="@+id/linearLayout"
                     android:layout_marginTop="16dp"
-                    >
+                    android:layout_marginBottom="10dp">
 
                     <TextView
                         android:text="TextView"
@@ -166,3 +193,4 @@
 </RelativeLayout>
 
 </LinearLayout>
+</ScrollView>

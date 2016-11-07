@@ -2,6 +2,8 @@
 package com.ranchosoftware.speedymovinginventory.database;
 
 
+import android.util.Log;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -21,6 +23,8 @@ import java.util.List;
 
 
 public class DatabaseObject<T>{
+
+  private static final String TAG = DatabaseObject.class.getSimpleName();
 
   private List<DatabaseObjectEventListener<T>> valueListeners = new ArrayList<>();
 
@@ -64,8 +68,12 @@ public class DatabaseObject<T>{
     public void onDataChange(DataSnapshot dataSnapshot) {
 
       for (DatabaseObjectEventListener<T> listener : valueListeners){
-        Object o = dataSnapshot.getValue(c);
-        listener.onChange(dataSnapshot.getKey(), (T) o);
+        try {
+          Object o = dataSnapshot.getValue(c);
+          listener.onChange(dataSnapshot.getKey(), (T) o);
+        } catch (Exception e){
+          Log.d(TAG, "Error reading object of class " + c.getSimpleName() + " from database. Error="+ e.getMessage());
+        }
       }
     }
 

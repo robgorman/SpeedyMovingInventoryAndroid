@@ -20,8 +20,10 @@ public class User extends Model {
   private String role;
   private String uid;
   private String emailAddress;
+  private String customerJobKey;  // this is null unless the user's role is customer; if the
+                                // role is customer this is the job they are limited to.
 
-  public User(String companyKey, String firstName, String lastName, String role, String uid, String emailAddress){
+  public User(String companyKey, String firstName, String lastName, String role, String uid, String emailAddress, String customerJobKey){
     this.companyKey = companyKey;
     this.firstName = firstName;
     this.lastName = lastName;
@@ -30,6 +32,7 @@ public class User extends Model {
     this.isDisabled = false;
 
     this.emailAddress = emailAddress;
+    this.customerJobKey = customerJobKey;
   }
 
   // no args ctor required for firebase
@@ -79,4 +82,6 @@ public class User extends Model {
   public String getEmailAddress() {
     return emailAddress;
   }
+
+  public String getCustomerJobKey() {return customerJobKey;}
 }

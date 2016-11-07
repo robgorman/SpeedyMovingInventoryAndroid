@@ -5,8 +5,8 @@
     <item android:state_pressed="true" >
         <shape>
             <gradient
-                android:startColor="@color/themeGreenLight"
-                android:endColor="@color/themeGreenLight"
+                android:startColor="@color/themeBlueLightest"
+                android:endColor="@color/themeBlueLightest"
                 android:angle="270" />
             <stroke
                 android:width="2dp"
@@ -24,8 +24,8 @@
     <item android:state_focused="true" >
         <shape>
             <gradient
-                android:endColor="@color/themeGreenLight"
-                android:startColor="@color/themeGreenLight"
+                android:endColor="@color/themeBlueLightest"
+                android:startColor="@color/themeBlueLightest"
                 android:angle="270" />
             <stroke
                 android:width="2dp"
@@ -43,8 +43,8 @@
     <item>
         <shape>
             <gradient
-                android:endColor="@color/themeGreenBase"
-                android:startColor="@color/themeGreenBase"
+                android:endColor="@color/themeBase"
+                android:startColor="@color/themeBase"
                 android:angle="270" />
             <stroke
                 android:width="2dp"

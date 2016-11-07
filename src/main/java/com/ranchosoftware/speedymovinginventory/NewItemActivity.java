@@ -17,12 +17,14 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +39,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -49,6 +52,8 @@ import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -61,6 +66,7 @@ import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
 import com.ranchosoftware.speedymovinginventory.model.Item;
+import com.ranchosoftware.speedymovinginventory.model.MovingItemDataDescription;
 import com.ranchosoftware.speedymovinginventory.utility.Permissions;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
@@ -78,15 +84,15 @@ import java.util.List;
 
 public class NewItemActivity extends BaseActivity {
 
+  private static String TAG = NewItemActivity.class.getSimpleName();
+
   private String jobKey;
   private String qrcCode;
   private String companyKey;
   private EditText descriptionEdit;
-  private Spinner categorySpinner;
   private CheckBox isBoxCheck;
   private View numberOfPadsLayout;
   private Spinner insuranceSpinner;
-  private Spinner packedBySpinner;
   private SeekBar numberOfPadsSeek;
   private TextView numberOfPadsTextView;
   private SeekBar monetaryValueSeek;
@@ -101,40 +107,68 @@ public class NewItemActivity extends BaseActivity {
   private Item item;
   private boolean syncWeightAndVolume;
   private TextView tvNoPhotosMessage;
+  private Button categoryButton;
+  private Button packedByButton;
 
-  DatabaseObject<Item> itemRef;
-  DatabaseObject<String> qrcListRef;
+  private CheckBox isDisassembled;
+  private Button assist;
+  private EditText damageDescription;
 
-  private ToggleButton syncVolumeWeightButton;
+  //DatabaseObject<Item> itemRef;
+  DatabaseReference itemRef;
+  DatabaseReference qrcListRef;
+  //DatabaseObject<String> qrcListRef;
+
+  private Switch syncVolumeWeightSwitch;
   /**
    * ATTENTION: This was auto-generated to implement the App Indexing API.
    * See https://g.co/AppIndexing/AndroidStudio for more information.
    */
   private GoogleApiClient client;
 
-  private DatabaseObjectEventListener<Item> itemRefEventListener = new DatabaseObjectEventListener<Item>() {
+
+  private ValueEventListener itemRefEventListener = new ValueEventListener(){
+
     @Override
-    public void onChange(String key, Item modelItem) {
-      if (modelItem == null){
+    public void onDataChange(DataSnapshot dataSnapshot) {
+
+      if (!dataSnapshot.exists()){
         Item item = createNewItem();
         itemRef.setValue(item);
-        qrcListRef.setValue(jobKey);
+        qrcListRef.setValue(jobKey, new DatabaseReference.CompletionListener() {
+          @Override
+          public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+
+            if (databaseError != null) {
+              Bundle bundle = new Bundle();
+              bundle.putString("error_details", databaseError.getDetails());
+              bundle.putString("error_message", databaseError.getMessage());
+              FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(NewItemActivity.this);
+              analytics.logEvent("qrclist_write_error" , bundle );
+            }
+          }
+        });
+
       } else {
-        item = modelItem;
+        item = dataSnapshot.getValue(Item.class);
         updateValuesFromItem();
         showProgress(false, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
       }
+
     }
 
-  };
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
 
+    }
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_new_item);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-    toolbar.setTitle("Edit Moving Item");
+    toolbar.setTitle("New Item");
     setSupportActionBar(toolbar);
 
     Bundle params = getIntent().getExtras();
@@ -144,9 +178,8 @@ public class NewItemActivity extends BaseActivity {
 
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     showProgress(true, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
-    itemRef = new DatabaseObject<Item>(Item.class, jobKey, qrcCode);
-    qrcListRef = new DatabaseObject< String>(String.class, qrcCode);
-
+    itemRef = FirebaseDatabase.getInstance().getReference("itemlists/" + jobKey + "/items/" + qrcCode);
+    qrcListRef = FirebaseDatabase.getInstance().getReference("qrcList/" + qrcCode);
 
     FloatingActionButton takePhoto = (FloatingActionButton) findViewById(R.id.fab_takePhoto);
     takePhoto.setOnClickListener(new View.OnClickListener() {
@@ -160,10 +193,8 @@ public class NewItemActivity extends BaseActivity {
     client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
     descriptionEdit = (EditText) findViewById(R.id.etDescription);
-    categorySpinner = (Spinner) findViewById(R.id.categorySpinner);
     isBoxCheck = (CheckBox) findViewById(R.id.cbIsBox);
     insuranceSpinner = (Spinner) findViewById(R.id.insuranceSpinner);
-    packedBySpinner = (Spinner) findViewById(R.id.packedBySpinner);
     numberOfPadsLayout = findViewById(R.id.padsLayout);
     numberOfPadsSeek = (SeekBar) findViewById(R.id.seekNumberOfPads);
     numberOfPadsTextView = (TextView) findViewById(R.id.tvNumberOfPads);
@@ -173,10 +204,18 @@ public class NewItemActivity extends BaseActivity {
     weightTextView = (TextView) findViewById(R.id.tvWeight);
     volumeSeek = (SeekBar) findViewById(R.id.seekVolume);
     volumeTextView = (TextView) findViewById(R.id.tvVolume);
-    syncVolumeWeightButton = (ToggleButton) findViewById(R.id.weightVolumeSyncButton);
+    syncVolumeWeightSwitch = (Switch) findViewById(R.id.weightVolumeSynchSwitch);
     photoGridView = (GridView) findViewById(R.id.photoGridView);
     specialHandlingEdit = (EditText) findViewById(R.id.etSpecialHandling);
     tvNoPhotosMessage = (TextView) findViewById(R.id.tvNoPhotosMessage);
+
+    assist = (Button) findViewById(R.id.assistButton);
+    assist.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        launchMovingItemDescriptionEntryActivity();
+      }
+    });
 
     isBoxCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
@@ -210,6 +249,25 @@ public class NewItemActivity extends BaseActivity {
       }
     });
 
+    damageDescription = (EditText) findViewById(R.id.editDamageDescription);
+    damageDescription.addTextChangedListener(new TextWatcher() {
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+        String newText = editable.toString();
+        item.setDamageDescription(newText);
+      }
+    });
+
     specialHandlingEdit.addTextChangedListener(new TextWatcher() {
       @Override
       public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -231,14 +289,12 @@ public class NewItemActivity extends BaseActivity {
     photoGridView.setAdapter(adapter);
     photoGridView.setVisibility(View.INVISIBLE);
 
-    setupCategorySpinner();
     setupInsuranceSpinner();
-    setupPackedBySpinner();
     setupNumberOfPads();
     setupMonetaryValue();
     setupWeightAndVolumeSliders();
 
-    syncVolumeWeightButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+    syncVolumeWeightSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
       public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (isChecked){
@@ -251,6 +307,139 @@ public class NewItemActivity extends BaseActivity {
       }
     });
 
+
+    categoryButton = (Button) findViewById(R.id.categoryButton);
+    categoryButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        launchSpinnerActivityForResult();
+
+      }
+    });
+
+    packedByButton = (Button) findViewById(R.id.packedByButton);
+    packedByButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        launchPackedBySpinnerForResult();
+      }
+    });
+
+    isDisassembled = (CheckBox) findViewById(R.id.cbDisassembled);
+    isDisassembled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+      @Override
+      public void onCheckedChanged(CompoundButton compoundButton, boolean value) {
+        item.setIsDisassembled(true);
+        itemRef.setValue(item);
+      }
+    });
+
+  }
+
+  // TODO we should really pull these strings from resources.
+  private String categoryToRoom(Item.Category category){
+    switch (category){
+      case Basement:
+        return MovingItemDataDescription.Room.Basement.name();
+      case Bedroom1:
+      case Bedroom2:
+      case Bedroom3:
+      case Bedroom4:
+      case Bedroom5:
+        return MovingItemDataDescription.Room.Bedroom.name();
+
+      case Garage:
+        return MovingItemDataDescription.Room.Garage.name();
+
+      case DiningRoom:
+        return MovingItemDataDescription.Room.DiningRoom.name();
+
+      case Den:
+        return MovingItemDataDescription.Room.Den.name();
+
+      case Office:
+        return MovingItemDataDescription.Room.Office.name();
+
+      case LivingRoom:
+        return MovingItemDataDescription.Room.LivingRoom.name();
+
+      case Kitchen:
+        return MovingItemDataDescription.Room.Kitchen.name();
+
+      case Bathroom:
+        return MovingItemDataDescription.Room.Bathroom.name();
+
+      case Patio:
+        return MovingItemDataDescription.Room.Patio.name();
+
+      case Sunroom:
+        return MovingItemDataDescription.Room.Sunroom.name();
+
+      case Laundry:
+        return MovingItemDataDescription.Room.Laundry.name();
+
+      case Nursery:
+        return MovingItemDataDescription.Room.Nursery.name();
+
+      case Other:
+        return MovingItemDataDescription.Room.Other.name();
+
+      default:
+        assert(false);
+        return MovingItemDataDescription.Room.Other.name();
+
+    }
+  }
+
+  private void launchMovingItemDescriptionEntryActivity(){
+    Intent intent = new Intent(this, MovingItemPickDescriptionActivity.class);
+    Item.Category cat = item.getCategoryEnum();
+    intent.putExtra("room", categoryToRoom(cat));
+    startActivityForResult(intent, PICK_AN_MOVING_ITEM_DESCRIPTION);
+    overridePendingTransition(R.xml.slide_in_from_right,R.xml.slide_out_to_left);
+  }
+
+  private static int PICK_A_CATEGORY = 345;
+  private static int PICK_A_PACKED_BY = 346;
+  private static int PICK_AN_MOVING_ITEM_DESCRIPTION = 347;
+
+  private void launchPackedBySpinnerForResult(){
+    Intent intent = new Intent(this, SpinnerActivity.class);
+    Bundle b = new Bundle();
+    b.putInt(SpinnerActivity.paramSelectedIndex,  item.getPackedByEnum().ordinal());
+
+    String labels[] = new String[Item.PackedBy.values().length];
+
+    for (Item.PackedBy cat : Item.PackedBy.values()){
+      labels[cat.ordinal()] = cat.name();
+    }
+
+    b.putStringArray(SpinnerActivity.paramLabels, labels);
+    b.putString(SpinnerActivity.paramTitle, "Choose Packed By");
+    intent.putExtras(b);
+
+    startActivityForResult(intent, PICK_A_PACKED_BY);
+    overridePendingTransition(R.xml.slide_in_from_right,R.xml.slide_out_to_left);
+  }
+
+
+  private void launchSpinnerActivityForResult(){
+    Intent intent = new Intent(this, SpinnerActivity.class);
+    Bundle b = new Bundle();
+    b.putInt(SpinnerActivity.paramSelectedIndex,  item.getCategoryEnum().ordinal());
+
+    String labels[] = new String[Item.Category.values().length];
+
+    for (Item.Category cat : Item.Category.values()){
+      labels[cat.ordinal()] = cat.name();
+    }
+
+    b.putStringArray(SpinnerActivity.paramLabels, labels);
+    b.putString(SpinnerActivity.paramTitle, "Choose Category");
+    intent.putExtras(b);
+
+    startActivityForResult(intent, PICK_A_CATEGORY);
+    overridePendingTransition(R.xml.slide_in_from_right,R.xml.slide_out_to_left);
   }
 
   private Item createNewItem() {
@@ -287,7 +476,7 @@ public class NewItemActivity extends BaseActivity {
     updateInterfaceFromItem();
 
     syncWeightAndVolume = item.getSyncWeightAndVolume();
-    syncVolumeWeightButton.setChecked(syncWeightAndVolume);
+    syncVolumeWeightSwitch.setChecked(syncWeightAndVolume);
 
     int volumeProgress = getVolumeProgessFromValue(item.getVolume());
     volumeSeek.setProgress(volumeProgress);
@@ -297,17 +486,11 @@ public class NewItemActivity extends BaseActivity {
 
     numberOfPadsSeek.setProgress(item.getNumberOfPads());
 
-    int monetaryValue = getMonetaryValueProgessFromValue(item.getMonetaryValue());
-    monetaryValueSeek.setProgress(monetaryValue);
+    int prog = getMonetaryValueProgessFromValue(item.getMonetaryValue());
+    monetaryValueSeek.setProgress(prog);
 
-    // just in case not found
-   // categorySpinner.setSelection(0);
-    for (int i = 0; i < categorySpinner.getAdapter().getCount(); i++){
-      if (categorySpinner.getAdapter().getItem(i).equals(item.getCategory())){
-        categorySpinner.setSelection(i);
-        break;
-      }
-    }
+    damageDescription.setText(item.getDamageDescription());
+
     descriptionEdit.setText(item.getDescription());
     specialHandlingEdit.setText(item.getSpecialHandling());
 
@@ -318,12 +501,6 @@ public class NewItemActivity extends BaseActivity {
       }
     }
 
-    for (int i = 0; i < packedBySpinner.getAdapter().getCount(); i++){
-      if (packedBySpinner.getAdapter().getItem(i).equals(item.getPackedBy())){
-        packedBySpinner.setSelection(i);
-        break;
-      }
-    }
 
     isBoxCheck.setChecked(item.getIsBox());
 
@@ -334,6 +511,9 @@ public class NewItemActivity extends BaseActivity {
     }
 
     adapter.notifyDataSetChanged();
+
+    categoryButton.setText(item.getCategory() + " >");
+    packedByButton.setText(item.getPackedBy() + " >");
 
   }
 
@@ -382,7 +562,9 @@ public class NewItemActivity extends BaseActivity {
       }
       // Continue only if the File was successfully created
       if (photoFile != null) {
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+        Uri photoUri = FileProvider.getUriForFile(thisActivity, BuildConfig.APPLICATION_ID + ".provider",
+                photoFile);
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         startActivityForResult(takePictureIntent, TAKE_PHOTO_CODE);
       }
     }
@@ -447,7 +629,7 @@ public class NewItemActivity extends BaseActivity {
     setupWeight();
     setupVolume();
   }
-  private static float possibleVolumes[] = {1, 3, 5, 7, 10, 20, 30, 40, 50, 60, 75, 100};
+  private static float possibleVolumes[] =     {1, 3, 5, 7, 10, 20, 30, 40, 50, 60, 75, 100};
   private static final float normalVolumes[] = {1, 3, 5, 7, 10, 20, 30, 40, 50, 60, 75, 100};
   private static final float boxVolumes[] = {1.5f, 3.0f, 4.5f, 6.0f };
   private static String boxNames[] = {"Small", "Medium", "Large", "XLarge"};
@@ -550,6 +732,8 @@ public class NewItemActivity extends BaseActivity {
 
         weightTextView.setText(String.format("%.0f",weight) + " lbs.");
         item.setWeightLbs(possibleWeights[progress]);
+        // for the present with no insurance the value is always .60 per pound
+        item.setMonetaryValue(possibleWeights[progress]* 0.60f);
       }
 
       @Override
@@ -598,7 +782,8 @@ public class NewItemActivity extends BaseActivity {
     });
 
   }
-  private static final int monetaryValues[] = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
+  private static final Float monetaryValues[] =
+          {0.0f, 1.0f, 5.0f, 10.0f, 20.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f};
 
   private void setupMonetaryValue() {
     monetaryValueSeek.setProgress(monetaryValues.length);
@@ -609,7 +794,7 @@ public class NewItemActivity extends BaseActivity {
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
         item.setMonetaryValue(monetaryValues[progress]);
-        monetaryValueTextView.setText("$"+Integer.toString(monetaryValues[progress]));
+        monetaryValueTextView.setText("$"+String.format("%.2f",monetaryValues[progress]));
       }
 
       @Override
@@ -647,55 +832,18 @@ public class NewItemActivity extends BaseActivity {
 
   }
 
-  private void setupPackedBySpinner() {
-    final List<String> packedByOptions = new ArrayList<String>();
-    for (Item.PackedBy packedBy : Item.PackedBy.values())
-    {
-      packedByOptions.add(packedBy.toString());
+  private boolean isNear(Float target, Float value){
+    if (Math.abs(target - value) < .5){
+      return true;
     }
-    ArrayAdapter<String> packedByAdapter = new ArrayAdapter<String>(thisActivity, android.R.layout.simple_spinner_item, packedByOptions );
-    packedBySpinner.setAdapter(packedByAdapter);
-    packedBySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-      @Override
-      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        item.setPackedBy(packedByOptions.get(position));
-      }
-
-      @Override
-      public void onNothingSelected(AdapterView<?> parent) {
-
-      }
-    });
+    return false;
 
   }
 
-  private void setupCategorySpinner() {
-    // fill category spinner
-    final List<String> categories = new ArrayList<String>();
-    for (Item.Category cat : Item.Category.values())
-    {
-      categories.add(cat.toString());
-    }
-    ArrayAdapter<String> categoryAdapter = new ArrayAdapter<String>(thisActivity, android.R.layout.simple_spinner_item, categories );
-    categorySpinner.setAdapter(categoryAdapter);
-    categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-      @Override
-      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        item.setCategory(categories.get(position));
-        app().setCurrentCategory(Item.Category.valueOf(categories.get(position)));
-      }
-
-      @Override
-      public void onNothingSelected(AdapterView<?> parent) {
-
-      }
-    });
-
-  }
-  private int getMonetaryValueProgessFromValue(Integer targetValue){
+  private int getMonetaryValueProgessFromValue(Float targetValue){
     int i = 0;
-    for (int next : monetaryValues){
-      if (targetValue == next){
+    for (Float next : monetaryValues){
+      if (isNear(targetValue, next)){
         return i;
       }
       i += 1;
@@ -736,8 +884,7 @@ public class NewItemActivity extends BaseActivity {
     super.onStop();
 
     itemRef.setValue(item);
-    qrcListRef.setValue(jobKey);
-    itemRef.removeValueEventListener(itemRefEventListener);
+    itemRef.removeEventListener(itemRefEventListener);
 
     // ATTENTION: This was auto-generated to implement the App Indexing API.
     // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -776,10 +923,66 @@ public class NewItemActivity extends BaseActivity {
     }
   }
 
+  private void setCategory(int selectedIndex){
+    final List<String> categories = new ArrayList<String>();
+    for (Item.Category cat : Item.Category.values())
+    {
+      categories.add(cat.toString());
+    }
+    item.setCategory(categories.get(selectedIndex));
+    app().setCurrentCategory(Item.Category.valueOf(categories.get(selectedIndex)));
+    itemRef.setValue(item);
+  }
+
+  private void setPackedBy(int selectedIndex){
+    final List<String> packedBys = new ArrayList<String>();
+    for (Item.PackedBy by : Item.PackedBy.values())
+    {
+      packedBys.add(by.toString());
+    }
+    item.setPackedBy(packedBys.get(selectedIndex));
+
+    itemRef.setValue(item);
+  }
+
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == TAKE_PHOTO_CODE && resultCode == Activity.RESULT_OK) {
-      handleTakePictureResult();
+    if (requestCode == TAKE_PHOTO_CODE) {
+      if (resultCode == Activity.RESULT_OK) {
+        handleTakePictureResult();
+      }
+    } else if (requestCode == PICK_A_CATEGORY){
+      if (resultCode == Activity.RESULT_OK){
+        // extract selected index
+        int selectedIndex = data.getIntExtra(SpinnerActivity.paramSelectedIndex, 0);
+        setCategory(selectedIndex);
+      }
+    } else if (requestCode == PICK_A_PACKED_BY){
+      if (resultCode == Activity.RESULT_OK){
+        // extract selected index
+        int selectedIndex = data.getIntExtra(SpinnerActivity.paramSelectedIndex, 0);
+        setPackedBy(selectedIndex);
+      }
+    } else if (requestCode == PICK_AN_MOVING_ITEM_DESCRIPTION){
+      if (resultCode == Activity.RESULT_OK){
+        // extrace data
+        String itemName = data.getStringExtra("itemName");
+        Float weightLbs = data.getFloatExtra("weightLbs", 0);
+        Float cubicFeet = data.getFloatExtra("cubicFeet", 0);
+        Boolean isBox = data.getBooleanExtra("isBox",false);
+        String boxSize = data.getStringExtra("boxSize");
+        String specialInstructions = data.getStringExtra("specialInstructions");
+        // TODO do something
+        item.setDescription(itemName);
+        item.setWeightLbs(weightLbs);
+        // for the present with no insurance the value is always .60 per pound
+        item.setMonetaryValue(weightLbs* 0.60f);
+        item.setVolume(cubicFeet);
+
+        item.setIsBox(isBox);
+        // box size is
+        itemRef.setValue(item);
+      }
     }
   }
 
