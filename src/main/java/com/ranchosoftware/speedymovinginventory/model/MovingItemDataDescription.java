@@ -1,15 +1,7 @@
 package com.ranchosoftware.speedymovinginventory.model;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.Exclude;
 
-/**
- * Created by rob on 11/3/16.
- */
 
 public class MovingItemDataDescription extends Model {
   public  enum Room {Basement, Bedroom,
@@ -21,30 +13,25 @@ public class MovingItemDataDescription extends Model {
 
   private String room;
   private String itemName;
-  private Float weightLbs;
   private Float cubicFeet;
   private Boolean isBox;
   private String boxSize;
   private String specialInstructions;
 
-
   // no-args constructor require for firebase
   public MovingItemDataDescription(){
-
 
   }
 
   public MovingItemDataDescription(
           String room,
           String itemName,
-          Float weightLbs,
           Float cubicFeet,
           Boolean isBox,
           String boxSize,
           String specialInstructions){
     this.room = room;
     this.itemName = itemName;
-    this.weightLbs = weightLbs;
     this.cubicFeet = cubicFeet;
     this.isBox = isBox;
     this.boxSize = boxSize;
@@ -76,12 +63,14 @@ public class MovingItemDataDescription extends Model {
     return specialInstructions;
   }
 
-  public Float getWeightLbs() {
-    return weightLbs;
-  }
-
+  @Exclude
   public Room getRoomAsEnum(){
     Room room = Room.valueOf(this.room);
     return room;
+  }
+
+  @Exclude
+  public void setRoomAsEnum(Room room){
+    this.room = room.toString();
   }
 }

@@ -6,9 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -40,6 +37,7 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
   private List<MovingItemDataDescription> filteredItemList;
 
   private MovingItemDataDescription.Room room;
+  private boolean allowCancel;
 
 
   private int selectedIndex = -1; // neg is no selection
@@ -65,6 +63,7 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
     } else {
        copy =  new ArrayList<MovingItemDataDescription>(originalItemList);
     }
+    lastFilterLength = charSequence.length();
     filter(copy, charSequence);
     MovingItemDescriptionAdapter adapter = (MovingItemDescriptionAdapter) itemList.getAdapter();
     adapter.notifyDataSetChanged();
@@ -79,6 +78,7 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
 
     String roomString = getIntent().getExtras().getString("room");
     room = MovingItemDataDescription.Room.valueOf(roomString);
+    allowCancel  = getIntent().getExtras().getBoolean("allowCancel");
 
     filterEdit = (EditText) findViewById(R.id.editFilter);
     changeRoomButton = (Button) findViewById(R.id.changeRoomButton);
@@ -91,10 +91,15 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
     });
     itemList = (ListView) findViewById(R.id.itemList);
     cancel = (Button) findViewById(R.id.cancelButton);
+    List<MovingItemDataDescription> list = app().getListFor(room);
 
-    originalItemList = new ArrayList<MovingItemDataDescription>(app().getListFor(room));
+    originalItemList = new ArrayList<MovingItemDataDescription>(list);
     filteredItemList = new ArrayList<MovingItemDataDescription>(app().getListFor(room));
 
+
+    if (!allowCancel){
+      cancel.setVisibility(View.GONE);
+    }
     cancel.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -115,9 +120,11 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
           @Override
           public void run() {
             setResult(Activity.RESULT_OK);
+            RanchoApp app = thisActivity.app();
+            float weight = item.getCubicFeet() * app.getCompanyPoundsPerCubicFoot();
             Intent returnValue = new Intent();
             returnValue.putExtra("itemName",item.getItemName() );
-            returnValue.putExtra("weightLbs", item.getWeightLbs());
+            returnValue.putExtra("weightLbs", weight);
             returnValue.putExtra("cubicFeet", item.getCubicFeet());
             returnValue.putExtra("isBox", item.getIsBox());
             returnValue.putExtra("boxSize", item.getBoxSize());
@@ -148,6 +155,13 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
       }
     });
 
+  }
+
+  @Override
+  public void onBackPressed() {
+    if (allowCancel) {
+      super.onBackPressed();
+    }
   }
 
   private static final int  PICK_ROOM = 465;

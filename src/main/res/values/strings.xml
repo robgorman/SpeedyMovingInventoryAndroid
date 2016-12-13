@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Speedy</string>
+    <!--<string name="app_name">Speedy</string>  This has been moved to build.gradle for the app-->
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
@@ -193,8 +193,17 @@
     <string name="claim_label">Claim:</string>
     <string name="claim_number_hint">Claim Number</string>
     <string name="damage_description_hint">Damage Description</string>
-    <string name="special_handling_label">Special Handling;</string>
+    <string name="special_handling_label">Special Handling:</string>
     <string name="special_handling_hint">Special Handling</string>
     <string name="disassembled_label">Disassembled</string>
     <string name="menu_change_qrc_code">Re-assign Qrc Code</string>
+    <string name="title_activity_print">PrintActivity</string>
+    <string name="no_printables_message">There are no signoff sheets for this job.</string>
+    <string name="job_status_label">Sts.</string>
+    <string name="lifecycle_new">New</string>
+    <string name="lifecycle_loaded_for_storage">Loaded For Storage</string>
+    <string name="lifecycle_in_storage">In Storage</string>
+    <string name="lifecycle_loaded_for_delivery">Loaded For Delivery</string>
+    <string name="lifecycle_delivered">Delivered</string>
+    <string name="working">Working...</string>
 </resources>

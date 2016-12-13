@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -13,7 +14,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.print.PrintHelper;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,17 +24,18 @@ import android.telephony.PhoneNumberUtils;
 import android.text.SpannableStringBuilder;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -42,7 +44,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
 import com.ranchosoftware.speedymovinginventory.model.Address;
@@ -50,11 +51,8 @@ import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.server.Server;
-import com.ranchosoftware.speedymovinginventory.uiutility.SimpleDividerItemDecoration;
 import com.ranchosoftware.speedymovinginventory.utility.TextUtility;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
-
-
 
 import org.joda.time.format.DateTimeFormatter;
 
@@ -69,7 +67,7 @@ public class JobActivity extends BaseMenuActivity {
   private RecyclerView itemRecyclerView;
   private TextView noItemsMessage;
 
-  private LinearLayoutManager listLayoutManager;
+  private LinearLayoutManager gridLayoutManager;
   private TextView findTv(int tv){
     return (TextView) findViewById(tv);
   }
@@ -86,9 +84,17 @@ public class JobActivity extends BaseMenuActivity {
   private TextView tvTotalDamagedItems;
   private TabHost tabHost;
 
-  String[] sortByLabels ={"Value", "Volume", "Category", "Scanned", "Weight", "Claim"};
+  private TextView newLabelIndicator;
+  private TextView loadedForStorageIndicator;
+  private TextView inStorageIndicator;
+  private TextView loadedForDeliveryIndicator;
+  private TextView deliveredIndicator;
 
-  private FloatingActionButton printActionButton;
+  private ImageView ivStatus[] = new ImageView[Job.Lifecycle.values().length];
+  private Drawable ivStatusInactive[] = new Drawable[Job.Lifecycle.values().length];
+  private Drawable ivStatusActive[] = new Drawable[Job.Lifecycle.values().length];
+
+  String[] sortByLabels ={"Value", "Volume", "Category", "Scanned", "Weight", "Claim"};
 
   private int sortByPosition = 0;
   private int tabIndex = 0;
@@ -117,6 +123,24 @@ public class JobActivity extends BaseMenuActivity {
 
   //private Configuration mailgunConfiguration;
 
+  private void setupInactiveImages(){
+    ivStatusInactive[0] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.new_, null);
+    ivStatusInactive[1] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.loaded_for_storage, null);
+    ivStatusInactive[2] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.in_storage, null);
+    ivStatusInactive[3] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.loaded_for_delivery, null);
+    ivStatusInactive[4] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.delivered, null);
+
+  }
+
+  private void setupActiveImages(){
+    ivStatusActive[0] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.new_active, null);
+    ivStatusActive[1] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.loaded_for_storage_active, null);
+    ivStatusActive[2] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.in_storage_active, null);
+    ivStatusActive[3] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.loaded_for_delivery_active, null);
+    ivStatusActive[4] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.delivered_active, null);
+
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -133,6 +157,19 @@ public class JobActivity extends BaseMenuActivity {
     setSupportActionBar(toolbar);
     setupQueries();
 
+    ivStatus[0] = (ImageView) findViewById(R.id.ivNew);
+    ivStatus[1] = (ImageView) findViewById(R.id.ivLoadedForStorage);
+    ivStatus[2] = (ImageView) findViewById(R.id.ivInStorage);
+    ivStatus[3] = (ImageView) findViewById(R.id.ivLoadedForDelivery);
+    ivStatus[4] = (ImageView) findViewById(R.id.ivDelivered);
+    setupActiveImages();
+    setupInactiveImages();
+
+    newLabelIndicator = (TextView) findViewById(R.id.tvNew);
+    loadedForStorageIndicator = (TextView) findViewById(R.id.tvLoadedForStorage);
+    inStorageIndicator = (TextView) findViewById(R.id.tvInStorage);
+    loadedForDeliveryIndicator = (TextView) findViewById(R.id.tvLoadedForDelivery);
+    deliveredIndicator = (TextView) findViewById(R.id.tvDelivered);
 
     FirebaseAuth auth = FirebaseAuth.getInstance();
     auth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
@@ -168,6 +205,12 @@ public class JobActivity extends BaseMenuActivity {
     signOff.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
+
+        if (adapter.getItemCount() == 0){
+          Utility.error(getRootView(), thisActivity, "The job must contain itmes for signoff.");
+          return;
+        }
+
         if (job.getLifecycle() == Job.Lifecycle.Delivered){
           Utility.error(getRootView(), thisActivity, R.string.job_is_complete_no_signoff);
           return;
@@ -229,6 +272,18 @@ public class JobActivity extends BaseMenuActivity {
     startActivityForResult(intent, PICK_SORT_BY);
     overridePendingTransition(R.xml.slide_in_from_right,R.xml.slide_out_to_left);
   }
+
+  private void launchPrintActivity(){
+
+    Bundle params = new Bundle();
+    params.putString("companyKey", job.getCompanyKey());
+    params.putString("jobKey", jobKey);
+    Intent intent = new Intent(thisActivity, PrintActivity.class);
+    intent.putExtras(params);
+    startActivity(intent);
+  }
+
+/*
   private void printSignOff(){
     final PrintHelper photoPrinter = new PrintHelper((thisActivity));
     photoPrinter.setScaleMode(PrintHelper.SCALE_MODE_FIT);
@@ -279,6 +334,7 @@ public class JobActivity extends BaseMenuActivity {
 
 
   }
+  */
 
   private void setupSummaryItems(){
     tvTotalItems = (TextView) findViewById(R.id.tvTotalItems);
@@ -466,8 +522,50 @@ public class JobActivity extends BaseMenuActivity {
     itemRecyclerView.setAdapter(adapter);
     adapterDataObserver.reset();
     adapter.registerAdapterDataObserver(adapterDataObserver);
-    //listLayoutManager.setReverseLayout(sortReverse[position]);
-    //listLayoutManager.setStackFromEnd(sortReverse[position]);
+  }
+
+  private void updateStatusFromJob(){
+    if (job.getStorageInTransit()){
+      ivStatus[1].setVisibility(View.VISIBLE);
+      ivStatus[2].setVisibility(View.VISIBLE);
+
+    } else {
+      ivStatus[1].setVisibility(View.GONE);
+      ivStatus[2].setVisibility(View.GONE);
+    }
+
+
+
+    ivStatus[0].setImageDrawable( (job.getLifecycle() == Job.Lifecycle.New ? ivStatusActive[0] : ivStatusInactive[0]));
+    ivStatus[1].setImageDrawable( (job.getLifecycle() == Job.Lifecycle.LoadedForStorage ? ivStatusActive[1] : ivStatusInactive[1]));
+    ivStatus[2].setImageDrawable( (job.getLifecycle() == Job.Lifecycle.InStorage ? ivStatusActive[2] : ivStatusInactive[2]));
+    ivStatus[3].setImageDrawable( (job.getLifecycle() == Job.Lifecycle.LoadedForDelivery ? ivStatusActive[3] : ivStatusInactive[3]));
+    ivStatus[4].setImageDrawable( (job.getLifecycle() == Job.Lifecycle.Delivered ? ivStatusActive[4] : ivStatusInactive[4]));
+
+    newLabelIndicator.setVisibility(View.INVISIBLE);
+    loadedForStorageIndicator.setVisibility(View.INVISIBLE);
+    inStorageIndicator.setVisibility(View.INVISIBLE);
+    loadedForDeliveryIndicator.setVisibility(View.INVISIBLE);
+    deliveredIndicator.setVisibility(View.INVISIBLE);
+
+    switch (job.getLifecycle()){
+      case New:
+        newLabelIndicator.setVisibility(View.VISIBLE);
+        break;
+      case LoadedForStorage:
+        loadedForStorageIndicator.setVisibility(View.VISIBLE);
+        break;
+      case InStorage:
+        inStorageIndicator.setVisibility(View.VISIBLE);
+        break;
+      case LoadedForDelivery:
+        loadedForDeliveryIndicator.setVisibility(View.VISIBLE);
+        break;
+      case Delivered:
+        deliveredIndicator.setVisibility(View.VISIBLE);
+        break;
+    }
+
   }
 
   private void updateFromJob(){
@@ -476,13 +574,14 @@ public class JobActivity extends BaseMenuActivity {
 
     toolbar.setTitle("(" + job.getJobNumber() + ") " + job.getCustomerFirstName() + " " + job.getCustomerLastName());
     findTv(R.id.tvEmail).setText(job.getCustomerEmail());
-    findTv(R.id.tvLifecycle).setText(job.getLifecycle().toString());
+
     if (Integer.valueOf(Build.VERSION.SDK_INT) >= 21) {
       findTv(R.id.tvPhone).setText(PhoneNumberUtils.formatNumber(job.getCustomerPhone(), "US"));
     } else {
       findTv(R.id.tvPhone).setText(PhoneNumberUtils.formatNumber(job.getCustomerPhone()));
     }
-    findTv(R.id.tvStorageInTransit).setText(Boolean.toString(job.getStorageInTransit()));
+    updateStatusFromJob();
+
     DateTimeFormatter dateTimeFormatter = app().getDateTimeFormatter();
     findTv(R.id.tvPickupDate).setText(dateTimeFormatter.print(job.getPickupDateTime()));
 
@@ -526,9 +625,6 @@ public class JobActivity extends BaseMenuActivity {
     if (initialJobLifecycle == null){
       initialJobLifecycle = job.getLifecycle();
     }
-
-    printActionButton.setVisibility(job.getLifecycle() == Job.Lifecycle.New ? View.GONE : View.VISIBLE);
-
 
     onChangeSortBy(sortByPosition);
 
@@ -618,17 +714,27 @@ public class JobActivity extends BaseMenuActivity {
     }
   };
 
-
+  private float pixelsPerDp() {
+    DisplayMetrics metrics = new DisplayMetrics();
+    getWindowManager().getDefaultDisplay().getMetrics(metrics);
+    float logicalDensity = metrics.density;
+    return logicalDensity;
+  }
 
   private void setupRecyclerView(){
     //itemRecyclerView.setHasFixedSize(true);
-    listLayoutManager = new GridLayoutManager(this, 3);
-    //listLayoutManager.setReverseLayout(true);
-    //listLayoutManager.setStackFromEnd(true);
-    //listLayoutManager.
+    int gridItemWidth = (int) Math.ceil(pixelsPerDp() * 130);
 
-    itemRecyclerView.setLayoutManager(listLayoutManager);
-    itemRecyclerView.addItemDecoration(new SimpleDividerItemDecoration(thisActivity));
+
+    Display display = getWindowManager().getDefaultDisplay();
+    Point size = new Point();
+    display.getSize(size);
+
+    int numberOfColumns = size.x / gridItemWidth;
+    gridLayoutManager = new GridLayoutManager(this, numberOfColumns);
+
+    itemRecyclerView.setLayoutManager(gridLayoutManager);
+    //itemRecyclerView.addItemDecoration(new SimpleDividerItemDecoration(thisActivity));
 
     setUpItemTouchHelper();
     setUpAnimationDecoratorHelper();
@@ -1063,7 +1169,7 @@ public class JobActivity extends BaseMenuActivity {
     // Handle item selection
     switch (item.getItemId()) {
       case R.id.print_signoff_sheet:
-        printSignOff();
+        launchPrintActivity();
         return true;
 
       default:

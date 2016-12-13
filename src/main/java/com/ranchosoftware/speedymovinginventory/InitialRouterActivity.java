@@ -5,9 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 
-import com.google.android.gms.fitness.data.Value;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -52,10 +50,7 @@ public class InitialRouterActivity extends BaseActivity {
 
         } else {
           lookupDatabaseUser(user);
-
         }
-
-
       }
     };
 
@@ -104,23 +99,25 @@ public class InitialRouterActivity extends BaseActivity {
 
   };
 
+  private DatabaseReference userReference;
+
   private void lookupDatabaseUser(FirebaseUser firebaseUser){
     String uid = firebaseUser.getUid();
-    final DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/users/"+uid);
+    userReference = FirebaseDatabase.getInstance().getReference("/users/"+uid);
 
     // set a timeout because if the user has been deleted there will be no event occurring
     new Handler().postDelayed(new Runnable() {
       @Override
       public void run() {
         if (!foundUser) {
-          ref.removeEventListener(listener);
+          userReference.removeEventListener(listener);
           FirebaseAuth.getInstance().signOut();
           launchLogin();
         }
       }
     }, 10000);
 
-    ref.addValueEventListener(listener);
+    userReference.addValueEventListener(listener);
     //ref.addChildEventListener(childEventListener);
 
   }
@@ -137,6 +134,9 @@ public class InitialRouterActivity extends BaseActivity {
     super.onStop();
     if (authListener != null) {
       auth.removeAuthStateListener(authListener);
+    }
+    if (userReference != null){
+      userReference.removeEventListener(listener);
     }
   }
 }

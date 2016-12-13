@@ -17,19 +17,19 @@
     <me.grantland.widget.AutofitTextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:id="@+id/tvJobNumber"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         autofit:minTextSize="3sp"
         android:maxLines="1"
         android:layout_marginLeft="6dp"
         android:gravity="left|center_vertical"
-        android:text="Gorman, Rob"/>
+        android:text="Gorman, Rob"
+        android:layout_weight="2"/>
 
     <me.grantland.widget.AutofitTextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_weight="4"
         android:id="@+id/tvName"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         autofit:minTextSize="3sp"
@@ -37,6 +37,13 @@
         android:layout_marginLeft="6dp"
         android:gravity="left|center_vertical"
         android:text="Gorman, Rob"/>
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        app:srcCompat="@drawable/new_active"
+        android:id="@+id/statusImage"
+        android:layout_weight="1"/>
 
     <me.grantland.widget.AutofitTextView
         android:layout_width="0dp"
@@ -49,14 +56,15 @@
         android:singleLine="true"
         android:layout_marginLeft="4dp"
         android:gravity="left|center_vertical"
-        android:text="New"/>
+        android:text="New"
+        android:visibility="gone"/>
 
 
     <me.grantland.widget.AutofitTextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:id="@+id/tvPickupDate"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:maxLines="1"
         autofit:minTextSize="8sp"
@@ -68,7 +76,7 @@
     <me.grantland.widget.AutofitTextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:id="@+id/tvDeliveryDate"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:maxLines="1"

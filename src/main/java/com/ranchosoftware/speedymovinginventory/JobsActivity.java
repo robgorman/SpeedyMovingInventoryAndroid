@@ -1,19 +1,17 @@
 package com.ranchosoftware.speedymovinginventory;
 
 import android.content.Intent;
-import android.content.pm.LabeledIntent;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -23,10 +21,10 @@ import com.ranchosoftware.speedymovinginventory.firebase.FirebaseListAdapter;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.model.UserIdMapEntry;
+import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 import org.joda.time.DateTime;
 import org.joda.time.Days;
-import org.joda.time.Weeks;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Map;
@@ -39,6 +37,10 @@ public class JobsActivity extends BaseMenuActivity {
   private ListView jobsListView;
   private View noJobsView;
   private String companyKey;
+  private View workingView;
+
+  private User.Role role;
+  private User user;
 
   FirebaseListAdapter<Job> adapter;
   DateTimeFormatter formatter;
@@ -81,9 +83,27 @@ public class JobsActivity extends BaseMenuActivity {
       //jobsListView.setBackgroundColor(Color.RED);
     }
     noJobsView = findViewById(R.id.layout_no_jobs);
+    workingView = findViewById(R.id.llLayoutWorking);
 
-    noJobsView.setVisibility(View.VISIBLE);
-    jobsListView.setVisibility(View.INVISIBLE);
+    if (!app().isInitializationDone()){
+      workingView.setVisibility(View.VISIBLE);
+      noJobsView.setVisibility(View.INVISIBLE);
+      jobsListView.setVisibility(View.INVISIBLE);
+
+      new Handler().postDelayed(new Runnable() {
+        @Override
+        public void run() {
+          checkInitialization();
+        }
+      }, 200);
+    } else {
+      workingView.setVisibility(View.VISIBLE);
+      noJobsView.setVisibility(View.VISIBLE);
+      jobsListView.setVisibility(View.INVISIBLE);
+    }
+
+    user = app().getCurrentUser();
+    role = user.getRoleAsEnum();
 
     Query ref = FirebaseDatabase.getInstance().getReference("/joblists/" + companyKey + "/jobs")
             .orderByChild("jobNumber");
@@ -99,8 +119,8 @@ public class JobsActivity extends BaseMenuActivity {
       @Override
       public boolean filter(DataSnapshot dataSnapshot) {
         Job job = dataSnapshot.getValue(Job.class);
-        User user = app().getCurrentUser();
-        User.Role role = user.getRoleAsEnum();
+        // TODO getCurrentUser() can return null sometimes. Probably if there is some
+        // uncompleted login. The logs show this is null in version 3.3 sometimes
 
         // don't show Delivered jobs that are older than 2 weeks
 
@@ -151,20 +171,24 @@ public class JobsActivity extends BaseMenuActivity {
       @Override
       protected void populateView(View v, Job job, int position) {
         // if there is at least one job hide the no jobs messae
-        noJobsView.setVisibility(View.INVISIBLE);
-        jobsListView.setVisibility(View.VISIBLE);
+        if (app().isInitializationDone()) {
+          noJobsView.setVisibility(View.INVISIBLE);
+          jobsListView.setVisibility(View.VISIBLE);
+        }
 
         TextView jobNumberView = (TextView) v.findViewById(R.id.tvJobNumber);
         TextView nameView = (TextView) v.findViewById(R.id.tvName);
         TextView statusView = (TextView) v.findViewById(R.id.tvStatus);
         TextView pickupDateView = (TextView) v.findViewById(R.id.tvPickupDate);
         TextView deliveryDateView = (TextView) v.findViewById(R.id.tvDeliveryDate);
+        ImageView statusImage = (ImageView) v.findViewById(R.id.statusImage);
 
         jobNumberView.setText(job.getJobNumber());
         nameView.setText(job.getCustomerLastName() + ", " + job.getCustomerFirstName());
         statusView.setText(job.getLifecycle().toString());
         pickupDateView.setText(formatter.print(job.getPickupDateTime()));
         deliveryDateView.setText(formatter.print(job.getDeliveryEarliestDate()));
+        statusImage.setImageDrawable(Utility.imageForLifecycle(thisActivity,job.getLifecycle(), true));
       }
     };
 
@@ -185,6 +209,26 @@ public class JobsActivity extends BaseMenuActivity {
     });
   }
 
+  private void checkInitialization(){
+    if (app().isInitializationDone()){
+      if (adapter.getCount() == 0){
+        workingView.setVisibility(View.INVISIBLE);
+        noJobsView.setVisibility(View.VISIBLE);
+        jobsListView.setVisibility(View.INVISIBLE);
+      } else {
+        workingView.setVisibility(View.VISIBLE);
+        noJobsView.setVisibility(View.INVISIBLE);
+        jobsListView.setVisibility(View.INVISIBLE);
+      }
+    } else {
+      new Handler().postDelayed(new Runnable() {
+        @Override
+        public void run() {
+          checkInitialization();
+        }
+      }, 200);
+    }
+  }
   @Override
   public void onStart(){
     super.onStart();

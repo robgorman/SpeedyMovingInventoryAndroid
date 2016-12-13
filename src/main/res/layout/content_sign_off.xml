@@ -190,70 +190,128 @@
 
                 <ImageView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/speedy_logo"
-                    android:id="@+id/imageView3"
-                    android:adjustViewBounds="true"
+                    app:srcCompat="@drawable/transparent"
+                    android:id="@+id/ivCompanyLogo"
                     android:layout_below="@+id/top"
                     android:layout_above="@+id/mover_bottom"
-                    android:layout_alignParentRight="true"
-                    android:scaleType="fitEnd"
-                    android:paddingRight="10dp"/>
+                    android:scaleType="fitCenter"
+                    android:paddingRight="10dp"
+                    android:layout_height="300dp"
+                    android:adjustViewBounds="false"
+                    android:layout_alignParentRight="true"/>
 
             </RelativeLayout>
 
-            <TextView
-                    android:text="@string/shipper_label"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/textView40"
-                    android:textColor="@color/Black"
-                    android:layout_weight="1"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/tvShipperName"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="8dp"/>
-
-            <TextView
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvShipperPhone"
-                android:layout_weight="1"
-                android:layout_marginLeft="8dp"/>
+                android:layout_weight="1">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/tvShipperAddress"
-                android:layout_weight="1"
-                android:layout_marginLeft="8dp"/>
-
-            <TextView
-                android:layout_width="match_parent"
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/tvShipperEmail"
                     android:layout_weight="1"
-                    android:layout_marginLeft="8dp"/>
+                    android:layout_alignParentRight="true">
 
-                <TextView
-                    android:text="@string/move_summary_label"
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            app:srcCompat="@drawable/new_"
+                            android:id="@+id/ivNew"
+                            android:layout_weight="1"/>
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            app:srcCompat="@drawable/loaded_for_storage"
+                            android:id="@+id/ivLoadedForStorage"
+                            android:layout_weight="1"/>
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            app:srcCompat="@drawable/in_storage"
+                            android:id="@+id/ivInStorage"
+                            android:layout_weight="1"/>
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            app:srcCompat="@drawable/loaded_for_delivery"
+                            android:id="@+id/ivLoadedForDelivery"
+                            />
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            app:srcCompat="@drawable/delivered"
+                            android:id="@+id/ivDelivered"
+                            android:layout_weight="1"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textView45"
-                    android:textColor="@color/Black"
-                    android:layout_weight="1"
-                    android:layout_marginTop="12dp"/>
+                    android:layout_weight="1">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/tvMoveSummary"
-                    android:lines="4"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="8dp"/>
+                    <TextView
+                            android:text="@string/shipper_label"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textView40"
+                            android:textColor="@color/Black"
+                            android:layout_weight="1"/>
+
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvShipperName"
+                            android:layout_weight="1"
+                            android:layout_marginLeft="8dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvShipperPhone"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="8dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvShipperAddress"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="8dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvShipperEmail"
+                            android:layout_weight="1"
+                            android:layout_marginLeft="8dp"/>
+
+                    <TextView
+                            android:text="@string/move_summary_label"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textView45"
+                            android:textColor="@color/Black"
+                            android:layout_weight="1"
+                            android:layout_marginTop="12dp"/>
+
+                    <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tvMoveSummary"
+                            android:lines="4"
+                            android:layout_weight="1"
+                            android:layout_marginLeft="8dp"/>
+                </LinearLayout>
+            </RelativeLayout>
 
 
         </LinearLayout>
@@ -291,6 +349,7 @@
                 android:layout_weight="1"
                 android:id="@+id/signatureForm"
                 android:layout_alignParentEnd="false"
+                android:layout_alignParentRight="false"
                 android:layout_alignParentBottom="true">
 
                 <com.github.gcacace.signaturepad.views.SignaturePad
@@ -306,12 +365,14 @@
                     android:layout_height="wrap_content"
                     android:textSize="40sp"
                     android:layout_alignStart="@id/signature_pad"
+                    android:layout_alignLeft="@id/signature_pad"
                     android:layout_alignBottom="@id/signature_pad"
                     android:layout_marginLeft="8dp"
                     android:layout_marginBottom="4dp"
                     android:id="@+id/tvX"/>
 
                 <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="2dp"
                     android:paddingTop="2dp"

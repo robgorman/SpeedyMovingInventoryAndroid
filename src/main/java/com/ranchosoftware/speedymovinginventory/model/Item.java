@@ -26,7 +26,7 @@ public class Item extends Model {
 
   public enum PackedBy{Owner, Mover, ThirdParty}
 
-  public enum Insurance { Released, Company, ThirdParty};
+  public enum Insurance { Released, Company, ThirdParty}
 
   // note xxxInverse fields are just for sorting in reverse order in the
   // web api. We can reverse sort in java using recylerview.
@@ -40,8 +40,7 @@ public class Item extends Model {
   private Map<String, String> imageReferences;  // first string is timestamp second url
   private String insurance;
   private Boolean isBox;
-  private Boolean isClaimActive;
-  private Boolean isClaimActiveInverse;
+
   private Boolean isDisassembled;
   private Boolean isScanned;
   private Boolean isScannedInverse;
@@ -97,8 +96,7 @@ public class Item extends Model {
     this.claimNumber = "";
     this.hasClaim = false;
     this.hasClaimInverse = !this.hasClaim;
-    this.isClaimActive = false;
-    this.isClaimActiveInverse = !this.isClaimActive;
+
     this.insurance = insurance;
     this.isBox = isBox ;
     this.isScanned = false;
@@ -237,16 +235,6 @@ public class Item extends Model {
     this.claimNumber = claimNumber;
   }
 
-  public Boolean getIsClaimActive() {
-    return isClaimActive;
-
-  }
-
-  public void setIsClaimActive(Boolean claimActive) {
-    isClaimActive = claimActive;
-    this.isClaimActiveInverse = !this.isClaimActive;
-  }
-
   public Boolean getHasClaim() {
     return hasClaim;
   }
@@ -287,10 +275,6 @@ public class Item extends Model {
 
   public Boolean getHasClaimInverse() {
     return hasClaimInverse;
-  }
-
-  public Boolean getIsClaimActiveInverse() {
-    return isClaimActiveInverse;
   }
 
   public Float getMonetaryValueInverse() {

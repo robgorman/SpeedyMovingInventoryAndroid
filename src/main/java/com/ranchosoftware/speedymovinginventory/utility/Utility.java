@@ -3,14 +3,17 @@ package com.ranchosoftware.speedymovinginventory.utility;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.res.ResourcesCompat;
 import android.view.View;
+
+import com.ranchosoftware.speedymovinginventory.R;
+import com.ranchosoftware.speedymovinginventory.model.Job;
 
 import java.util.UUID;
 
-/**
- * Created by rob on 7/15/16.
- */
+
 
 public class Utility {
 
@@ -58,8 +61,34 @@ public class Utility {
         newHeight = 800;
         newWidth = (int) (bitmap.getWidth() * (800.0/(double) bitmap.getHeight()));
       }
-      bitmap = bitmap.createScaledBitmap(bitmap, newWidth, newHeight, false);
+      bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, false);
     }
     return bitmap;
+  }
+
+  public static Drawable imageForLifecycle(Context context, Job.Lifecycle lifecycle, boolean active){
+
+    int resource = 0;
+
+      switch (lifecycle){
+        case New:
+          resource = active ? R.drawable.new_active : R.drawable.new_;
+          break;
+        case LoadedForStorage:
+          resource = active ? R.drawable.loaded_for_storage_active : R.drawable.loaded_for_storage;
+          break;
+        case InStorage:
+          resource = active ? R.drawable.in_storage_active : R.drawable.in_storage;
+          break;
+        case LoadedForDelivery:
+          resource = active ? R.drawable.loaded_for_delivery_active : R.drawable.loaded_for_delivery;
+          break;
+        case Delivered:
+          resource = active ? R.drawable.delivered_active : R.drawable.delivered;
+          break;
+
+    }
+    return ResourcesCompat.getDrawable(context.getResources(), resource, null);
+    //return context.getResources().getDrawable(resource);
   }
 }

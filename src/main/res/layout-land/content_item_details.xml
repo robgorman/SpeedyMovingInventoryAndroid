@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/content_item_detail"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.ranchosoftware.speedymovinginventory.ItemDetailsActivity"
+    tools:showIn="@layout/activity_item_details"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:orientation="vertical"
+    android:layout_marginLeft="0dp"
+    android:layout_marginTop="0dp"
+    android:layout_marginBottom="0dp"
+    android:layout_marginRight="0dp"
+    android:background="@color/themeBlueLightest">
+
+
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:id="@+id/progressLayout"
+                android:visibility="gone">
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/progressBar2"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_margin="8dp">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/itemFormLayout">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:text="@string/description_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textView2"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:textColor="@color/Black"
+                            android:layout_weight="1"
+                            android:layout_alignParentLeft="false"
+                            android:layout_centerVertical="false"
+                            android:gravity="center_vertical"
+                            android:layout_gravity="center_vertical"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:ems="10"
+                            android:id="@+id/tvDescription"
+                            android:layout_height="wrap_content"
+                            android:gravity="top|left"
+                            android:layout_weight="5"
+                            android:hint="Type A Description"
+                            android:inputType="textCapSentences|textAutoCorrect|textAutoComplete|textMultiLine"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginLeft="20dp"
+                            android:lines="2"
+                            android:layout_gravity="center_vertical"/>
+
+                        <CheckBox
+                            android:text="@string/is_box"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/cbIsBox"
+                            android:enabled="false"
+                            android:layout_weight="1"
+                            android:layout_alignParentRight="true"
+                            android:layout_centerInParent="false"
+                            android:layout_centerVertical="true"
+                            android:layout_marginRight="8dp"
+                            android:layout_gravity="center_vertical"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+
+                        <CheckBox
+                            android:text="@string/item_is_damaged_checkbox_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/cbDamaged"
+                            android:layout_weight="1"/>
+
+                        <RelativeLayout
+                            android:orientation="horizontal"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <CheckBox
+                                android:text="@string/active_claim_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/cbActiveClaim"
+                                android:layout_centerVertical="true"
+                                android:layout_alignParentLeft="true"/>
+
+                        </RelativeLayout>
+
+                        <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:text="@string/insurance_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/textView29"
+                                android:layout_weight="1"
+                                android:gravity="right"
+                                android:layout_marginRight="2dp"/>
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tvInsurance"
+                                android:layout_weight="1"/>
+                        </LinearLayout>
+
+                        <ToggleButton
+                            android:text="@string/scan_override_button_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/buttonScanOverride"
+                            android:layout_alignParentRight="true"
+                            android:layout_centerVertical="true"
+                            android:textOff="@string/scan_override_button_label"
+                            android:textOn="@string/unscan"
+                            android:checked="true"
+                            />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:id="@+id/layoutDamageDescription"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:text="@string/damage_description_lable"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/textView28"
+                                android:layout_weight="1"/>
+                            <android.support.design.widget.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <AutoCompleteTextView
+                                    android:id="@+id/tvDamageDescription"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+
+                                    android:maxLines="1"
+                                    android:singleLine="false"
+                                    android:imeOptions="actionNext"
+                                    android:inputType="textCapSentences"/>
+
+                            </android.support.design.widget.TextInputLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:id="@+id/layoutClaimNumber"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:text="@string/claim_number_label"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/textView25"
+                                android:layout_weight="1"/>
+
+                            <LinearLayout
+                                android:orientation="horizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1">
+
+                                <android.support.design.widget.TextInputLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent">
+
+                                    <AutoCompleteTextView
+                                        android:id="@+id/tvClaimNumber"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:maxLines="1"
+                                        android:singleLine="true"
+                                        android:imeOptions="actionNext"
+                                        />
+
+                                </android.support.design.widget.TextInputLayout>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <TextView
+                    android:text="@string/no_photos_message"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/itemFormLayout"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="30dp"
+                    android:gravity="center_horizontal"
+                    android:id="@+id/tvNoPhotosMessage"/>
+
+                <GridView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/photoGridView"
+                    android:layout_below="@id/itemFormLayout"
+                    android:numColumns="3"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginRight="4dp">
+
+                </GridView>
+
+            </RelativeLayout>
+
+
+
+</LinearLayout>

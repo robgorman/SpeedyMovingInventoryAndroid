@@ -4,13 +4,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
-import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -23,9 +21,6 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
-//import com.google.android.gms.appindexing.Action;
-//import com.google.android.gms.appindexing.AppIndex;
-//import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -41,6 +36,10 @@ import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 import org.apache.commons.validator.routines.EmailValidator;
+
+//import com.google.android.gms.appindexing.Action;
+//import com.google.android.gms.appindexing.AppIndex;
+//import com.google.android.gms.common.api.GoogleApiClient;
 
 
 /**
@@ -186,7 +185,7 @@ public class LoginActivity extends BaseActivity {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
         if (dataSnapshot.getValue() == null){
-          Utility.error(thisActivity.getRootView(), thisActivity, "Unexpected error user is null; Was user deleted?");
+          Utility.error(thisActivity.getRootView(), thisActivity, "Unexpected error. User is not present; Was user deleted?");
 
           return;
         }
@@ -194,14 +193,15 @@ public class LoginActivity extends BaseActivity {
         try {
           user = dataSnapshot.getValue(User.class);
           if (user.getRoleAsEnum() == User.Role.Customer) {
-            Utility.error(thisActivity.getRootView(), thisActivity, "We're sorry, but we presently do not support Customer logins to the Speedy Moving Inventory App.");
+            Utility.error(thisActivity.getRootView(), thisActivity,
+                    "We're sorry, but we presently do not support Customer logins in the mobile app. Please try the web interface at https://app.speedymovinginventory.com");
             auth.signOut();
             showProgress(false);
             fired = false;
             return;
           }
         } catch (Exception e){
-          Utility.error(thisActivity.getRootView(), thisActivity, "Unexpected error; cant read user. Contact Support ErrorCode=" + e.getMessage());
+          Utility.error(thisActivity.getRootView(), thisActivity, "Unexpected error; cant read user information. Contact Support ErrorCode=" + e.getMessage());
           return;
         }
 

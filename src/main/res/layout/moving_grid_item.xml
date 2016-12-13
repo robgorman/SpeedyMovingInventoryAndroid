@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
               android:orientation="horizontal"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               xmlns:autofit="http://schemas.android.com/apk/res-auto"
-              android:layout_marginBottom="1dp"
-              android:padding="2dp"
-              android:background="@color/LightGrey">
+              android:layout_marginBottom="4dp"
+              android:padding="4dp"
+              android:background="@drawable/grid_border"
+              android:layout_marginTop="4dp">
 
     <LinearLayout
         android:orientation="vertical"
@@ -42,29 +42,16 @@
 
             <ImageView
                 autofit:srcCompat="@drawable/damage_warning_red"
-                android:id="@+id/ivInactiveClaim"
-                android:layout_alignParentBottom="false"
-                android:layout_alignParentRight="false"
-                android:layout_alignRight="@id/ivItemImage"
-                android:layout_alignBottom="@id/ivItemImage"
-                android:paddingRight="10dp"
-                android:paddingBottom="10dp"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-
-            <ImageView
-                autofit:srcCompat="@drawable/damage_warning_red"
-                android:id="@+id/ivActiveClaim"
+                android:id="@+id/ivDamaged"
                 android:layout_centerInParent="true"
                 android:layout_width="60dp"
                 android:layout_height="60dp"/>
 
             <me.grantland.widget.AutofitTextView
-                android:text="2 more images"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@id/ivItemImage"
-                android:paddingBottom="4dp"
+                android:paddingBottom="12dp"
                 android:gravity="center_horizontal"
                 android:layout_centerHorizontal="true"
                 android:id="@+id/tvMoreImages"
@@ -88,7 +75,10 @@
             android:layout_weight="1"
             android:layout_gravity="center_horizontal"
             android:gravity="center_horizontal"
-            android:textColor="@color/Black"/>
+            android:textColor="@color/Black"
+            android:lines="1"
+            android:singleLine="false"
+            android:maxLines="1"/>
 
     </LinearLayout>
 

@@ -2,7 +2,6 @@ package com.ranchosoftware.speedymovinginventory.app;
 
 import android.content.SharedPreferences;
 import android.support.multidex.MultiDexApplication;
-import android.util.Log;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -19,12 +18,11 @@ import com.ranchosoftware.speedymovinginventory.model.MovingItemDataDescription;
 import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.server.Server;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -85,18 +83,65 @@ public class RanchoApp extends MultiDexApplication {
   }
 
 
-  private ChildEventListener itemListForRoomListener = new ChildEventListener(){
+
+
+
+  // we need to know when we have read the entire list
+  // we know the list is 14 items long
+  private int count = 0;
+  private boolean initializationDone = false;
+
+  public boolean isInitializationDone(){
+    return initializationDone;
+  }
+
+
+  private DatabaseReference roomLists;
+
+  private ValueEventListener valueListener = new ValueEventListener() {
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+
+      // iterate the kids
+      for (DataSnapshot category : dataSnapshot.getChildren() ){
+        ArrayList<MovingItemDataDescription> itemsSoFar = new ArrayList<MovingItemDataDescription>();
+        for (DataSnapshot item : category.getChildren()){
+          MovingItemDataDescription nextItem = item.getValue(MovingItemDataDescription.class);
+          itemsSoFar.add(nextItem);
+        }
+        movingItemDescriptions.put(category.getKey(), itemsSoFar);
+
+      }
+
+      initializationDone = true;
+    }
+
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+
+    }
+  };
+
+  private ChildEventListener listener = new ChildEventListener(){
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
-      MovingItemDataDescription itemDataDescription = dataSnapshot.getValue(MovingItemDataDescription.class);
-
-      ArrayList<MovingItemDataDescription> itemsSoFar = movingItemDescriptions.get(itemDataDescription.getRoom());
-      if (itemsSoFar == null){
-        itemsSoFar = new ArrayList<MovingItemDataDescription>();
+      ArrayList<MovingItemDataDescription> itemsSoFar = new ArrayList<MovingItemDataDescription>();
+      // iterate the kids
+      String room = dataSnapshot.getKey();
+      for (DataSnapshot item : dataSnapshot.getChildren() ){
+          MovingItemDataDescription nextItem = item.getValue(MovingItemDataDescription.class);
+          itemsSoFar.add(nextItem);
       }
-      itemsSoFar.add(itemDataDescription);
-      movingItemDescriptions.put(itemDataDescription.getRoom(), itemsSoFar);
+
+      movingItemDescriptions.put(room, itemsSoFar);
+      count = count + 1;
+      if (count == 14) {
+        initializationDone = true;
+        roomLists.removeEventListener(this);
+      }
+
+
     }
 
     @Override
@@ -120,41 +165,15 @@ public class RanchoApp extends MultiDexApplication {
     }
   };
 
-
-
   private void loadMovingItemDescriptions(){
+    // speedyMovingItemDataDescriptions is readable by anyone. No security or login
+    // necessary.
     final FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference roomLists = database.getReference("speedyMovingItemDataDescriptions/");
-    roomLists.addChildEventListener(new ChildEventListener(){
-      @Override
-      public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+    roomLists = database.getReference("speedyMovingItemDataDescriptions/");
 
-        final DatabaseReference itemListForRoom =
-                database.getReference("speedyMovingItemDataDescriptions/" + dataSnapshot.getKey());
-        itemListForRoom.addChildEventListener(itemListForRoomListener);
+    roomLists.addValueEventListener(valueListener);
+    //roomLists.addChildEventListener(listener);
 
-      }
-
-      @Override
-      public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-      }
-
-      @Override
-      public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-      }
-
-      @Override
-      public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-      }
-
-      @Override
-      public void onCancelled(DatabaseError databaseError) {
-
-      }
-    });
   }
 
 

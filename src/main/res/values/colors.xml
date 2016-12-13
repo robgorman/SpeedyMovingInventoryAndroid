@@ -29,7 +29,7 @@
     <color name="themeGreenBase">#49cea1</color>
     <color name="themeGreenLight">#70e0bb</color>
     <color name="themeGreenLightest">#a4f0d7</color>-->
-
+    <color name="superlightRed">#ff0000</color>
     <color name="buttonRedBright">#ff0700</color>
     <color name="buttonRedLight">#E00600</color>
     <color name="buttonRed">#b80500</color>
@@ -52,6 +52,7 @@
     <color name="Red">#ff0000</color>
     <color name="LightGrey">#D3D3D3</color>
     <color name="DimGray">#696969</color>
+    <color name="DimestGray">#696969</color>
     <color name="DimerGray">#eeeeee</color>
     <color name="Blue">#0000FF</color>
     <color name="MediumBlue">#0000CD</color>

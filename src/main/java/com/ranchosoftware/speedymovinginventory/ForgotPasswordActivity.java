@@ -14,7 +14,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -39,8 +38,6 @@ public class ForgotPasswordActivity extends BaseActivity {
     //s = toolbar.getTitle();
     toolbar.setTitle("Forgot Password");
     setSupportActionBar(toolbar);
-
-
 
     textSentMessage = (TextView) findViewById(R.id.tvMessageSent);
     textSentMessage.setVisibility(View.INVISIBLE);

@@ -13,6 +13,31 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/llLayoutWorking">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar4"
+            android:layout_weight="1"
+            android:paddingTop="50dp"
+            android:layout_gravity="center_horizontal"/>
+
+        <TextView
+            android:text="@string/working"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView14"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:textSize="24sp"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -26,7 +51,7 @@
         <me.grantland.widget.AutofitTextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:id="@+id/tvJobNumber"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             autofit:minTextSize="3sp"
@@ -40,7 +65,7 @@
         <me.grantland.widget.AutofitTextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="4"
             android:id="@+id/tvName"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             autofit:minTextSize="3sp"
@@ -60,16 +85,17 @@
             autofit:minTextSize="8sp"
             android:singleLine="true"
             android:layout_marginLeft="4dp"
-            android:gravity="left|center_vertical"
-            android:text="Lifecycle"
-            android:textColor="@color/White"/>
+            android:gravity="center_horizontal"
+            android:text="@string/job_status_label"
+            android:textColor="@color/White"
+            android:layout_gravity="center_horizontal"/>
 
 
         <me.grantland.widget.AutofitTextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:id="@+id/tvPickupDate"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:maxLines="1"
             autofit:minTextSize="8sp"
@@ -82,7 +108,7 @@
         <me.grantland.widget.AutofitTextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:id="@+id/tvDeliveryDate"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:maxLines="1"

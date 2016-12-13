@@ -6,9 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.Toolbar;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
@@ -21,13 +19,6 @@ import com.android.volley.toolbox.ImageLoader;
 import com.github.gcacace.signaturepad.views.SignaturePad;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.vision.text.Text;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -36,7 +27,6 @@ import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
 import com.ranchosoftware.speedymovinginventory.model.Address;
 import com.ranchosoftware.speedymovinginventory.model.Company;
-import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.Signature;
 import com.ranchosoftware.speedymovinginventory.utility.TextUtility;
@@ -47,7 +37,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Date;
 
 public class SignOffActivity extends BaseActivity {
 
@@ -78,7 +67,13 @@ public class SignOffActivity extends BaseActivity {
   private TextView tvShipperEmail;
   private TextView tvMoveSummary;
 
-  //private ImageView ivCompanyLogo;
+  private ImageView ivNew;
+  private ImageView ivLoadedForStorage;
+  private ImageView ivInStorage;
+  private ImageView ivLoadedForDelivery;
+  private ImageView ivDelivered;
+
+  private ImageView ivCompanyLogo;
 
   private int totalItems;
   private int totalValue;
@@ -90,6 +85,35 @@ public class SignOffActivity extends BaseActivity {
   private ImageLoader imageLoader;
   private Company company;
   private Job job;
+
+  private void updateLifecycle(Job job){
+    if (job.getStorageInTransit()){
+      ivLoadedForStorage.setVisibility(View.VISIBLE);
+      ivInStorage.setVisibility(View.VISIBLE);
+
+    } else {
+      ivLoadedForStorage.setVisibility(View.GONE);
+      ivInStorage.setVisibility(View.GONE);
+    }
+
+    switch (job.getLifecycle()){
+      case New:
+        ivNew.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.new_active, null));
+        break;
+      case LoadedForStorage:
+        ivLoadedForStorage.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.loaded_for_storage_active, null));
+        break;
+      case InStorage:
+        ivInStorage.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.in_storage_active, null));
+        break;
+      case LoadedForDelivery:
+        ivLoadedForDelivery.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.loaded_for_delivery_active, null));
+        break;
+      case Delivered:
+        ivDelivered.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.delivered_active, null));
+        break;
+    }
+  }
 
   private void updateFromJob(){
     if (job == null)
@@ -109,6 +133,8 @@ public class SignOffActivity extends BaseActivity {
     tvShipperEmail.setText(job.getCustomerEmail());
 
     toolbar.setTitle("Job Number: " + job.getJobNumber() + "  " + determineSignoffTitle());
+
+    updateLifecycle(job);
 
   }
   private void loadJob(){
@@ -182,13 +208,13 @@ public class SignOffActivity extends BaseActivity {
       getTextView(R.id.tvCalT).setText(company.getCalT());
     }
 
-/*
+
     String logoImage = app().getCompanyLogoUrl();
     if (logoImage != null && logoImage.length() > 0){
       imageLoader.get(logoImage, ImageLoader.getImageListener(ivCompanyLogo,
-              R.drawable.yourlogohere, R.drawable.yourlogohere));
+              R.drawable.transparent, R.drawable.transparent));
     }
-*/
+
   }
 
   private String moveDestination(){
@@ -246,7 +272,7 @@ public class SignOffActivity extends BaseActivity {
     totalDamagedItems = params.getInt("totalDamagedItems");
 
     tvDate = (TextView) findViewById(R.id.tvDate);
-    DateTimeFormatter fmt = DateTimeFormat.forPattern("EEE, MMM d yyyy, h:m a");
+    DateTimeFormatter fmt = DateTimeFormat.forPattern("EEE, MMM d yyyy, h:mm a");
     DateTime now = new DateTime();
     tvDate.setText(fmt.print(now));
     tvForeman = (TextView) findViewById(R.id.tvForeman);
@@ -260,9 +286,14 @@ public class SignOffActivity extends BaseActivity {
     tvShipperAddress = (TextView) findViewById(R.id.tvShipperAddress);
     tvShipperEmail = (TextView) findViewById(R.id.tvShipperEmail);
     tvMoveSummary = (TextView) findViewById(R.id.tvMoveSummary);
-   // ivCompanyLogo = (ImageView) findViewById(R.id.ivCompanyLogo);
+    ivCompanyLogo = (ImageView) findViewById(R.id.ivCompanyLogo);
 
 
+    ivNew = (ImageView) findViewById(R.id.ivNew);
+    ivLoadedForStorage = (ImageView) findViewById(R.id.ivLoadedForStorage);
+    ivInStorage = (ImageView) findViewById(R.id.ivInStorage);
+    ivLoadedForDelivery = (ImageView) findViewById(R.id.ivLoadedForDelivery);
+    ivDelivered = (ImageView) findViewById(R.id.ivDelivered);
 
     // we have to load both the company and job
     loadJob();
@@ -275,14 +306,6 @@ public class SignOffActivity extends BaseActivity {
     toolbar.setTitle("Sign Off");
     setSupportActionBar(toolbar);
 
-    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-    fab.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
-      }
-    });
 
     signaturePad = (SignaturePad) findViewById(R.id.signature_pad);
     clearPad = (Button) findViewById(R.id.buttonClearPad);
@@ -379,11 +402,11 @@ public class SignOffActivity extends BaseActivity {
 
         Job.Lifecycle nextState = getNextLifecyle();
 
-        new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("lifecycle").setValue(getNextLifecyle().toString());
+        new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("lifecycle").setValue(nextState);
         //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/lifecycle").setValue(getNextLifecyle().toString());
         Uri downloadUrl = taskSnapshot.getDownloadUrl();
         //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
-        new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("signature" + getNextLifecyle().toString())
+        new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("signature" + nextState)
                 .setValue(new Signature(name, downloadUrl.toString(), new DateTime().getMillis()));
         progressDialog.hide();
         setResult(RESULT_OK);

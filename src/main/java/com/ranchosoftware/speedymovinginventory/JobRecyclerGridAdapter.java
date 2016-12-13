@@ -3,6 +3,7 @@ package com.ranchosoftware.speedymovinginventory;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
 import android.text.style.RelativeSizeSpan;
@@ -25,9 +26,7 @@ import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 import java.util.Map;
 
-/**
- * Created by rob on 8/11/16.
- */
+
 
 public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRecyclerGridAdapter.MovingItemViewHolder> {
 
@@ -100,15 +99,10 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
   }
 
   private void setClaimInfo(Item item, MovingItemViewHolder holder){
-    holder.inactiveClaim.setVisibility(View.INVISIBLE);
     holder.activeClaim.setVisibility(View.INVISIBLE);
 
     if (item.getHasClaim()){
-      if (item.getIsClaimActive()){
-        holder.activeClaim.setVisibility(View.VISIBLE);
-      } else {
-        holder.inactiveClaim.setVisibility(View.VISIBLE);
-      }
+      holder.activeClaim.setVisibility(View.VISIBLE);
     }
   }
 
@@ -116,7 +110,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
   private void setTopText(MovingItemViewHolder holder, Item item){
     holder.topText.setText("");
     if (sortBy.equals("By Value")) {
-      holder.topText.setText("$" + String.format("%.2f",item.getMonetaryValue()));
+      holder.topText.setText("$" + String.format("%.0f",item.getMonetaryValue()));
     } else if (sortBy.equals("By Volume")){
       String styled = String.format("%.1f", (float) item.getVolume()) + " ft3";
 
@@ -151,9 +145,9 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
 
 
     } else if (item.getIsBox()) {
-      holder.itemImage.setImageDrawable(context.getResources().getDrawable(R.drawable.closedbox));
+      holder.itemImage.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.closedbox, null));
     } else {
-      holder.itemImage.setImageDrawable(context.getResources().getDrawable(R.drawable.noimage));
+      holder.itemImage.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(),R.drawable.noimage, null));
     }
     if (numberOfImages > 1) {
       holder.moreImages.setVisibility(View.VISIBLE);
@@ -195,7 +189,6 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
   public static class MovingItemViewHolder extends RecyclerView.ViewHolder {
     ImageView itemImage;
     ImageView activeClaim;
-    ImageView inactiveClaim;
     ImageView scannedCheck;
     TextView description;
     TextView moreImages;
@@ -206,8 +199,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
     public MovingItemViewHolder(View v){
       super(v);
       itemImage = (ImageView) v.findViewById(R.id.ivItemImage);
-      activeClaim = (ImageView) v.findViewById(R.id.ivActiveClaim);
-      inactiveClaim = (ImageView) v.findViewById(R.id.ivInactiveClaim);
+      activeClaim = (ImageView) v.findViewById(R.id.ivDamaged);
       description = (TextView) v.findViewById(R.id.tvDescription);
 
       moreImages = (TextView) v.findViewById(R.id.tvMoreImages);

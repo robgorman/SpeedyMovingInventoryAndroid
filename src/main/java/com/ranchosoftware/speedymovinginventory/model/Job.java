@@ -7,15 +7,13 @@ import org.joda.time.DateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by rob on 7/13/16.
- */
 
 public class Job extends Model {
 
   public enum Lifecycle {New, LoadedForStorage, InStorage, LoadedForDelivery, Delivered}
 
   private String companyKey;
+  private String jobCompanyName;
   private Long createDateTime;
   private String customerEmail;
   private String customerFirstName;
@@ -44,10 +42,12 @@ public class Job extends Model {
   public Job(
           String jobNumber,
           String companyKey,
+          String jobCompanyName,
           Long createDateTime,
           String customerEmail,
           String customerFirstName,
           String customerLastName,
+          String companyName,
           String customerPhone,
           Long deliveryEarliestDate,
           Long deliveryLatestDate,
@@ -59,6 +59,7 @@ public class Job extends Model {
   ){
     this.jobNumber = jobNumber;
     this.companyKey = companyKey;
+    this.jobCompanyName = jobCompanyName;
     this.createDateTime  = createDateTime;
     this.customerEmail  = customerEmail;
     this.customerFirstName  = customerFirstName;
@@ -75,7 +76,7 @@ public class Job extends Model {
     this.signatureInStorage = null;
     this.signatureLoadedForDelivery = null;
     this.signatureDelivered = null;
-    this.users = new HashMap<String, UserIdMapEntry>();
+    this.users = new HashMap<>();
     this.deliveryInstructions = "";
     this.pickupInstructions = "";
 
@@ -176,5 +177,12 @@ public class Job extends Model {
       pickupInstructions = "";
     }
     return pickupInstructions;
+  }
+
+  private String getJobCompanyName(){
+    if (jobCompanyName == null){
+      jobCompanyName = "";
+    }
+    return jobCompanyName;
   }
 }

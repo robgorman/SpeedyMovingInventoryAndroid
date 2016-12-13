@@ -11,6 +11,13 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false"/>
+
     <application
         android:name=".app.RanchoApp"
         android:allowBackup="true"
@@ -100,7 +107,12 @@
         <activity
             android:name=".MovingItemPickDescriptionActivity"
             android:label="@string/title_activity_moving_item_pick_description"
-            android:windowSoftInputMode="stateHidden"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateHidden">
+        </activity>
+        <activity
+            android:name=".PrintActivity"
+            android:label="@string/title_activity_print"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
     </application>

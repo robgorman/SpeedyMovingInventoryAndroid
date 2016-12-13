@@ -2,7 +2,6 @@ package com.ranchosoftware.speedymovinginventory;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -82,9 +81,9 @@ public class ItemDetailsActivity extends BaseActivity {
   private CheckBox checkBoxDamaged;
   private EditText claimNumber;
   private EditText damageDescription;
+  private EditText specialHandling;
   private CheckBox checkBoxIsBox;
   private TextView descriptionView;
-  private CheckBox checkBoxActiveClaim;
   private Switch scanOverrideSwitch;
 
   private MediaPlayer positivePlayer;
@@ -125,7 +124,6 @@ public class ItemDetailsActivity extends BaseActivity {
     checkBoxDamaged.setChecked(item.getHasClaim());
     damageDescription.setText(item.getDamageDescription());
     claimNumber.setText(item.getClaimNumber());
-    checkBoxActiveClaim.setChecked(item.getIsClaimActive());
     adapter.clear();
     for (String key : item.getImageReferences().keySet()){
       String stringUri = item.getImageReferences().get(key);
@@ -143,7 +141,7 @@ public class ItemDetailsActivity extends BaseActivity {
     ((TextView)findViewById(R.id.tvNumberOfPads)).setText(String.valueOf(item.getNumberOfPads()));
     ((TextView)findViewById(R.id.tvCategory)).setText(item.getCategory());
     ((TextView)findViewById(R.id.tvPackedBy)).setText(item.getPackedBy());
-    ((EditText)findViewById(R.id.editSpecialHandling)).setText(item.getSpecialHandling());
+    specialHandling.setText(item.getSpecialHandling());
 
     ((CheckBox)findViewById(R.id.cbDisassembled)).setChecked(item.getIsDisassembled());
 
@@ -186,8 +184,8 @@ public class ItemDetailsActivity extends BaseActivity {
 
     claimNumber = (EditText) findViewById(R.id.tvClaimNumber);
     damageDescription = (EditText) findViewById(R.id.editDamageDescription);
+    specialHandling = (EditText) findViewById(R.id.editSpecialHandling);
     checkBoxIsBox = (CheckBox) findViewById(R.id.cbIsBox);
-    checkBoxActiveClaim = (CheckBox) findViewById(R.id.cbActiveClaim);
     descriptionView = (TextView) findViewById(R.id.tvDescription);
     scanOverrideSwitch = (Switch) findViewById(R.id.scanOverrideSwitch);
 
@@ -505,19 +503,18 @@ public class ItemDetailsActivity extends BaseActivity {
   }
 
   private void updateItemFromControls(){
-    item.setIsClaimActive(checkBoxActiveClaim.isChecked());
     item.setHasClaim(checkBoxDamaged.isChecked());
     item.setClaimNumber(claimNumber.getText().toString());
     item.setDamageDescription(damageDescription.getText().toString());
-    item.setIsClaimActive(checkBoxActiveClaim.isChecked());
-
+    item.setSpecialHandling(specialHandling.getText().toString());
   }
 
   @Override
   public void onStop() {
     super.onStop();
-    updateItemFromControls();
+
     if (item != null) {
+      updateItemFromControls();
       itemRef.setValue(item);
     }
     itemRef.removeEventListener(itemRefEventListener);

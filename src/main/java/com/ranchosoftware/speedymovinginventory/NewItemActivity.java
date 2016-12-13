@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,7 +23,6 @@ import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,10 +40,8 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.android.volley.toolbox.ImageLoader;
-import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -53,7 +49,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -63,8 +58,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
-import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
-import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.MovingItemDataDescription;
 import com.ranchosoftware.speedymovinginventory.utility.Permissions;
@@ -76,7 +69,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,8 +87,8 @@ public class NewItemActivity extends BaseActivity {
   private Spinner insuranceSpinner;
   private SeekBar numberOfPadsSeek;
   private TextView numberOfPadsTextView;
-  private SeekBar monetaryValueSeek;
-  private TextView monetaryValueTextView;
+ // private SeekBar monetaryValueSeek;
+  //private TextView monetaryValueTextView;
   private SeekBar weightSeek;
   private TextView weightTextView;
   private SeekBar volumeSeek;
@@ -151,6 +143,8 @@ public class NewItemActivity extends BaseActivity {
 
       } else {
         item = dataSnapshot.getValue(Item.class);
+        //Toast.makeText(thisActivity, "item update: " + String.valueOf(updates) , Toast.LENGTH_SHORT).show();
+        updates = updates + 1;
         updateValuesFromItem();
         showProgress(false, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
       }
@@ -162,6 +156,8 @@ public class NewItemActivity extends BaseActivity {
 
     }
   };
+
+  private int updates = 0;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -198,8 +194,8 @@ public class NewItemActivity extends BaseActivity {
     numberOfPadsLayout = findViewById(R.id.padsLayout);
     numberOfPadsSeek = (SeekBar) findViewById(R.id.seekNumberOfPads);
     numberOfPadsTextView = (TextView) findViewById(R.id.tvNumberOfPads);
-    monetaryValueSeek = (SeekBar) findViewById(R.id.seekMonetaryValue);
-    monetaryValueTextView = (TextView) findViewById(R.id.tvMonetaryValue);
+    //monetaryValueSeek = (SeekBar) findViewById(R.id.seekMonetaryValue);
+    //monetaryValueTextView = (TextView) findViewById(R.id.tvMonetaryValue);
     weightSeek = (SeekBar) findViewById(R.id.seekWeight);
     weightTextView = (TextView) findViewById(R.id.tvWeight);
     volumeSeek = (SeekBar) findViewById(R.id.seekVolume);
@@ -213,7 +209,7 @@ public class NewItemActivity extends BaseActivity {
     assist.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        launchMovingItemDescriptionEntryActivity();
+        launchMovingItemDescriptionEntryActivity(true);
       }
     });
 
@@ -225,8 +221,8 @@ public class NewItemActivity extends BaseActivity {
           if (isChecked){
             item.setNumberOfPads(0);
           }
+          updateValuesFromItem();
         }
-        updateValuesFromItem();
       }
     });
 
@@ -291,19 +287,16 @@ public class NewItemActivity extends BaseActivity {
 
     setupInsuranceSpinner();
     setupNumberOfPads();
-    setupMonetaryValue();
+    //setupMonetaryValue();
     setupWeightAndVolumeSliders();
 
     syncVolumeWeightSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
       public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (isChecked){
-          syncWeightAndVolume = true;
-          item.setSyncWeightAndVolume(true);
-        } else {
-          syncWeightAndVolume = false;
-          item.setSyncWeightAndVolume(false);
-        }
+
+        syncWeightAndVolume = isChecked;
+        item.setSyncWeightAndVolume(isChecked);
+
       }
     });
 
@@ -329,11 +322,19 @@ public class NewItemActivity extends BaseActivity {
     isDisassembled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
       @Override
       public void onCheckedChanged(CompoundButton compoundButton, boolean value) {
-        item.setIsDisassembled(true);
-        itemRef.setValue(item);
+        item.setIsDisassembled(value);
+
       }
     });
 
+
+    TextView poundsPerCubicFootConversionView = (TextView) findViewById(R.id.tvPoundsPerCubicFoot);
+    int poundsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
+    String styled = "(" + String.valueOf(poundsPerCubicFoot) + " lbs/ft3)";
+    SpannableStringBuilder superScript = new SpannableStringBuilder(styled);
+    superScript.setSpan(new SuperscriptSpan(),styled.length() -2, styled.length()-1, 0);
+    superScript.setSpan(new RelativeSizeSpan(0.5f), styled.length() -2, styled.length()-1, 0);
+    poundsPerCubicFootConversionView.setText(superScript);
   }
 
   // TODO we should really pull these strings from resources.
@@ -385,16 +386,17 @@ public class NewItemActivity extends BaseActivity {
         return MovingItemDataDescription.Room.Other.name();
 
       default:
-        assert(false);
+
         return MovingItemDataDescription.Room.Other.name();
 
     }
   }
 
-  private void launchMovingItemDescriptionEntryActivity(){
+  private void launchMovingItemDescriptionEntryActivity(boolean allowCancel){
     Intent intent = new Intent(this, MovingItemPickDescriptionActivity.class);
     Item.Category cat = item.getCategoryEnum();
     intent.putExtra("room", categoryToRoom(cat));
+    intent.putExtra("allowCancel", allowCancel);
     startActivityForResult(intent, PICK_AN_MOVING_ITEM_DESCRIPTION);
     overridePendingTransition(R.xml.slide_in_from_right,R.xml.slide_out_to_left);
   }
@@ -450,14 +452,14 @@ public class NewItemActivity extends BaseActivity {
       app().setCurrentCategory(newItemCategory);
     }
     // TODO need insurance
-    Item item = new Item(newItemCategory, 0, app().getCurrentUser().getUid(), "",
+    Item newItem = new Item(newItemCategory, 0, app().getCurrentUser().getUid(), "",
             Item.Defaults.monetaryValue(),
             Item.Defaults.weightLbs(),
             Item.Defaults.volume(),
             "",
             jobKey,
             Item.Defaults.packedBy(), "None", false);
-    return item;
+    return newItem;
   }
 
   private void updateInterfaceFromItem(){
@@ -478,16 +480,16 @@ public class NewItemActivity extends BaseActivity {
     syncWeightAndVolume = item.getSyncWeightAndVolume();
     syncVolumeWeightSwitch.setChecked(syncWeightAndVolume);
 
-    int volumeProgress = getVolumeProgessFromValue(item.getVolume());
+    int volumeProgress = getSeekValueFromVolume(item.getVolume());
     volumeSeek.setProgress(volumeProgress);
 
-    int weightProgress = getWeightProgessFromValue(item.getWeightLbs());
+    int weightProgress = getSeekValueFromWeight(item.getWeightLbs());
     weightSeek.setProgress(weightProgress);
 
     numberOfPadsSeek.setProgress(item.getNumberOfPads());
 
-    int prog = getMonetaryValueProgessFromValue(item.getMonetaryValue());
-    monetaryValueSeek.setProgress(prog);
+    //int prog = getMonetaryValueProgessFromValue(item.getMonetaryValue());
+   // monetaryValueSeek.setProgress(prog);
 
     damageDescription.setText(item.getDamageDescription());
 
@@ -503,6 +505,7 @@ public class NewItemActivity extends BaseActivity {
 
 
     isBoxCheck.setChecked(item.getIsBox());
+    isDisassembled.setChecked(item.getIsDisassembled());
 
     adapter.clear();
     for (String key : item.getImageReferences().keySet()){
@@ -515,8 +518,16 @@ public class NewItemActivity extends BaseActivity {
     categoryButton.setText(item.getCategory() + " >");
     packedByButton.setText(item.getPackedBy() + " >");
 
+    if (item.getDescription().length() == 0 && !pickLaunched){
+      pickLaunched = true;
+      launchMovingItemDescriptionEntryActivity(false);
+    }
+
+
+
   }
 
+  private boolean pickLaunched = false;
 
   private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 4;
   private static final int TAKE_PHOTO_CODE = 5;
@@ -570,86 +581,56 @@ public class NewItemActivity extends BaseActivity {
     }
   }
 
-  private int convertPoundsToProgress(float pounds){
-    for (int i = 0; i < possibleWeights.length; i++){
-      float next = possibleWeights[i];
-      if (next > pounds){
-        float delta1 = Math.abs(next - pounds);
-        if (i == 0){
-          return i;
-        }
-        float delta2 = Math.abs(next - possibleWeights[i-1] );
-
-        if (delta1 < delta2){
-          return i;
-        } else {
-          return i-1;
-        }
-      }
-    }
-
-    return possibleWeights.length - 1;
-  }
-
-  private int convertCubicFeetToProgess(float cubicFeet){
-    for (int i = 0; i < possibleVolumes.length; i++){
-      float next = possibleVolumes[i];
-      if (next > cubicFeet){
-        float delta1 =  Math.abs(next - cubicFeet);
-        if (i == 0){
-          return i;
-        }
-        float delta2 = Math.abs(next - cubicFeet);
-        if (delta1 < delta2){
-          return i;
-        } else {
-          return i-1;
-        }
-      }
-    }
-    return possibleVolumes.length - 1;
-  }
 
 
-  private static final float possibleWeights[] = {1, 2, 5, 10, 20, 50, 100, 200, 300, 400, 500, 700};
   private void setupWeightAndVolumeSliders(){
 
     if (item != null && item.getIsBox()){
-      possibleVolumes = boxVolumes;
+      volumeRange = boxVolumeRange;
     } else {
-      possibleVolumes = normalVolumes;
+      volumeRange = normalVolumeRange;
     }
 
     int lbsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
-    assert(possibleWeights.length >= possibleVolumes.length);
 
-    for (int i = 0; i < possibleVolumes.length; i++){
-      possibleWeights[i] = possibleVolumes[i] * lbsPerCubicFoot;
-    }
     setupWeight();
     setupVolume();
   }
-  private static float possibleVolumes[] =     {1, 3, 5, 7, 10, 20, 30, 40, 50, 60, 75, 100};
-  private static final float normalVolumes[] = {1, 3, 5, 7, 10, 20, 30, 40, 50, 60, 75, 100};
-  private static final float boxVolumes[] = {1.5f, 3.0f, 4.5f, 6.0f };
+
+  private int getSeekValueFromVolume(float cubicFeet){
+    double fProgress  = ((cubicFeet * (1.0/volumeRange[2])) - volumeRange[0]);
+    int progress = (int) Math.round(fProgress);
+    return progress;
+  }
+
+  private float getCubicFeetFromSeekValue(int progress){
+    float cubicFeet = (progress + volumeRange[0])  * volumeRange[2] ;
+    return cubicFeet;
+  }
+
+
+  //                                     low, high, inc
+  private static float volumeRange[] =  {1f, 185f, 1.0f};
+  private static final float normalVolumeRange[] = {1f, 185f, 1.0f};
+  private static final float boxVolumeRange[] = {1.5f, 42f, .5f};
   private static String boxNames[] = {"Small", "Medium", "Large", "XLarge"};
   private void setupVolume() {
 
     // set out of range so on change fires for first value
     if (item != null){
-      volumeSeek.setProgress(getVolumeProgessFromValue(item.getVolume()));
+      volumeSeek.setProgress(getSeekValueFromVolume(item.getVolume()));
     } else {
-      volumeSeek.setProgress(possibleVolumes.length);
+      volumeSeek.setProgress((int)(volumeRange[1] + 1));
     }
-    volumeSeek.setMax(possibleVolumes.length-1);
+    volumeSeek.setMax((int)(volumeRange[1] * (1.0/volumeRange[2])));
 
 
     volumeSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-        float cubicFeet = possibleVolumes[progress];
-        String styled = String.format("%.1f",possibleVolumes[progress]) + " ft3" ;
+        float cubicFeet = getCubicFeetFromSeekValue(progress);
+        String styled = String.format("%.1f",cubicFeet) + " ft3" ;
 
         SpannableStringBuilder superScript = new SpannableStringBuilder(styled);
         superScript.setSpan(new SuperscriptSpan(),styled.length() -1, styled.length(), 0);
@@ -661,7 +642,7 @@ public class NewItemActivity extends BaseActivity {
         }
 
         volumeTextView.setText(superScript);
-        item.setVolume(possibleVolumes[progress]);
+        item.setVolume(cubicFeet);
       }
 
       @Override
@@ -677,53 +658,45 @@ public class NewItemActivity extends BaseActivity {
 
   }
 
+
   private int weightProgressFromVolume(float cubicFeet){
+    int poundsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
+    float pounds = (float) cubicFeet * poundsPerCubicFoot;
+    return getSeekValueFromWeight(pounds);
+  }
 
-    int lbsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
-    float pounds = cubicFeet * lbsPerCubicFoot;
-    // how to convert to
-    int progress = convertPoundsToProgress(pounds);
+  private int volumeProgessFromWeight(float pounds){
+    int poundsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
+    float cubicFeet = (float)pounds / (float)poundsPerCubicFoot;
+    return getSeekValueFromVolume(cubicFeet);
+  }
+
+  private int getSeekValueFromWeight(float weight){
+    int progress = (int)((weight / (1.0/weightRange[2])) - weightRange[0]);
     return progress;
   }
 
-  private int volumeProgessFromWeight(float weight){
-    int lbsPerCubicFoot = app().getCompanyPoundsPerCubicFoot();
-    float cubicFeet = weight / lbsPerCubicFoot;
-    // how to convert to
-    int progress = convertCubicFeetToProgess(cubicFeet);
-    return progress;
+  private float getWeightLbsFromSeekValue(int progress){
+    float pounds = (progress + weightRange[0]) * weightRange[2];
+    return pounds;
   }
-
-  boolean isClose(float left, float right){
-    float delta = Math.abs(left - right);
-    return delta < .5;
-  }
-  private int getVolumeProgessFromValue(float targetValue){
-    int i = 0;
-    for (float next : possibleVolumes){
-      if (isClose(targetValue, next)){
-        return i;
-      }
-      i += 1;
-    }
-    // its an error if we get here, but just return the lowest value
-    return 0;
-  }
-
+  private static float weightRange[] =  {1f, 700f, 1.0f};
+  private static final float normalWeightRange[] = {1f, 700f, 1.0f};
+  private static final float boxWeightRange[] = {1.0f, 70f, 1.0f};
   private void setupWeight() {
-    weightSeek.setMax(possibleWeights.length-1);
+    weightSeek.setMax((int)(weightRange[1] * (1.0/weightRange[2])));
     // set out of range so on change fires for first value
     if (item != null){
-      weightSeek.setProgress(getWeightProgessFromValue(item.getWeightLbs()));
+      weightSeek.setProgress(getSeekValueFromWeight(item.getWeightLbs()));
     } else {
-      weightSeek.setProgress(possibleWeights.length);
+      weightSeek.setProgress((int)(weightRange[1] + 1));
     }
 
     weightSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       @Override
       public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-        float weight = possibleWeights[progress];
+        float weight = getWeightLbsFromSeekValue(progress);
 
         // if the change is from the user and we are syching, change the weight seek
         if (fromUser && syncWeightAndVolume){
@@ -731,9 +704,10 @@ public class NewItemActivity extends BaseActivity {
         }
 
         weightTextView.setText(String.format("%.0f",weight) + " lbs.");
-        item.setWeightLbs(possibleWeights[progress]);
+        item.setWeightLbs(weight);
         // for the present with no insurance the value is always .60 per pound
-        item.setMonetaryValue(possibleWeights[progress]* 0.60f);
+
+        item.setMonetaryValue(weight * 0.60f);
       }
 
       @Override
@@ -748,17 +722,6 @@ public class NewItemActivity extends BaseActivity {
     });
   }
 
-  private int getWeightProgessFromValue(float targetValue){
-    int i = 0;
-    for (float next : possibleWeights){
-      if (isClose(targetValue, next)){
-        return i;
-      }
-      i += 1;
-    }
-    // its an error if we get here, but just return the lowest value
-    return 0;
-  }
   private void setupNumberOfPads(){
     // 1 thru 10 so 0..9
     numberOfPadsSeek.setMax(9);
@@ -781,32 +744,6 @@ public class NewItemActivity extends BaseActivity {
       }
     });
 
-  }
-  private static final Float monetaryValues[] =
-          {0.0f, 1.0f, 5.0f, 10.0f, 20.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 2000.0f, 5000.0f};
-
-  private void setupMonetaryValue() {
-    monetaryValueSeek.setProgress(monetaryValues.length);
-    monetaryValueSeek.setMax(monetaryValues.length-1);
-
-    monetaryValueSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-      @Override
-      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-        item.setMonetaryValue(monetaryValues[progress]);
-        monetaryValueTextView.setText("$"+String.format("%.2f",monetaryValues[progress]));
-      }
-
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) {
-
-      }
-
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) {
-
-      }
-    });
   }
 
   private void setupInsuranceSpinner() {
@@ -840,17 +777,6 @@ public class NewItemActivity extends BaseActivity {
 
   }
 
-  private int getMonetaryValueProgessFromValue(Float targetValue){
-    int i = 0;
-    for (Float next : monetaryValues){
-      if (isNear(targetValue, next)){
-        return i;
-      }
-      i += 1;
-    }
-    // its an error if we get here, but just return the lowest value
-    return 0;
-  }
 
   /**
    * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -871,6 +797,9 @@ public class NewItemActivity extends BaseActivity {
   @Override
   public void onStart() {
     super.onStart();
+    //if (item != null){
+    //  itemRef.setValue(item);
+   // }
     itemRef.addValueEventListener(itemRefEventListener);
 
     // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -883,7 +812,9 @@ public class NewItemActivity extends BaseActivity {
   public void onStop() {
     super.onStop();
 
-    itemRef.setValue(item);
+    if (item != null) {
+      itemRef.setValue(item);
+    }
     itemRef.removeEventListener(itemRefEventListener);
 
     // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -930,8 +861,9 @@ public class NewItemActivity extends BaseActivity {
       categories.add(cat.toString());
     }
     item.setCategory(categories.get(selectedIndex));
+    categoryButton.setText(item.getCategory() + " >");
+
     app().setCurrentCategory(Item.Category.valueOf(categories.get(selectedIndex)));
-    itemRef.setValue(item);
   }
 
   private void setPackedBy(int selectedIndex){
@@ -941,8 +873,7 @@ public class NewItemActivity extends BaseActivity {
       packedBys.add(by.toString());
     }
     item.setPackedBy(packedBys.get(selectedIndex));
-
-    itemRef.setValue(item);
+    packedByButton.setText(item.getPackedBy());
   }
 
   @Override
@@ -956,12 +887,14 @@ public class NewItemActivity extends BaseActivity {
         // extract selected index
         int selectedIndex = data.getIntExtra(SpinnerActivity.paramSelectedIndex, 0);
         setCategory(selectedIndex);
+        itemRef.setValue(item);
       }
     } else if (requestCode == PICK_A_PACKED_BY){
       if (resultCode == Activity.RESULT_OK){
         // extract selected index
         int selectedIndex = data.getIntExtra(SpinnerActivity.paramSelectedIndex, 0);
         setPackedBy(selectedIndex);
+        itemRef.setValue(item);
       }
     } else if (requestCode == PICK_AN_MOVING_ITEM_DESCRIPTION){
       if (resultCode == Activity.RESULT_OK){
@@ -980,8 +913,8 @@ public class NewItemActivity extends BaseActivity {
         item.setVolume(cubicFeet);
 
         item.setIsBox(isBox);
-        // box size is
         itemRef.setValue(item);
+        // box size is
       }
     }
   }

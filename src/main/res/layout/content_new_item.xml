@@ -70,7 +70,7 @@
                         android:background="@drawable/button_link"
                         android:textAlignment="textEnd"
                         android:textAllCaps="false"
-                        android:layout_gravity="center_vertical"/>
+                        android:layout_gravity="end"/>
 
                 </LinearLayout>
 
@@ -93,7 +93,7 @@
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
+                    android:inputType="textCapSentences|textMultiLine"
                     android:ems="10"
                     android:id="@+id/editDamageDescription"
                     android:layout_weight="1"
@@ -158,7 +158,7 @@
                             android:layout_width="0dp"
                             android:id="@+id/categoryButton"
                             android:layout_weight="2.00"
-                            android:layout_gravity="center_vertical"
+                            android:layout_gravity="end"
                             android:background="@drawable/button_link"
                             android:layout_height="wrap_content"
                             android:textColor="@color/themeBlueLightest"
@@ -193,7 +193,8 @@
                             android:background="@drawable/button_link"
                             android:textColor="@color/themeBlueLightest"
                             android:textAllCaps="false"
-                            android:textAlignment="textEnd"/>
+                            android:textAlignment="textEnd"
+                            android:layout_gravity="end"/>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -377,7 +378,7 @@
 
                 </LinearLayout>
 
-                <RelativeLayout
+                <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -386,23 +387,34 @@
                     android:background="@color/DimerGray">
 
 
-                    <Switch
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/weightVolumeSynchSwitch"
-                        android:gravity="center_vertical|center_horizontal"
-                        android:layout_centerInParent="true"/>
-
                     <TextView
                         android:text="Sync."
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView31"
                         android:layout_centerHorizontal="true"
-                        android:layout_above="@id/weightVolumeSynchSwitch"
+                        android:textColor="@color/Black"
+                        android:layout_gravity="center_horizontal"/>
+
+                    <Switch
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/weightVolumeSynchSwitch"
+                        android:gravity="center_vertical|center_horizontal"
+                        android:layout_centerInParent="true"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="2dp"/>
+
+                    <TextView
+                        android:text="(7 lbs/ft3)"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvPoundsPerCubicFoot"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="5dp"
                         android:textColor="@color/Black"/>
 
-                </RelativeLayout>
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -424,7 +436,11 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:id="@+id/etSpecialHandling"
-                    android:inputType="textCapSentences"/>
+                    android:inputType="textCapSentences"
+                    android:layout_alignBottom="@+id/layoutMain"
+                    android:layout_alignLeft="@+id/layoutMain"
+                    android:layout_alignStart="@+id/layoutMain"/>
+
             </LinearLayout>
 
         </LinearLayout>
