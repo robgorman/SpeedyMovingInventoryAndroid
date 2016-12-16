@@ -111,6 +111,8 @@ public class NewItemActivity extends BaseActivity {
   DatabaseReference qrcListRef;
   //DatabaseObject<String> qrcListRef;
 
+  private boolean itemIsOutOfPhase;
+
   private Switch syncVolumeWeightSwitch;
   /**
    * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -171,6 +173,7 @@ public class NewItemActivity extends BaseActivity {
     companyKey = params.getString("companyKey");
     jobKey = params.getString("jobKey");
     qrcCode = params.getString("itemCode");
+    itemIsOutOfPhase = params.getBoolean("itemIsOutOfPhase", false); // means item added after new
 
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     showProgress(true, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
@@ -451,6 +454,8 @@ public class NewItemActivity extends BaseActivity {
       newItemCategory = Item.Category.Bedroom1;
       app().setCurrentCategory(newItemCategory);
     }
+
+
     // TODO need insurance
     Item newItem = new Item(newItemCategory, 0, app().getCurrentUser().getUid(), "",
             Item.Defaults.monetaryValue(),
@@ -458,7 +463,8 @@ public class NewItemActivity extends BaseActivity {
             Item.Defaults.volume(),
             "",
             jobKey,
-            Item.Defaults.packedBy(), "None", false);
+            Item.Defaults.packedBy(), "None", false,
+            itemIsOutOfPhase);
     return newItem;
   }
 

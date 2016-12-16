@@ -37,6 +37,7 @@ public class RanchoApp extends MultiDexApplication {
   private static final String PreferencesName = "SpeedyMovingInventoryPrefs";
 
   private String storageUrl;
+  private String webAppUrl;
 
   private Server mailServer;
 
@@ -79,6 +80,14 @@ public class RanchoApp extends MultiDexApplication {
 //            .apiKey("key-c90fa773c9d000ce3cd38a903368ee7b")
 //            .from("Speedy Moving Inventory", "speedy@ranchosoftware.com");
     storageUrl = "gs://" + getString(R.string.google_storage_bucket);
+    // compute the web app url from the storage url, because we
+    // don't have a good way to get it. its necessary when sending email
+
+    if (storageUrl == "gs://speedymovinginventorydev-9c905.appspot.com" ){
+      webAppUrl = "https://speedymovinginventorydev-9c905.firebaseapp.com";
+    } else {
+      webAppUrl = "https://app.speedymovinginventory.com";
+    }
     loadMovingItemDescriptions();
   }
 
@@ -309,7 +318,12 @@ public class RanchoApp extends MultiDexApplication {
 //    return mailgunConfiguration;
 //  }
 
+  public String getWebAppUrl() {
+    return webAppUrl;
+  }
+
   public List<MovingItemDataDescription> getListFor(MovingItemDataDescription.Room room){
     return movingItemDescriptions.get(room.name());
   }
+
 }

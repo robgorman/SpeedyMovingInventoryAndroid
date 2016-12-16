@@ -58,6 +58,7 @@ public class Item extends Model {
   private Float weightLbsInverse;
   private Boolean syncWeightAndVolume;
 
+  private Boolean itemWasCreatedOutOfPhase;
 
 
 
@@ -76,7 +77,8 @@ public class Item extends Model {
               String jobKey,
               String packedBy,
               String insurance,
-              Boolean isBox){
+              Boolean isBox,
+              Boolean itemWasCreatedOutOfPhase){
     this.category = category.toString();
     this.numberOfPads = numberOfPads;
     this.numberOfPadsInverse = -numberOfPads;
@@ -104,6 +106,8 @@ public class Item extends Model {
     this.damageDescription = "";
     this.syncWeightAndVolume = true;
     this.isDisassembled = false;
+
+    this.itemWasCreatedOutOfPhase = itemWasCreatedOutOfPhase;
   }
 
 
@@ -310,6 +314,15 @@ public class Item extends Model {
       isDisassembled = false;
     }
     return isDisassembled;
+  }
+
+
+
+  public Boolean getItemWasCreatedOutOfPhase() {
+    if (itemWasCreatedOutOfPhase == null){
+      itemWasCreatedOutOfPhase = false;
+    }
+    return itemWasCreatedOutOfPhase;
   }
 }
 

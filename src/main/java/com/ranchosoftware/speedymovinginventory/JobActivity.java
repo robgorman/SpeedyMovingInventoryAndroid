@@ -195,7 +195,7 @@ public class JobActivity extends BaseMenuActivity {
         if (job.getLifecycle() == Job.Lifecycle.Delivered){
           Utility.error(getRootView(), thisActivity, R.string.job_is_complete_no_scanning);
         } else {
-          launchScanActivity();
+          launchScanActivity(false);
         }
       }
     });
@@ -903,11 +903,12 @@ public class JobActivity extends BaseMenuActivity {
     });
   }
 
-  private void launchScanActivity() {
+  private void launchScanActivity(boolean allowItemAddOutsideNew) {
     Intent intent = new Intent(thisActivity, ScanActivity.class);
     Bundle params = new Bundle();
     params.putString("companyKey", job.getCompanyKey());
     params.putString("jobKey", jobKey);
+    params.putBoolean("allowItemAddOutsideNew", allowItemAddOutsideNew);
 
     intent.putExtras(params);
     startActivity(intent);
@@ -926,7 +927,7 @@ public class JobActivity extends BaseMenuActivity {
 
 
 
-  private void markAllItemsAsScanned(){
+  private void markAllItemsAsUnScanned(){
     DatabaseReference itemsRef = FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey +
       "/items/");
     for (int i = 0; i < adapter.getItemCount(); i++){
@@ -986,8 +987,8 @@ public class JobActivity extends BaseMenuActivity {
     if (requestCode == SIGNOFF_REQUEST) {
       // Make sure the request was successful
       if (resultCode == RESULT_OK) {
-        // we got signoff. we need to mark all items as scanned
-        markAllItemsAsScanned();
+        // we got signoff. we need to mark all items as unscanned
+        markAllItemsAsUnScanned();
         SendEmailTask task = new SendEmailTask();
         task.execute();
 
@@ -1086,7 +1087,7 @@ public class JobActivity extends BaseMenuActivity {
     String companyName = app().getCurrentCompany().getName();
     String companyPhone = app().getCurrentCompany().getPhoneNumber();
 
-    String linkUrl = getResources().getString(R.string.firebase_database_url) + "/user-sign-up";
+    String linkUrl = app().getWebAppUrl() + "/user-sign-up";
     String customerName = job.getCustomerFirstName() + " " + job.getCustomerLastName();
     String lifecycle = job.getLifecycle().toString();
     String jobNumber = job.getJobNumber();
@@ -1112,7 +1113,7 @@ public class JobActivity extends BaseMenuActivity {
     String companyName = app().getCurrentCompany().getName();
     String companyPhone = app().getCurrentCompany().getPhoneNumber();
 
-    String linkUrl = getResources().getString(R.string.firebase_database_url);
+    String linkUrl = app().getWebAppUrl();
     String customerName = job.getCustomerFirstName() + " " + job.getCustomerLastName();
     String lifecycle = job.getLifecycle().toString();
     String jobNumber = job.getJobNumber();
@@ -1162,6 +1163,7 @@ public class JobActivity extends BaseMenuActivity {
     super.onCreateOptionsMenu(menu);
     MenuInflater inflater = getMenuInflater();
     inflater.inflate(R.menu.job_activity_menu, menu);
+
     return true;
   }
   @Override
@@ -1171,6 +1173,22 @@ public class JobActivity extends BaseMenuActivity {
       case R.id.print_signoff_sheet:
         launchPrintActivity();
         return true;
+      case R.id.scan_new_item:
+        User.Role role = app().getCurrentUser().getRoleAsEnum();
+        if (job.getLifecycle() == Job.Lifecycle.Delivered) {
+          Utility.error(getRootView(), thisActivity, "Adding and item after the job has been delivered is not allowed.");
+        } else if (job.getLifecycle() == Job.Lifecycle.New){
+          Utility.error(getRootView(), thisActivity, "Use the scan button at the bottom of the screen to add items for a new Job.");
+
+        }else if (role == User.Role.AgentCrewMember || role == User.Role.CrewMember || role == User.Role.Customer){
+          Utility.error(getRootView(), thisActivity, "Only a user with the role of Foreman or higher can add items to the job after it has been signed off.");
+
+        } else {
+          launchScanActivity(true);
+
+        }
+        return true;
+
 
       default:
         return super.onOptionsItemSelected(item);

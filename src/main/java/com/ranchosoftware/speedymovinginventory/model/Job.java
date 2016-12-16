@@ -34,6 +34,7 @@ public class Job extends Model {
   private Signature signatureLoadedForStorage; // can be null
   private Boolean storageInTransit;
   private Map<String, UserIdMapEntry> users; // can be null
+  private Boolean isCancelled;
 
   // no-args constructor require for firebase
   public Job(){
@@ -55,7 +56,8 @@ public class Job extends Model {
           String lifecycle,
           Address originAddress,
           Long pickupDateTime,
-          Boolean storageInTransit
+          Boolean storageInTransit,
+          Boolean isCancelled
   ){
     this.jobNumber = jobNumber;
     this.companyKey = companyKey;
@@ -79,6 +81,7 @@ public class Job extends Model {
     this.users = new HashMap<>();
     this.deliveryInstructions = "";
     this.pickupInstructions = "";
+    this.isCancelled = isCancelled;
 
   }
 
@@ -184,5 +187,12 @@ public class Job extends Model {
       jobCompanyName = "";
     }
     return jobCompanyName;
+  }
+
+  public boolean getIsCancelled(){
+    if (isCancelled == null){
+      isCancelled = false;
+    }
+    return isCancelled;
   }
 }

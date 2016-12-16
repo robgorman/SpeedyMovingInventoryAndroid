@@ -122,23 +122,20 @@ public class JobsActivity extends BaseMenuActivity {
         // TODO getCurrentUser() can return null sometimes. Probably if there is some
         // uncompleted login. The logs show this is null in version 3.3 sometimes
 
-        // don't show Delivered jobs that are older than 2 weeks
+        // filter all cancelled jobs
+        if (job.getIsCancelled()){
+          return true;
+        }
 
-        if (job.getLifecycle() == Job.Lifecycle.Delivered){
-          if (job.getSignatureDelivered() != null){
-
-            int days = Days.daysBetween(new DateTime(job.getSignatureDelivered().getSignOffDateTime()), new DateTime()).getDays();
-
-            if (Math.abs(days) > 14){
-              return true;
-            }
-
-            ///Weeks weeks = Weeks.weeksBetween(new DateTime(job.getSignatureDelivered().getSignOffDateTime()), new DateTime());
-            //if (weeks.isGreaterThan(Weeks.TWO)){
-            //  return true;
-            //}
+        if (isActive(job)){
+          if (canCurrentUserViewJob(job, dataSnapshot)){
+            return false;
           }
         }
+
+        return true;
+
+        /*
 
         if (role == User.Role.AgentCrewMember || role == User.Role.AgentForeman || role == User.Role.CrewMember
           || role == User.Role.Foreman){
@@ -153,14 +150,13 @@ public class JobsActivity extends BaseMenuActivity {
           }
         }
 
-
-
         if (role == User.Role.CompanyAdmin || role == User.Role.ServiceAdmin) {
           return false;
         }
 
 
         return true;
+        */
       }
 
 
@@ -246,4 +242,57 @@ public class JobsActivity extends BaseMenuActivity {
     adapter.cleanup();
   }
 
+  private boolean canCurrentUserViewJob(Job job, DataSnapshot dataSnapshot) {
+
+    if (role == User.Role.AgentCrewMember || role == User.Role.AgentForeman || role == User.Role.CrewMember
+            || role == User.Role.Foreman){
+      Map<String, UserIdMapEntry> map = job.getUsers();
+      if (map.containsKey(app().getCurrentUser().getUid())) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    if (role == User.Role.Customer){
+      if (user.getCustomerJobKey() != null && user.getCustomerJobKey().equals(dataSnapshot.getKey())){
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    return true;
+
+  }
+
+  private boolean isActive(Job job){
+    if (job.getIsCancelled()){
+      return false;
+    }
+    Job.Lifecycle lifecycle = job.getLifecycle();
+    if (lifecycle == Job.Lifecycle.New || lifecycle == Job.Lifecycle.LoadedForStorage || lifecycle == Job.Lifecycle.LoadedForDelivery){
+      return true;
+    } else if (lifecycle == Job.Lifecycle.InStorage){
+      DateTime earliestDeliveryDate = job.getDeliveryEarliestDate();
+      DateTime now = DateTime.now();
+
+      int days = Days.daysBetween(now.withTimeAtStartOfDay(), earliestDeliveryDate.withTimeAtStartOfDay()).getDays();
+      if (days < 14){
+        return true;
+      }
+    } else if (lifecycle == Job.Lifecycle.Delivered && job.getSignatureDelivered() != null){
+      if (job.getSignatureDelivered() == null){
+        return false;
+      } else {
+        DateTime signOffDate = new DateTime(job.getSignatureDelivered().getSignOffDateTime());
+        DateTime now = DateTime.now();
+        int days = Days.daysBetween(signOffDate, now).getDays();
+        if (days < 14) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }

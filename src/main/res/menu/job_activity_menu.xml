@@ -5,5 +5,9 @@
 
           android:title="@string/print"
           app:showAsAction="never"/>
+    <item android:id="@+id/scan_new_item"
+
+          android:title="@string/scan_a_new_item"
+          app:showAsAction="never"/>
 
 </menu>

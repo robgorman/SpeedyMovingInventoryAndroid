@@ -206,4 +206,5 @@
     <string name="lifecycle_loaded_for_delivery">Loaded For Delivery</string>
     <string name="lifecycle_delivered">Delivered</string>
     <string name="working">Working...</string>
+    <string name="scan_a_new_item">New Item Override</string>
 </resources>

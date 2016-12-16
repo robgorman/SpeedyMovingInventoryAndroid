@@ -83,6 +83,7 @@ public class ScanActivity extends BaseActivity {
   private String jobKey;
   private String companyKey;
   private Boolean isReplacementCode = false;
+  private Boolean allowItemAddOutsideNew = false;
   private View topView;
   private TextView scannerMessage;
 
@@ -99,6 +100,7 @@ public class ScanActivity extends BaseActivity {
     jobKey = b.getString("jobKey");
     companyKey = b.getString("companyKey");
     isReplacementCode = b.getBoolean("isReplacementCode",false);
+    allowItemAddOutsideNew = b.getBoolean("allowItemAddOutsideNew", false);
 
 
 
@@ -503,7 +505,6 @@ public class ScanActivity extends BaseActivity {
   private void barcodeScanned(final String code){
     Log.d(TAG, code);
 
-
     if (!Utility.isQrcCodeValid(code)){
       invalidCodePlayer.start();
       vibrator.vibrate(200);
@@ -592,6 +593,7 @@ public class ScanActivity extends BaseActivity {
     params.putString("companyKey", companyKey);
     params.putString("jobKey", jobKey);
     params.putString("itemCode", code);
+    params.putBoolean("itemIsOutOfPhase", allowItemAddOutsideNew);
     intent.putExtras(params);
     startActivity(intent);
 
@@ -610,7 +612,7 @@ public class ScanActivity extends BaseActivity {
 
   private void createNewItem(Job job, String code){
     // the job has to be in status New for additional items to be created
-    if (job.getLifecycle() != Job.Lifecycle.New){
+    if (job.getLifecycle() != Job.Lifecycle.New && !allowItemAddOutsideNew){
       // its an error
       Utility.error(topView, this, R.string.item_not_found);
       negativePlayer.start();
