@@ -1,0 +1,135 @@
+{
+  "project_info": {
+    "project_number": "559611929727",
+    "firebase_url": "https://speedymovinginventorydev-9c905.firebaseio.com",
+    "project_id": "speedymovinginventorydev-9c905",
+    "storage_bucket": "speedymovinginventorydev-9c905.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559611929727:android:90713d00395de05d",
+        "android_client_info": {
+          "package_name": "com.ranchosoftware.speedymovinginventory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "559611929727-0nu3vfteso9b0l13td6pg5eiabsii7i6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBty2mhOGpt0iteBFM4pSwaQKw2_xFtRdA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559611929727:android:c060781355e052ce",
+        "android_client_info": {
+          "package_name": "com.ranchosoftware.qrclistfix"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "559611929727-0nu3vfteso9b0l13td6pg5eiabsii7i6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBty2mhOGpt0iteBFM4pSwaQKw2_xFtRdA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559611929727:android:1e89cbc4835e1d14",
+        "android_client_info": {
+          "package_name": "com.ranchosoftware.movingitemdescriptionloader"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "559611929727-0nu3vfteso9b0l13td6pg5eiabsii7i6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBty2mhOGpt0iteBFM4pSwaQKw2_xFtRdA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559611929727:android:6965e245dfdb468a",
+        "android_client_info": {
+          "package_name": "com.ranchosoftware.speedymovinginventory.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "559611929727-0nu3vfteso9b0l13td6pg5eiabsii7i6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBty2mhOGpt0iteBFM4pSwaQKw2_xFtRdA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
