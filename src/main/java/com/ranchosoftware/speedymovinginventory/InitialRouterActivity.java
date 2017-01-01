@@ -77,10 +77,7 @@ public class InitialRouterActivity extends BaseActivity {
 
           @Override
           public void run() {
-            Intent intent = new Intent(thisActivity, JobsActivity.class);
-            Bundle params = new Bundle();
-            params.putString("companyKey", user.getCompanyKey());
-            intent.putExtras(params);
+            Intent intent = new Intent(thisActivity, ChooseCompanyActivity.class);
             startActivity(intent);
             finish();
           }

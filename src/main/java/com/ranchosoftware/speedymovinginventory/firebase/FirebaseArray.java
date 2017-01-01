@@ -58,7 +58,7 @@ class FirebaseArray implements ChildEventListener {
   // Start of ChildEventListener methods
   public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
 
-    if (!filter.filter(snapshot)) {
+    if (filter == null || !filter.filter(snapshot)) {
       mSnapshots.add(snapshot);
       notifyChangedListeners(OnChangedListener.EventType.ADDED, mSnapshots.size()-1);
     }
@@ -66,7 +66,7 @@ class FirebaseArray implements ChildEventListener {
   }
 
   public void onChildChanged(DataSnapshot snapshot, String previousChildKey) {
-    if (!filter.filter(snapshot)) {
+    if (filter == null || !filter.filter(snapshot)) {
       int index = getIndexForKey(snapshot.getKey());
       if (index == -1){
         mSnapshots.add(snapshot);
@@ -79,7 +79,7 @@ class FirebaseArray implements ChildEventListener {
   }
 
   public void onChildRemoved(DataSnapshot snapshot) {
-    if ((!filter.filter(snapshot))){
+    if (filter == null || !filter.filter(snapshot)){
       int index = getIndexForKey(snapshot.getKey());
       mSnapshots.remove(index);
       notifyChangedListeners(OnChangedListener.EventType.REMOVED, index);
@@ -88,7 +88,7 @@ class FirebaseArray implements ChildEventListener {
   }
 
   public void onChildMoved(DataSnapshot snapshot, String previousChildKey) {
-    if ((!filter.filter(snapshot))) {
+    if (filter == null || !filter.filter(snapshot)) {
       int oldIndex = getIndexForKey(snapshot.getKey());
       mSnapshots.remove(oldIndex);
       int newIndex = previousChildKey == null ? 0 : (getIndexForKey(previousChildKey) + 1);

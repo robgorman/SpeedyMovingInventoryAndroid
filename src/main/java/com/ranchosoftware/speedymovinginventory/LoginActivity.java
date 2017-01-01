@@ -219,7 +219,7 @@ public class LoginActivity extends BaseActivity {
 
           @Override
           public void run() {
-            Intent intent = new Intent(thisActivity, JobsActivity.class);
+            Intent intent = new Intent(thisActivity, ChooseCompanyActivity.class);
             Bundle params = new Bundle();
             params.putString("companyKey", userFinal.getCompanyKey());
             intent.putExtras(params);

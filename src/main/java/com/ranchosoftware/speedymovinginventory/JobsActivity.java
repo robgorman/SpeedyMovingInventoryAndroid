@@ -1,12 +1,16 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -15,9 +19,13 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.ranchosoftware.speedymovinginventory.firebase.FirebaseListAdapter;
+import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.model.UserIdMapEntry;
@@ -45,6 +53,27 @@ public class JobsActivity extends BaseMenuActivity {
   FirebaseListAdapter<Job> adapter;
   DateTimeFormatter formatter;
 
+  class CustomValueEventListener implements ValueEventListener {
+    private DatabaseReference ref;
+
+    CustomValueEventListener(DatabaseReference ref) {
+      this.ref = ref;
+    }
+
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+      ref.removeEventListener(this);
+      Company company = dataSnapshot.getValue(Company.class);
+      getSupportActionBar().setTitle("Active Jobs (" + company.getName() + ")");
+
+    }
+
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+
+    }
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -53,9 +82,15 @@ public class JobsActivity extends BaseMenuActivity {
     Bundle b = getIntent().getExtras();
 
     companyKey = b.getString("companyKey");
+    boolean hasParent = b.getBoolean("hasParent", false);
+
+    final DatabaseReference companyRef = FirebaseDatabase.getInstance().getReference("/companies/" + companyKey);
+    companyRef.addValueEventListener(new CustomValueEventListener(companyRef));
 
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(hasParent);
+
     formatter = app().getDateFormatter();
 
     FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -135,28 +170,7 @@ public class JobsActivity extends BaseMenuActivity {
 
         return true;
 
-        /*
 
-        if (role == User.Role.AgentCrewMember || role == User.Role.AgentForeman || role == User.Role.CrewMember
-          || role == User.Role.Foreman){
-          Map<String, UserIdMapEntry> map = job.getUsers();
-          if (map.containsKey(app().getCurrentUser().getUid())) {
-            return false;
-          }
-        }
-        if (role == User.Role.Customer){
-          if (user.getCustomerJobKey() != null && user.getCustomerJobKey().equals(dataSnapshot.getKey())){
-            return false;
-          }
-        }
-
-        if (role == User.Role.CompanyAdmin || role == User.Role.ServiceAdmin) {
-          return false;
-        }
-
-
-        return true;
-        */
       }
 
 
@@ -203,7 +217,70 @@ public class JobsActivity extends BaseMenuActivity {
         startActivity(intent);
       }
     });
+
+    //checkSchemaVersionAndWarn();
   }
+
+
+  private ValueEventListener schemaListener = new ValueEventListener(){
+
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+      final FirebaseDatabase database = FirebaseDatabase.getInstance();
+      database.getReference("schema").removeEventListener(schemaListener);
+
+      Long schema = null;
+      if (dataSnapshot.exists()){
+        Object o = dataSnapshot.getValue();
+        if (o instanceof Long) {
+          schema = (Long) dataSnapshot.getValue();
+        }
+      }
+
+      // this version compatible up to 1. That means null and 1 are acceptable
+      if (schema != null){
+        if (schema > 1){
+          thisActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              showSchemaWarning();
+            }
+          });
+        }
+      }
+
+    }
+
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+
+    }
+  };
+
+  private void checkSchemaVersionAndWarn(){
+    // speedyMovingItemDataDescriptions is readable by anyone. No security or login
+    // necessary.
+    final FirebaseDatabase database = FirebaseDatabase.getInstance();
+    database.getReference("schema").addValueEventListener(schemaListener);
+
+  }
+
+  private void showSchemaWarning(){
+    new AlertDialog.Builder(this)
+            .setTitle("Upgrade Warning!")
+            .setMessage("The Speedy Moving Inventory Database has been upgraded. To ensure full functionality, " +
+                    "please upgrade to the latest version. This version has limited functionaity and may " +
+                    "malfunction.")
+
+            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+              public void onClick(DialogInterface dialog, int which) {
+                // continue with delete
+              }
+            })
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show();
+  }
+
 
   private void checkInitialization(){
     if (app().isInitializationDone()){
@@ -212,9 +289,9 @@ public class JobsActivity extends BaseMenuActivity {
         noJobsView.setVisibility(View.VISIBLE);
         jobsListView.setVisibility(View.INVISIBLE);
       } else {
-        workingView.setVisibility(View.VISIBLE);
+        workingView.setVisibility(View.INVISIBLE);
         noJobsView.setVisibility(View.INVISIBLE);
-        jobsListView.setVisibility(View.INVISIBLE);
+        jobsListView.setVisibility(View.VISIBLE);
       }
     } else {
       new Handler().postDelayed(new Runnable() {
@@ -295,4 +372,20 @@ public class JobsActivity extends BaseMenuActivity {
     }
     return false;
   }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle item selection
+    switch (item.getItemId()) {
+
+      case android.R.id.home:
+        NavUtils.navigateUpFromSameTask(this);
+        return true;
+
+
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+
 }

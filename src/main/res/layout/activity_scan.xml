@@ -2,6 +2,7 @@
 
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/topLayout"
 
     android:layout_width="match_parent"
@@ -24,24 +25,16 @@
         android:textAllCaps="false"
         android:layout_marginBottom="12dp"/>
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/previewLayout">
-
-        <com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview
-          android:id="@+id/preview"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent">
-
-        <com.ranchosoftware.speedymovinginventory.ui.camera.GraphicOverlay
-            android:id="@+id/graphicOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-      </com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview>
-    </LinearLayout>
+    <Button
+        android:id="@+id/buttonCameraLight"
+        android:background="@drawable/lightbulb_icon_bluebackground"
+        android:layout_marginBottom="12dp"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="8dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"/>
 
     <TextView
         android:text="@string/scanner_message"
@@ -58,5 +51,29 @@
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/previewLayout"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview
+          android:id="@+id/preview"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+        </com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview>
+
+        <com.ranchosoftware.speedymovinginventory.ui.camera.GraphicOverlay
+            android:id="@+id/graphicOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="12dp"
+            />
+    </LinearLayout>
 
 </RelativeLayout>

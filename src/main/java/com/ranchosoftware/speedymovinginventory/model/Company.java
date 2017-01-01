@@ -8,6 +8,7 @@ public class Company extends Model{
   private Boolean active;
   private Address address;
   private String calT;
+  private String contact;
   private Long dateCreated;
   private Long dateDeactivated;
   private String iccMc;
@@ -68,5 +69,12 @@ public class Company extends Model{
 
   public String getPoundsPerCubicFoot(){
     return poundsPerCubicFoot;
+  }
+
+  public String getContact(){
+    if (contact == null){
+      return "";
+    }
+    return contact;
   }
 }

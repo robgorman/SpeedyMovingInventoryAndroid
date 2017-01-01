@@ -19,7 +19,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
-    <string name="title_activity_jobs">Jobs</string>
+    <string name="title_activity_jobs">Active Jobs</string>
     <string name="prompt_cellular_number">10 Digit Cell Number</string>
     <string name="remember_me">Remember Me</string>
     <string name="action_forgot_password">Forgot Password?</string>
@@ -207,4 +207,9 @@
     <string name="lifecycle_delivered">Delivered</string>
     <string name="working">Working...</string>
     <string name="scan_a_new_item">New Item Override</string>
+    <string name="light">Light</string>
+    <string name="title_activity_choose_company">ChooseCompanyActivity</string>
+    <string name="choose_company_message">You have an association with more than one Moving Company.  Please select the company you would like to work with from the list below.</string>
+    <string name="phone_number_label">Phone</string>
+    <string name="contact_label">Contact</string>
 </resources>

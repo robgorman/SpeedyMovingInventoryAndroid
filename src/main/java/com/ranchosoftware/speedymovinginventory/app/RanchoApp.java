@@ -41,6 +41,7 @@ public class RanchoApp extends MultiDexApplication {
 
   private Server mailServer;
 
+
   private Map<String, ArrayList<MovingItemDataDescription>> movingItemDescriptions = new HashMap<>();
 
 
@@ -88,10 +89,10 @@ public class RanchoApp extends MultiDexApplication {
     } else {
       webAppUrl = "https://app.speedymovinginventory.com";
     }
+
     loadMovingItemDescriptions();
+
   }
-
-
 
 
 
@@ -131,48 +132,6 @@ public class RanchoApp extends MultiDexApplication {
     }
   };
 
-  private ChildEventListener listener = new ChildEventListener(){
-    @Override
-    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-      ArrayList<MovingItemDataDescription> itemsSoFar = new ArrayList<MovingItemDataDescription>();
-      // iterate the kids
-      String room = dataSnapshot.getKey();
-      for (DataSnapshot item : dataSnapshot.getChildren() ){
-          MovingItemDataDescription nextItem = item.getValue(MovingItemDataDescription.class);
-          itemsSoFar.add(nextItem);
-      }
-
-      movingItemDescriptions.put(room, itemsSoFar);
-      count = count + 1;
-      if (count == 14) {
-        initializationDone = true;
-        roomLists.removeEventListener(this);
-      }
-
-
-    }
-
-    @Override
-    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-    }
-
-    @Override
-    public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-    }
-
-    @Override
-    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
-  };
 
   private void loadMovingItemDescriptions(){
     // speedyMovingItemDataDescriptions is readable by anyone. No security or login
@@ -181,7 +140,6 @@ public class RanchoApp extends MultiDexApplication {
     roomLists = database.getReference("speedyMovingItemDataDescriptions/");
 
     roomLists.addValueEventListener(valueListener);
-    //roomLists.addChildEventListener(listener);
 
   }
 

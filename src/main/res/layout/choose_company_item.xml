@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_marginBottom="6dp"
+              android:layout_marginTop="6dp"
+              android:paddingBottom="6dp"
+              android:paddingTop="6dp">
+
+    <me.grantland.widget.AutofitTextView
+        android:text="TextView"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvName"
+        android:layout_width="0dp"
+        android:layout_weight="2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:maxLines="1"
+        android:paddingLeft="8dp"
+        android:paddingRight="4dp"
+        android:gravity="center_vertical"/>
+
+    <me.grantland.widget.AutofitTextView
+        android:text="TextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvPhone"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:maxLines="1"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:gravity="center_vertical"/>
+
+    <me.grantland.widget.AutofitTextView
+        android:text="TextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvContact"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:maxLines="1"
+        android:paddingRight="4dp"
+        android:paddingLeft="4dp"
+        android:gravity="center_vertical"/>
+</LinearLayout>

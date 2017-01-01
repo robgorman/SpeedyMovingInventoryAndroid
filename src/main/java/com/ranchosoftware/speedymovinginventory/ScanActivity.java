@@ -23,6 +23,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -87,6 +88,8 @@ public class ScanActivity extends BaseActivity {
   private View topView;
   private TextView scannerMessage;
 
+  private Button cameraLightButton;
+
   private boolean processingCode = false;
   /**
    * Initializes the UI and creates the detector pipeline.
@@ -101,8 +104,6 @@ public class ScanActivity extends BaseActivity {
     companyKey = b.getString("companyKey");
     isReplacementCode = b.getBoolean("isReplacementCode",false);
     allowItemAddOutsideNew = b.getBoolean("allowItemAddOutsideNew", false);
-
-
 
     positivePlayer = MediaPlayer.create(thisActivity, R.raw.checkout_beep);
     positivePlayer.setVolume(1.0f, 1.0f);
@@ -173,6 +174,20 @@ public class ScanActivity extends BaseActivity {
     if (isReplacementCode){
       endScan.setText("Cancel");
     }
+
+    cameraLightButton = (Button) findViewById(R.id.buttonCameraLight);
+    cameraLightButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+
+        if (cameraSource.getFlashMode().equals(Camera.Parameters.FLASH_MODE_TORCH)){
+          cameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+        } else {
+          cameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+        }
+
+      }
+    });
 
   }
 
@@ -284,7 +299,7 @@ public class ScanActivity extends BaseActivity {
     // at long distances.
     CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
             .setFacing(CameraSource.CAMERA_FACING_BACK)
-            .setFlashMode(Camera.Parameters.FLASH_MODE_AUTO)
+            .setFlashMode(Camera.Parameters.FLASH_MODE_OFF)
             .setRequestedFps(15.0f);
 
     // make sure that auto focus is an available option
@@ -292,7 +307,10 @@ public class ScanActivity extends BaseActivity {
       builder = builder.setFocusMode( Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
     }
 
+
+
     cameraSource = builder.build();
+    //cameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
   }
 
   /**
@@ -307,6 +325,7 @@ public class ScanActivity extends BaseActivity {
   /**
    * Stops the camera.
    */
+
   @Override
   protected void onPause() {
     super.onPause();

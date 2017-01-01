@@ -34,7 +34,15 @@
             android:name=".JobsActivity"
             android:label="@string/title_activity_jobs"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".ChooseCompanyActivity" >
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ChooseCompanyActivity" />
+            >
+            >
         </activity>
         <activity
             android:name=".InitialRouterActivity"
@@ -51,7 +59,13 @@
             android:name=".JobActivity"
             android:label="@string/title_activity_job"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".JobsActivity" >
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".JobsActivity" />
+            >
         </activity>
         <activity
             android:name=".ForgotPasswordActivity"
@@ -113,6 +127,12 @@
         <activity
             android:name=".PrintActivity"
             android:label="@string/title_activity_print"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity
+            android:name=".ChooseCompanyActivity"
+            android:label="@string/title_activity_choose_company"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
     </application>

@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.GridLayoutManager;
@@ -155,6 +156,7 @@ public class JobActivity extends BaseMenuActivity {
     recipientListQuery = FirebaseDatabase.getInstance().getReference("users/").orderByChild("companyKey").startAt(companyKey).endAt(companyKey);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     setupQueries();
 
     ivStatus[0] = (ImageView) findViewById(R.id.ivNew);
@@ -207,7 +209,7 @@ public class JobActivity extends BaseMenuActivity {
       public void onClick(View view) {
 
         if (adapter.getItemCount() == 0){
-          Utility.error(getRootView(), thisActivity, "The job must contain itmes for signoff.");
+          Utility.error(getRootView(), thisActivity, "The job must contain items for signoff.");
           return;
         }
 
@@ -1184,9 +1186,15 @@ public class JobActivity extends BaseMenuActivity {
           Utility.error(getRootView(), thisActivity, "Only a user with the role of Foreman or higher can add items to the job after it has been signed off.");
 
         } else {
+
           launchScanActivity(true);
 
         }
+        return true;
+
+      case android.R.id.home:
+
+        NavUtils.navigateUpFromSameTask(this);
         return true;
 
 
