@@ -19,7 +19,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
-    <string name="title_activity_jobs">Active Jobs</string>
+    <string name="title_activity_jobs">Jobs</string>
     <string name="prompt_cellular_number">10 Digit Cell Number</string>
     <string name="remember_me">Remember Me</string>
     <string name="action_forgot_password">Forgot Password?</string>
@@ -103,6 +103,7 @@
     <string name="deliver_label">Delivery Window</string>
     <string name="button_scan">Scan Items</string>
     <string name="permission_camera_rationale">Access to the camera is needed for reading QRC codes</string>
+    <string name="permission_location_rationale">Access to your location is needed for recording scan history.</string>
     <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
     <string name="barcode_header">Click &quot;Read Barcode&quot; to read a barcode</string>
     <string name="read_barcode">Read Barcode</string>
@@ -111,7 +112,8 @@
     <string name="barcode_success">Barcode read successfully</string>
     <string name="barcode_failure">No barcode captured</string>
     <string name="barcode_error">"Error reading barcode: %1$s"</string>
-    <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
+    <string name="no_camera_permission">Scanning requires camera access permission.  You cannot scan unless you allow camera access.</string>
+    <string name="no_location_permission">Scanning requires location access permission.  You cannot scan unless you allow location access.</string>
     <string name="no_external_storage_permission">You must enable the external storage application in order to take pictures.</string>
     <string name="item_not_found">Item not found.</string>
     <string name="title_activity_new_item">New Item</string>

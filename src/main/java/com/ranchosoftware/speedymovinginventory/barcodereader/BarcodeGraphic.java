@@ -21,7 +21,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 
 import com.google.android.gms.vision.barcode.Barcode;
-import com.ranchosoftware.speedymovinginventory.ui.camera.GraphicOverlay;
+import com.ranchosoftware.speedymovinginventory.ui.camera2.GraphicOverlay;
 
 /**
  * Graphic instance for rendering barcode position, size, and ID within an associated graphic

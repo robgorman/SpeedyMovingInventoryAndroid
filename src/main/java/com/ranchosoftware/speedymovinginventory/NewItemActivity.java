@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -24,6 +25,7 @@ import android.text.TextWatcher;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -59,6 +61,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 import com.ranchosoftware.speedymovinginventory.model.Item;
+import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.MovingItemDataDescription;
 import com.ranchosoftware.speedymovinginventory.utility.Permissions;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
@@ -105,6 +108,10 @@ public class NewItemActivity extends BaseActivity {
   private CheckBox isDisassembled;
   private Button assist;
   private EditText damageDescription;
+
+  private boolean invokedByScanner = false;
+
+  private Job.Lifecycle lifecycle;
 
   //DatabaseObject<Item> itemRef;
   DatabaseReference itemRef;
@@ -161,19 +168,62 @@ public class NewItemActivity extends BaseActivity {
 
   private int updates = 0;
 
+
+  @Override
+  public Intent getSupportParentActivityIntent() {
+    return getParentActivityIntentImpl();
+  }
+
+  @Override
+  public Intent getParentActivityIntent() {
+    return getParentActivityIntentImpl();
+  }
+
+  private Intent getParentActivityIntentImpl() {
+    Intent i = null;
+
+    // Here you need to do some logic to determine from which Activity you came.
+    // example: you could pass a variable through your Intent extras and check that.
+    if (invokedByScanner) {
+      i = new Intent(this, ScanActivity.class);
+      // set any flags or extras that you need.
+      // If you are reusing the previous Activity (i.e. bringing it to the top
+      // without re-creating a new instance) set these flags:
+      i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+      // if you are re-using the parent Activity you may not need to set any extras
+
+    } else {
+      i = new Intent(this, JobActivity.class);
+      // same comments as above
+      i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+    }
+
+    return i;
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_new_item);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-    toolbar.setTitle("New Item");
-    setSupportActionBar(toolbar);
-
     Bundle params = getIntent().getExtras();
     companyKey = params.getString("companyKey");
     jobKey = params.getString("jobKey");
     qrcCode = params.getString("itemCode");
     itemIsOutOfPhase = params.getBoolean("itemIsOutOfPhase", false); // means item added after new
+    lifecycle = Job.Lifecycle.valueOf(params.getString("lifecycle"));
+
+    invokedByScanner = params.getBoolean("invokedByScanner", false);
+    if (invokedByScanner){
+      toolbar.setTitle("Scanning");
+    } else {
+      toolbar.setTitle("Edit Item");
+    }
+
+    setSupportActionBar(toolbar);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     showProgress(true, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
@@ -400,6 +450,7 @@ public class NewItemActivity extends BaseActivity {
     Item.Category cat = item.getCategoryEnum();
     intent.putExtra("room", categoryToRoom(cat));
     intent.putExtra("allowCancel", allowCancel);
+    intent.putExtra("category", cat.toString());
     startActivityForResult(intent, PICK_AN_MOVING_ITEM_DESCRIPTION);
     overridePendingTransition(R.xml.slide_in_from_right,R.xml.slide_out_to_left);
   }
@@ -464,7 +515,7 @@ public class NewItemActivity extends BaseActivity {
             "",
             jobKey,
             Item.Defaults.packedBy(), "None", false,
-            itemIsOutOfPhase);
+            itemIsOutOfPhase, new DateTime().getMillis());
     return newItem;
   }
 
@@ -911,6 +962,9 @@ public class NewItemActivity extends BaseActivity {
         Boolean isBox = data.getBooleanExtra("isBox",false);
         String boxSize = data.getStringExtra("boxSize");
         String specialInstructions = data.getStringExtra("specialInstructions");
+        Item.Category category = Item.Category.valueOf(data.getStringExtra("category"));
+        item.setCategory(category.name());
+        app().setCurrentCategory(category);
         // TODO do something
         item.setDescription(itemName);
         item.setWeightLbs(weightLbs);
@@ -1026,5 +1080,16 @@ public class NewItemActivity extends BaseActivity {
       return imageView;
     }
 
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      // Respond to the action bar's Up/Home button
+      case android.R.id.home:
+        NavUtils.navigateUpFromSameTask(this);
+        return true;
+    }
+    return super.onOptionsItemSelected(item);
   }
 }

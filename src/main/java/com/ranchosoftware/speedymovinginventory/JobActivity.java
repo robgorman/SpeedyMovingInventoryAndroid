@@ -51,6 +51,7 @@ import com.ranchosoftware.speedymovinginventory.model.Address;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.User;
+import com.ranchosoftware.speedymovinginventory.model.UserCompanyAssignment;
 import com.ranchosoftware.speedymovinginventory.server.Server;
 import com.ranchosoftware.speedymovinginventory.utility.TextUtility;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
@@ -140,6 +141,7 @@ public class JobActivity extends BaseMenuActivity {
     ivStatusActive[3] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.loaded_for_delivery_active, null);
     ivStatusActive[4] = ResourcesCompat.getDrawable(thisActivity.getResources(),R.drawable.delivered_active, null);
 
+
   }
 
   @Override
@@ -153,7 +155,8 @@ public class JobActivity extends BaseMenuActivity {
 
     final FirebaseDatabase database = FirebaseDatabase.getInstance();
     jobRef = new DatabaseObject<>(Job.class, companyKey, jobKey);
-    recipientListQuery = FirebaseDatabase.getInstance().getReference("users/").orderByChild("companyKey").startAt(companyKey).endAt(companyKey);
+    //recipientListQuery = FirebaseDatabase.getInstance().getReference("/users/").orderByChild("companyKey").startAt(companyKey).endAt(companyKey);
+    recipientListQuery = FirebaseDatabase.getInstance().getReference("/companyUserAssignments/").orderByChild("companyKey").startAt(companyKey).endAt(companyKey);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -217,9 +220,15 @@ public class JobActivity extends BaseMenuActivity {
           Utility.error(getRootView(), thisActivity, R.string.job_is_complete_no_signoff);
           return;
         }
-        if (app().getCurrentUser().getRole().equals(User.Role.AgentCrewMember.toString())
-                || app().getCurrentUser().getRole().equals(User.Role.CrewMember.toString())
-                || app().getCurrentUser().getRole().equals(User.Role.Customer.toString())){
+        // TODO this is hack because UserCompanyAssignment can be null for unknown reasons
+        User.Role role = User.Role.CompanyAdmin;
+        if (app().getUserCompanyAssignment() != null) {
+          role = app().getUserCompanyAssignment().getRoleAsEnum();
+        }
+
+        if (role == User.Role.AgentCrewMember
+                || role == User.Role.CrewMember
+                || role == User.Role.Customer){
           Utility.error(findViewById(android.R.id.content), thisActivity, R.string.must_be_foreman_to_signoff);
           return;
         }
@@ -237,10 +246,14 @@ public class JobActivity extends BaseMenuActivity {
       }
     });
 
+    // TODO this is hack because UserCompanyAssignment can be null for unknown reasons
+    User.Role role = User.Role.CompanyAdmin;
+    if (app().getUserCompanyAssignment() != null) {
+      role = app().getUserCompanyAssignment().getRoleAsEnum();
+    }
 
-    User.Role userRole = app().getCurrentUser().getRoleAsEnum();
-    if (userRole == User.Role.ServiceAdmin || userRole == User.Role.CompanyAdmin
-            || userRole == User.Role.Foreman || userRole == User.Role.AgentForeman){
+    if ( role == User.Role.CompanyAdmin
+            || role == User.Role.Foreman || role == User.Role.AgentForeman){
       signOff.setEnabled(true);
     } else {
       signOff.setEnabled(false);
@@ -285,58 +298,7 @@ public class JobActivity extends BaseMenuActivity {
     startActivity(intent);
   }
 
-/*
-  private void printSignOff(){
-    final PrintHelper photoPrinter = new PrintHelper((thisActivity));
-    photoPrinter.setScaleMode(PrintHelper.SCALE_MODE_FIT);
 
-    ImageLoader loader = MyVolley.getImageLoader();
-    // just print the most recent sign off sheet
-    String url = "";
-    Job.Lifecycle lifecycle = initialJobLifecycle;
-    if (lifecycle == Job.Lifecycle.Delivered){
-      // this case cant occur
-      if (job.getSignatureDelivered() != null) {
-        url = job.getSignatureDelivered().getImageUrl();
-      } else {
-        Utility.error(getRootView(), this, "Error: Missing delivery signoff, it can't be printed.");
-        return;
-      }
-      loader.get(job.getSignatureDelivered().getImageUrl(), new ImageLoader.ImageListener(){
-        @Override
-        public void onErrorResponse(VolleyError error) {
-          Utility.error(getRootView(), JobActivity.this, "Failed to load Signoff Image: " + error.getLocalizedMessage());
-        }
-
-        @Override
-        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
-          photoPrinter.printBitmap("speedyPrinting", response.getBitmap());
-        }
-      });
-
-    } else {
-      if (job.getSignatureLoadedForStorage() != null) {
-        url = job.getSignatureLoadedForStorage().getImageUrl();
-      } else {
-        Utility.error(getRootView(), this, "Error: Missing new job signoff, it can't be printed.");
-        return;
-      }
-      loader.get(job.getSignatureLoadedForStorage().getImageUrl(), new ImageLoader.ImageListener(){
-        @Override
-        public void onErrorResponse(VolleyError error) {
-          Utility.error(getRootView(), JobActivity.this, "Failed to load Signoff Image: " + error.getLocalizedMessage());
-        }
-
-        @Override
-        public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
-          photoPrinter.printBitmap("speedyPrinting", response.getBitmap());
-        }
-      });
-    }
-
-
-  }
-  */
 
   private void setupSummaryItems(){
     tvTotalItems = (TextView) findViewById(R.id.tvTotalItems);
@@ -520,7 +482,7 @@ public class JobActivity extends BaseMenuActivity {
       adapter.registerAdapterDataObserver(adapterDataObserver);
     }
     adapter = new JobRecyclerGridAdapter(thisActivity, allowDelete, companyKey, jobKey,
-            allowDelete ? NewItemActivity.class : ItemDetailsActivity.class, sortBy);
+            allowDelete ? NewItemActivity.class : ItemDetailsActivity.class, sortBy, job.getLifecycle().toString());
     itemRecyclerView.setAdapter(adapter);
     adapterDataObserver.reset();
     adapter.registerAdapterDataObserver(adapterDataObserver);
@@ -617,7 +579,7 @@ public class JobActivity extends BaseMenuActivity {
     removeAllChildEventListenersAndClearData();
     queries.get(sortByPosition).query.addChildEventListener(childEventListener);
     adapter = new JobRecyclerGridAdapter(thisActivity, allowDelete, companyKey, jobKey,
-            allowDelete ? NewItemActivity.class : ItemDetailsActivity.class, queries.get(sortByPosition));
+            allowDelete ? NewItemActivity.class : ItemDetailsActivity.class, queries.get(sortByPosition), job.getLifecycle().toString());
 
     adapterDataObserver.reset();
     adapter.registerAdapterDataObserver(adapterDataObserver);
@@ -675,6 +637,7 @@ public class JobActivity extends BaseMenuActivity {
       if (adapter.getItemCount() > 0){
         itemRecyclerView.setVisibility(View.VISIBLE);
         noItemsMessage.setVisibility(View.INVISIBLE);
+        tabHost.setCurrentTab(1);
         sortByGroup.setVisibility(View.VISIBLE);
       } else {
         itemRecyclerView.setVisibility(View.INVISIBLE);
@@ -911,7 +874,7 @@ public class JobActivity extends BaseMenuActivity {
     params.putString("companyKey", job.getCompanyKey());
     params.putString("jobKey", jobKey);
     params.putBoolean("allowItemAddOutsideNew", allowItemAddOutsideNew);
-
+    params.putString("lifecycle", job.getLifecycle().toString());
     intent.putExtras(params);
     startActivity(intent);
   }
@@ -949,7 +912,7 @@ public class JobActivity extends BaseMenuActivity {
       adapter.notifyDataSetChanged();
     }
     if (recipientListQuery != null){
-      recipientListQuery.addValueEventListener(recipientListEventLister);
+      recipientListQuery.addValueEventListener(recipientListEventListener);
     }
   }
 
@@ -957,7 +920,7 @@ public class JobActivity extends BaseMenuActivity {
   protected  void onStop(){
     super.onStop();
     jobRef.removeValueEventListener(jobChangeListener);
-    recipientListQuery.removeEventListener(recipientListEventLister);
+    recipientListQuery.removeEventListener(recipientListEventListener);
     //adapter.unregisterAdapterDataObserver(adapterDataObserver);
   }
 
@@ -1048,7 +1011,7 @@ public class JobActivity extends BaseMenuActivity {
     return result;
   }
 
-  private ValueEventListener recipientListEventLister = new ValueEventListener() {
+  private ValueEventListener recipientListEventListener = new ValueEventListener() {
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
       if (dataSnapshot.getValue() == null){
@@ -1059,16 +1022,30 @@ public class JobActivity extends BaseMenuActivity {
         for (DataSnapshot nextSnapshot : dataSnapshot.getChildren()){
 
           try {
-            User user = nextSnapshot.getValue(User.class);
-            if (!recipientList.contains(user.getEmailAddress())) {
-              if (user.getRoleAsEnum() == User.Role.CompanyAdmin) {
-                if (recipientList.length() == 0) {
-                  recipientList = recipientList + user.getEmailAddress();
-                } else {
-                  recipientList = recipientList + "," + user.getEmailAddress();
+            final UserCompanyAssignment uca = nextSnapshot.getValue(UserCompanyAssignment.class);
+
+            FirebaseDatabase.getInstance().getReference("/users/" + uca.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+              @Override
+              public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                // TODO this is a hack because uca may be null
+                if (uca != null) {
+                  if (uca.getRoleAsEnum() == User.Role.CompanyAdmin) {
+                    if (recipientList.length() == 0) {
+                      recipientList = recipientList + user.getEmailAddress();
+                    } else {
+                      recipientList = recipientList + "," + user.getEmailAddress();
+                    }
+                  }
                 }
               }
-            }
+
+              @Override
+              public void onCancelled(DatabaseError databaseError) {
+
+              }
+            });
+
           } catch (Exception e){
             // just skip a user that we can't read
             Log.d(TAG, "Unreadable user skipped");
@@ -1176,7 +1153,11 @@ public class JobActivity extends BaseMenuActivity {
         launchPrintActivity();
         return true;
       case R.id.scan_new_item:
-        User.Role role = app().getCurrentUser().getRoleAsEnum();
+        // TODO this is hack because UserCompanyAssignment can be null for unknown reasons
+        User.Role role = User.Role.CompanyAdmin;
+        if (app().getUserCompanyAssignment() != null) {
+           role = app().getUserCompanyAssignment().getRoleAsEnum();
+        }
         if (job.getLifecycle() == Job.Lifecycle.Delivered) {
           Utility.error(getRootView(), thisActivity, "Adding and item after the job has been delivered is not allowed.");
         } else if (job.getLifecycle() == Job.Lifecycle.New){

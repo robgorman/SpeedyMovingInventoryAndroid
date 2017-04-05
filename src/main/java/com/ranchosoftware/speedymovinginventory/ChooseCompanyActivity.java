@@ -1,6 +1,8 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -9,6 +11,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.PhoneNumberUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,10 +24,12 @@ import android.widget.TextView;
 
 
 import com.android.volley.toolbox.ImageLoader;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 import com.ranchosoftware.speedymovinginventory.model.Company;
@@ -35,7 +40,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ChooseCompanyActivity extends BaseMenuActivity {
+public class ChooseCompanyActivity extends BaseActivity {
+
+  private static final String TAG = BaseMenuActivity.class.getSimpleName();
 
   private ListView companiesListView;
   private View mainLayout;
@@ -45,38 +52,42 @@ public class ChooseCompanyActivity extends BaseMenuActivity {
 
   private CompanyAdapter adapter;
 
-  private class CompanyAndKey {
+  private class CompanyAndUca {
     private Company company;
-    private String companyKey;
+    private UserCompanyAssignment uca;
 
-    public CompanyAndKey(Company company, String companyKey) {
+    public CompanyAndUca(Company company, UserCompanyAssignment uca) {
       this.company = company;
-      this.companyKey = companyKey;
+      this.uca = uca;
     }
 
     public Company getCompany() {
       return company;
     }
 
-    public String getCompanyKey() {
-      return companyKey;
+    public UserCompanyAssignment getUserCompanyAssignment() {
+      return uca;
     }
   }
 
-  private List<CompanyAndKey> companies = new ArrayList<>();
+  private List<UserCompanyAssignment> assignments = new ArrayList<>();
+
+  private List<CompanyAndUca> companies = new ArrayList<>();
 
   class CustomValueEventListener implements ValueEventListener {
     private DatabaseReference ref;
+    private UserCompanyAssignment uca;
 
-    CustomValueEventListener(DatabaseReference ref) {
+    CustomValueEventListener(DatabaseReference ref, UserCompanyAssignment uca) {
       this.ref = ref;
+      this.uca = uca;
     }
 
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
       ref.removeEventListener(this);
       Company company = dataSnapshot.getValue(Company.class);
-      companies.add(new CompanyAndKey(company, dataSnapshot.getKey()));
+      companies.add(new CompanyAndUca(company,uca));
       adapter.notifyDataSetChanged();
     }
 
@@ -87,7 +98,7 @@ public class ChooseCompanyActivity extends BaseMenuActivity {
   }
 
 
-
+/*
   private int countActiveCompaniesForUser(User user){
     if (user.getCompanies() == null){
       // old style can only be 1
@@ -107,6 +118,41 @@ public class ChooseCompanyActivity extends BaseMenuActivity {
     }
     return count;
   }
+  */
+  private ChildEventListener childListener = new ChildEventListener(){
+
+  @Override
+  public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+    UserCompanyAssignment uca = dataSnapshot.getValue(UserCompanyAssignment.class);
+    if (!uca.getIsDisabled()){
+      int x = 5;
+      assignments.add(uca);
+      // TODO: this is confustion
+      // we need to set the app stuff here.
+    }
+  }
+
+  @Override
+  public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+  }
+
+  @Override
+  public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+  }
+
+  @Override
+  public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+  }
+
+  @Override
+  public void onCancelled(DatabaseError databaseError) {
+
+  }
+};
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -119,26 +165,57 @@ public class ChooseCompanyActivity extends BaseMenuActivity {
     user = app().getCurrentUser();
     // if the user is only associated with one company we just send them
     // there. Otherwise they need to choose.
-    if (countActiveCompaniesForUser(user) <= 1){
-      String companyKey = "";
-      String companyName = "";
-      if (user.getCompanies() != null && user.getCompanies().size() > 0) {
-        for (Map.Entry<String, UserCompanyAssignment> assignment : user.getCompanies().entrySet()) {
-          companyKey = assignment.getValue().getCompanyKey();
+    final Query companiesQuery = FirebaseDatabase.getInstance().getReference("/companyUserAssignments/").orderByChild("uid").startAt(user.getUid()).endAt(user.getUid());
 
+
+    companiesQuery.addChildEventListener(childListener);
+
+    companiesQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+      @Override
+      public void onDataChange(DataSnapshot dataSnapshot) {
+
+        Log.d(TAG, "all done");
+        companiesQuery.removeEventListener(childListener);
+        if (assignments.size() == 0){
+          DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+              dialog.dismiss();
+            }
+          };
+          AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
+          builder.setTitle("Error")
+                  .setMessage("There are no company assignments for this user. Contact support.")
+                  .setPositiveButton(R.string.ok, listener)
+                  .show();
+        } else if (assignments.size() == 1){
+          // we just launch jobs
+
+          app().setUserCompanyAssignment(assignments.get(0));
+          app().setCurrentCompany(assignments.get(0).getCompanyKey());
+          Intent intent = new Intent(thisActivity, JobsActivity.class);
+          Bundle params = new Bundle();
+          params.putString("companyKey", assignments.get(0).getCompanyKey());
+
+
+          intent.putExtras(params);
+          startActivity(intent);
+          finish();
+          return;
+        } else {
+          for (UserCompanyAssignment uca : assignments) {
+
+            final DatabaseReference companyRef = FirebaseDatabase.getInstance().getReference("/companies/" + uca.getCompanyKey());
+            CustomValueEventListener listener = new CustomValueEventListener(companyRef, uca);
+            companyRef.addValueEventListener(listener);
+          }
         }
-      } else {
-        companyKey = user.getCompanyKey();
       }
-      Intent intent = new Intent(thisActivity, JobsActivity.class);
-      Bundle params = new Bundle();
-      params.putString("companyKey", companyKey);
 
-      intent.putExtras(params);
-      startActivity(intent);
-      finish();
-      return;
-    }
+      @Override
+      public void onCancelled(DatabaseError databaseError) {
+
+      }
+    });
 
 
     companiesListView = (ListView) findViewById(R.id.companiesListView);
@@ -148,6 +225,7 @@ public class ChooseCompanyActivity extends BaseMenuActivity {
     adapter = new CompanyAdapter(thisActivity, companies);
     companiesListView.setAdapter(adapter);
 
+    /*
     for (Map.Entry<String, UserCompanyAssignment> assignment : user.getCompanies().entrySet()) {
       String companyKey = assignment.getValue().getCompanyKey();
       final DatabaseReference companyRef = FirebaseDatabase.getInstance().getReference("/companies/" + companyKey);
@@ -155,15 +233,20 @@ public class ChooseCompanyActivity extends BaseMenuActivity {
       companyRef.addValueEventListener(listener);
 
     }
+    */
 
     companiesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
 
-        CompanyAndKey companyAndKey = adapter.getItem(position);
+        CompanyAndUca companyAndUca = adapter.getItem(position);
+
+        app().setUserCompanyAssignment(assignments.get(0));
+        app().setCurrentCompany(assignments.get(0).getCompanyKey());
+
         Intent intent = new Intent(thisActivity, JobsActivity.class);
         Bundle params = new Bundle();
-        params.putString("companyKey", companyAndKey.getCompanyKey());
+        params.putString("companyKey", companyAndUca.getUserCompanyAssignment().getCompanyKey());
         params.putBoolean("hasParent", true);
         intent.putExtras(params);
         startActivity(intent);
@@ -183,11 +266,11 @@ public class ChooseCompanyActivity extends BaseMenuActivity {
   }
 
 
-  private class CompanyAdapter extends ArrayAdapter<CompanyAndKey> {
+  private class CompanyAdapter extends ArrayAdapter<CompanyAndUca> {
     private Context context;
     private LayoutInflater inflater;
 
-    public CompanyAdapter(Context context, List<CompanyAndKey> companies) {
+    public CompanyAdapter(Context context, List<CompanyAndUca> companies) {
       super(context, R.layout.choose_company_item, companies);
       this.context = context;
       inflater = LayoutInflater.from(context);
@@ -213,8 +296,8 @@ public class ChooseCompanyActivity extends BaseMenuActivity {
         companyPhone.setText(PhoneNumberUtils.formatNumber(company.getPhoneNumber()));
       }
 
-      if (company.getContact().length() > 0) {
-        contact.setText(company.getContact());
+      if (company.getContactPerson().length() > 0) {
+        contact.setText(company.getContactPerson());
       } else {
         contact.setText("None");
       }

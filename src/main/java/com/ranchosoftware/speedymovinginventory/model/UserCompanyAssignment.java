@@ -9,6 +9,7 @@ import com.google.firebase.database.Exclude;
 public class UserCompanyAssignment {
 
 
+  private String uid;
   private String companyKey;  // this user can access this company
   // this might be null if the user doesn't yet have a company
   private String role;        // the users role for the company
@@ -22,11 +23,12 @@ public class UserCompanyAssignment {
 
   }
 
-  public UserCompanyAssignment(String companyKey, String role, Boolean isDisabled, String customerJobKey) {
+  public UserCompanyAssignment(String uid, String companyKey, String role, Boolean isDisabled, String customerJobKey) {
     this.companyKey = companyKey;
     this.role = role;
     this.isDisabled = isDisabled;
     this.customerJobKey = customerJobKey;
+    this.uid = uid;
   }
 
   public String getCompanyKey() {
@@ -54,5 +56,9 @@ public class UserCompanyAssignment {
     }
     return User.Role.CrewMember;
 
+  }
+
+  public String getUid() {
+    return uid;
   }
 }

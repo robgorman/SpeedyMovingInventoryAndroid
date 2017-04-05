@@ -4,7 +4,7 @@ package com.ranchosoftware.speedymovinginventory.barcodereader;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.barcode.Barcode;
-import com.ranchosoftware.speedymovinginventory.ui.camera.GraphicOverlay;
+import com.ranchosoftware.speedymovinginventory.ui.camera2.GraphicOverlay;
 
 /**
  * Factory for creating a tracker and associated graphic to be associated with a new barcode.  The

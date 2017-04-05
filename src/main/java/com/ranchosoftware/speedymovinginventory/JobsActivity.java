@@ -28,6 +28,7 @@ import com.ranchosoftware.speedymovinginventory.firebase.FirebaseListAdapter;
 import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.User;
+import com.ranchosoftware.speedymovinginventory.model.UserCompanyAssignment;
 import com.ranchosoftware.speedymovinginventory.model.UserIdMapEntry;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
@@ -47,8 +48,9 @@ public class JobsActivity extends BaseMenuActivity {
   private String companyKey;
   private View workingView;
 
-  private User.Role role;
+  private UserCompanyAssignment uca;
   private User user;
+
 
   FirebaseListAdapter<Job> adapter;
   DateTimeFormatter formatter;
@@ -64,7 +66,7 @@ public class JobsActivity extends BaseMenuActivity {
     public void onDataChange(DataSnapshot dataSnapshot) {
       ref.removeEventListener(this);
       Company company = dataSnapshot.getValue(Company.class);
-      getSupportActionBar().setTitle("Active Jobs (" + company.getName() + ")");
+      getSupportActionBar().setTitle("Jobs (" + company.getName() + ")");
 
     }
 
@@ -138,7 +140,7 @@ public class JobsActivity extends BaseMenuActivity {
     }
 
     user = app().getCurrentUser();
-    role = user.getRoleAsEnum();
+    uca = app().getUserCompanyAssignment();
 
     Query ref = FirebaseDatabase.getInstance().getReference("/joblists/" + companyKey + "/jobs")
             .orderByChild("jobNumber");
@@ -218,7 +220,7 @@ public class JobsActivity extends BaseMenuActivity {
       }
     });
 
-    //checkSchemaVersionAndWarn();
+    checkSchemaVersionAndWarn();
   }
 
 
@@ -321,6 +323,13 @@ public class JobsActivity extends BaseMenuActivity {
 
   private boolean canCurrentUserViewJob(Job job, DataSnapshot dataSnapshot) {
 
+    // TODO this is a hack to avoid crash
+    uca = app().getUserCompanyAssignment();
+    if (uca == null){
+      return true;
+    }
+
+    User.Role role = uca.getRoleAsEnum();
     if (role == User.Role.AgentCrewMember || role == User.Role.AgentForeman || role == User.Role.CrewMember
             || role == User.Role.Foreman){
       Map<String, UserIdMapEntry> map = job.getUsers();
@@ -332,7 +341,7 @@ public class JobsActivity extends BaseMenuActivity {
     }
 
     if (role == User.Role.Customer){
-      if (user.getCustomerJobKey() != null && user.getCustomerJobKey().equals(dataSnapshot.getKey())){
+      if (uca.getCustomerJobKey() != null && uca.getCustomerJobKey().equals(dataSnapshot.getKey())){
         return true;
       } else {
         return false;

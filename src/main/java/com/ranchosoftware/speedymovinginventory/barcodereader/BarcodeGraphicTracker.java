@@ -18,7 +18,7 @@ package com.ranchosoftware.speedymovinginventory.barcodereader;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.barcode.Barcode;
-import com.ranchosoftware.speedymovinginventory.ui.camera.GraphicOverlay;
+import com.ranchosoftware.speedymovinginventory.ui.camera2.GraphicOverlay;
 
 /**
  * Generic tracker which is used for tracking or reading a barcode (and can really be used for

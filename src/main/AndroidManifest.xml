@@ -4,19 +4,21 @@
 
     <uses-feature android:name="android.hardware.camera"/>
 
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="true"/>
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false"/>
+
+
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
         android:name=".app.RanchoApp"
@@ -33,14 +35,15 @@
         <activity
             android:name=".JobsActivity"
             android:label="@string/title_activity_jobs"
-            android:screenOrientation="portrait"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".ChooseCompanyActivity" >
+            android:parentActivityName=".ChooseCompanyActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ChooseCompanyActivity" />
+                android:value=".ChooseCompanyActivity"/>
             >
             >
         </activity>
@@ -58,13 +61,15 @@
         <activity
             android:name=".JobActivity"
             android:label="@string/title_activity_job"
+            android:parentActivityName=".JobsActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".JobsActivity" >
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar">
+
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".JobsActivity" />
+                android:value=".JobsActivity"/>
             >
         </activity>
         <activity
@@ -78,6 +83,7 @@
         <activity
             android:name=".NewItemActivity"
             android:label="@string/title_activity_new_item"
+            android:parentActivityName=".JobActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
@@ -99,6 +105,7 @@
             android:name=".ItemDetailsActivity"
             android:label="@string/title_activity_item_detail"
             android:screenOrientation="portrait"
+            android:parentActivityName=".JobActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
@@ -133,6 +140,7 @@
             android:name=".ChooseCompanyActivity"
             android:label="@string/title_activity_choose_company"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
     </application>

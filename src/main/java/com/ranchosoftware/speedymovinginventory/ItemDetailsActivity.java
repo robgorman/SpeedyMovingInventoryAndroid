@@ -1,5 +1,7 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.*;
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -9,14 +11,20 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.SpannableStringBuilder;
@@ -53,6 +61,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 import com.ranchosoftware.speedymovinginventory.model.Item;
+import com.ranchosoftware.speedymovinginventory.model.Job;
+import com.ranchosoftware.speedymovinginventory.model.ScanRecord;
 import com.ranchosoftware.speedymovinginventory.utility.Permissions;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
@@ -87,8 +97,36 @@ public class ItemDetailsActivity extends BaseActivity {
   private Switch scanOverrideSwitch;
 
   private MediaPlayer positivePlayer;
+  private Vibrator vibrator;
   private DatabaseReference itemRef;
+  private static final int RC_HANDLE_ACCESS_FINE  = 3;
+  private Location currentLocation;
+  private Job.Lifecycle lifecycle;
 
+
+  private final LocationListener locationListener = new LocationListener() {
+    @Override
+    public void onLocationChanged(final Location location) {
+      //your code here
+      currentLocation = location;
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+  };
   private ValueEventListener itemRefEventListener = new ValueEventListener() {
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -165,14 +203,19 @@ public class ItemDetailsActivity extends BaseActivity {
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     toolbar.setTitle("Item Details");
     setSupportActionBar(toolbar);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-    positivePlayer = MediaPlayer.create(thisActivity, R.raw.checkout_beep);
+    positivePlayer = MediaPlayer.create(thisActivity, R.raw.success);
     positivePlayer.setVolume(1.0f, 1.0f);
+
+    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
     Bundle params = getIntent().getExtras();
     companyKey = params.getString("companyKey");
     jobKey = params.getString("jobKey");
     qrcCode = params.getString("itemCode");
+
+    lifecycle = Job.Lifecycle.valueOf(params.getString("lifecycle"));
 
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     showProgress(true, findViewById(R.id.progressLayout), findViewById(R.id.itemFormLayout) );
@@ -195,6 +238,7 @@ public class ItemDetailsActivity extends BaseActivity {
         Log.d(TAG, "sttf");
         if (scanOverrideSwitch.isChecked()){
           positivePlayer.start();
+          vibrator.vibrate(100);
         }
       }
     });
@@ -203,7 +247,21 @@ public class ItemDetailsActivity extends BaseActivity {
       public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
         if (item != null){
           if (checked) {
-            item.setIsScanned(checked);
+            if (!item.getIsScanned()) {
+              item.setIsScanned(checked);
+              double latitude = 33.158092;
+              double longitude = -117.350594;
+              if (currentLocation != null){
+                latitude = currentLocation.getLatitude();
+                longitude = currentLocation.getLongitude();
+              }
+              ScanRecord scanRecord = new ScanRecord(new DateTime(), latitude,
+                      longitude, app().getCurrentUser().getUid(), true, lifecycle);
+
+
+              DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/scanHistory/" + qrcCode).push();
+              ref.setValue(scanRecord);
+            }
             //positivePlayer.start();
           } else {
             item.setIsScanned(false);
@@ -223,6 +281,47 @@ public class ItemDetailsActivity extends BaseActivity {
     adapter = new ImageAdapter(thisActivity, new ArrayList<ImageAdapterItem>());
     photoGridView.setVisibility(View.INVISIBLE);
     photoGridView.setAdapter(adapter);
+
+    // Check location before accessing
+    // permission is not granted yet, request permission.
+    int rc2 = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION);
+    if (rc2 == PackageManager.PERMISSION_GRANTED) {
+
+      LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+      currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+      locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100.0f, locationListener);
+    } else {
+      requestLocationPermission();
+    }
+  }
+
+  private void requestLocationPermission(){
+    Log.w(TAG, "Location permission is not granted. Requesting permission");
+
+    final String[] permissions = new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION};
+
+    if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
+            Manifest.permission.ACCESS_FINE_LOCATION)) {
+      ActivityCompat.requestPermissions(this, permissions, RC_HANDLE_ACCESS_FINE);
+      return;
+    }
+
+    final Activity thisActivity = this;
+
+    View.OnClickListener listener = new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        ActivityCompat.requestPermissions(thisActivity, permissions,
+                RC_HANDLE_ACCESS_FINE);
+      }
+    };
+
+
+    Snackbar.make(getRootView(), R.string.permission_location_rationale,
+            Snackbar.LENGTH_INDEFINITE)
+            .setAction(R.string.ok, listener)
+            .show();
   }
 
 
@@ -304,6 +403,36 @@ public class ItemDetailsActivity extends BaseActivity {
                   .show();
         }
         return;
+      }
+      case RC_HANDLE_ACCESS_FINE:{
+        if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+          Log.d(TAG, "location granted - initialize tehe location stuff");
+          // we have permission, so create the camerasource
+          LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+          int rc2 = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+          if (rc2 == PackageManager.PERMISSION_GRANTED) {
+            currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100.0f, locationListener);
+          }
+
+
+          return;
+        }
+
+        Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
+                " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int id) {
+            finish();
+          }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Speedy Moving Inventory")
+                .setMessage(R.string.no_location_permission)
+                .setPositiveButton(R.string.ok, listener)
+                .show();
       }
 
       // other 'case' lines to check for other
@@ -567,6 +696,7 @@ public class ItemDetailsActivity extends BaseActivity {
     params.putString("companyKey", companyKey);
     params.putString("jobKey", jobKey);
     params.putBoolean("isReplacementCode", true);
+    params.putString("lifecycle", lifecycle.toString());
 
     intent.putExtras(params);
     startActivityForResult(intent, QRC_CODE_REPLACEMENT);

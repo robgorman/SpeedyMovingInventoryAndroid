@@ -1,5 +1,7 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.*;
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -10,6 +12,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -43,14 +48,18 @@ import com.ranchosoftware.speedymovinginventory.barcodereader.BarcodeGraphic;
 import com.ranchosoftware.speedymovinginventory.barcodereader.BarcodeGraphicTracker;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.Job;
-import com.ranchosoftware.speedymovinginventory.ui.camera.CameraSource;
-import com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview;
-import com.ranchosoftware.speedymovinginventory.ui.camera.GraphicOverlay;
+import com.ranchosoftware.speedymovinginventory.model.ScanRecord;
+import com.ranchosoftware.speedymovinginventory.ui.camera2.CameraSource;
+import com.ranchosoftware.speedymovinginventory.ui.camera2.CameraSourcePreview;
+import com.ranchosoftware.speedymovinginventory.ui.camera2.GraphicOverlay;
 
 import com.ranchosoftware.speedymovinginventory.barcodereader.BarcodeTrackerFactory;
 import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
+import org.joda.time.DateTime;
+
 import java.io.IOException;
+import java.util.List;
 
 public class ScanActivity extends BaseActivity {
 
@@ -61,6 +70,7 @@ public class ScanActivity extends BaseActivity {
 
   // permission request codes need to be < 256
   private static final int RC_HANDLE_CAMERA_PERM = 2;
+  private static final int RC_HANDLE_ACCESS_FINE  = 3;
 
   // constants used to pass extra data in the intent
   public static final String AutoFocus = "AutoFocus";
@@ -76,6 +86,7 @@ public class ScanActivity extends BaseActivity {
   private GestureDetector gestureDetector;
 
   private MediaPlayer positivePlayer;
+  private MediaPlayer itemExistsPlayer;
   private MediaPlayer negativePlayer;
   private MediaPlayer invalidCodePlayer;
   private Vibrator vibrator;
@@ -91,9 +102,41 @@ public class ScanActivity extends BaseActivity {
   private Button cameraLightButton;
 
   private boolean processingCode = false;
+  private Job.Lifecycle lifecycle;
+
+  private boolean allowScans = false;
   /**
    * Initializes the UI and creates the detector pipeline.
    */
+
+  private Location currentLocation;
+
+  private final LocationListener locationListener = new LocationListener() {
+    @Override
+    public void onLocationChanged(final Location location) {
+      //your code here
+      currentLocation = location;
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+  };
+
+
+
   @Override
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
@@ -104,15 +147,23 @@ public class ScanActivity extends BaseActivity {
     companyKey = b.getString("companyKey");
     isReplacementCode = b.getBoolean("isReplacementCode",false);
     allowItemAddOutsideNew = b.getBoolean("allowItemAddOutsideNew", false);
+    lifecycle = Job.Lifecycle.valueOf(b.getString("lifecycle"));
 
-    positivePlayer = MediaPlayer.create(thisActivity, R.raw.checkout_beep);
+
+    positivePlayer = MediaPlayer.create(thisActivity, R.raw.success);
     positivePlayer.setVolume(1.0f, 1.0f);
-    negativePlayer = MediaPlayer.create(thisActivity, R.raw.negative_beep);
+    negativePlayer = MediaPlayer.create(thisActivity, R.raw.item_not_found);
     negativePlayer.setVolume(1.0f, 1.0f);
-
+    itemExistsPlayer = MediaPlayer.create(thisActivity, R.raw.alreadyscanned);
+    if (itemExistsPlayer != null) {
+      itemExistsPlayer.setVolume(1.0f, 1.0f);
+    } else {
+      itemExistsPlayer = positivePlayer;
+    }
+    cameraLightButton = (Button) findViewById(R.id.buttonCameraLight);
     vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-    invalidCodePlayer = MediaPlayer.create(thisActivity, R.raw.negative_beep_2);
+    invalidCodePlayer = MediaPlayer.create(thisActivity, R.raw.negative_beep);
     invalidCodePlayer.setVolume(1.0f, 1.0f);
     scannerMessage = (TextView) findViewById(R.id.tvScannerMessage);
 
@@ -154,7 +205,9 @@ public class ScanActivity extends BaseActivity {
     // permission is not granted yet, request permission.
     int rc = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA);
     if (rc == PackageManager.PERMISSION_GRANTED) {
+      updateUIBasedOnFlash();
       createCameraSource(autoFocus, useFlash);
+
     } else {
       requestCameraPermission();
     }
@@ -175,13 +228,14 @@ public class ScanActivity extends BaseActivity {
       endScan.setText("Cancel");
     }
 
-    cameraLightButton = (Button) findViewById(R.id.buttonCameraLight);
+
     cameraLightButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
 
         if (cameraSource.getFlashMode().equals(Camera.Parameters.FLASH_MODE_TORCH)){
           cameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+
         } else {
           cameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
         }
@@ -189,6 +243,91 @@ public class ScanActivity extends BaseActivity {
       }
     });
 
+    // hide the cameraLight button if the device doesn't have one
+
+
+
+    // Check location before accessing
+    // permission is not granted yet, request permission.
+    int rc2 = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+    if (rc2 == PackageManager.PERMISSION_GRANTED) {
+      allowScans = true;
+      LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+      currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+      if (currentLocation == null) {
+        currentLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+      }
+
+      locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100.0f, locationListener);
+    } else {
+      requestLocationPermission();
+    }
+
+
+
+  }
+
+
+  private void updateUIBasedOnFlash(){
+
+    //return;
+
+
+
+      Camera camera = Camera.open();
+      if (camera == null){
+        return;
+      }
+      Camera.Parameters params = camera.getParameters();
+      if (params == null) {
+        camera.release();
+        return ;
+      }
+      camera.release();
+
+
+      List<String> supportedFlashModes = params.getSupportedFlashModes();
+      if (supportedFlashModes == null || supportedFlashModes.size() == 0) {
+
+        return ;
+      }
+
+      for (int i = 0; i < supportedFlashModes.size(); i++) {
+        String mode = supportedFlashModes.get(i);
+        if (mode.equalsIgnoreCase( Camera.Parameters.FLASH_MODE_TORCH)) {
+          cameraLightButton.setVisibility(View.VISIBLE);
+
+        }
+      }
+
+    return ;
+
+  }
+  private void requestLocationPermission(){
+    Log.w(TAG, "Location permission is not granted. Requesting permission");
+
+    final String[] permissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+
+    if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
+            Manifest.permission.ACCESS_FINE_LOCATION)) {
+      ActivityCompat.requestPermissions(this, permissions, RC_HANDLE_ACCESS_FINE);
+      return;
+    }
+
+    final Activity thisActivity = this;
+
+    View.OnClickListener listener = new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        ActivityCompat.requestPermissions(thisActivity, permissions,
+                RC_HANDLE_ACCESS_FINE);
+      }
+    };
+
+    Snackbar.make(graphicOverlay, R.string.permission_location_rationale,
+            Snackbar.LENGTH_INDEFINITE)
+            .setAction(R.string.ok, listener)
+            .show();
   }
 
   /**
@@ -244,6 +383,7 @@ public class ScanActivity extends BaseActivity {
     .setBarcodeFormats(Barcode.QR_CODE)
     .build();
 
+
     BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(graphicOverlay, new BarcodeGraphicTracker.Callback() {
       @Override
       public void itemRecognized(final String code) {
@@ -256,7 +396,9 @@ public class ScanActivity extends BaseActivity {
 
           thisActivity.runOnUiThread(new Runnable(){
             public void run(){
-              barcodeScanned(code);
+              if(allowScans) {
+                barcodeScanned(code);
+              }
             }
 
           });
@@ -319,6 +461,7 @@ public class ScanActivity extends BaseActivity {
   @Override
   protected void onResume() {
     super.onResume();
+    scannerMessage.setText("Point camera at a QRC Code");
     startCameraSource();
   }
 
@@ -329,6 +472,7 @@ public class ScanActivity extends BaseActivity {
   @Override
   protected void onPause() {
     super.onPause();
+
     if (preview != null) {
       preview.stop();
     }
@@ -341,6 +485,8 @@ public class ScanActivity extends BaseActivity {
   @Override
   protected void onDestroy() {
     super.onDestroy();
+
+
     if (preview != null) {
       preview.release();
     }
@@ -366,35 +512,73 @@ public class ScanActivity extends BaseActivity {
   public void onRequestPermissionsResult(int requestCode,
                                          @NonNull String[] permissions,
                                          @NonNull int[] grantResults) {
-    if (requestCode != RC_HANDLE_CAMERA_PERM) {
+    if (!(requestCode == RC_HANDLE_CAMERA_PERM || requestCode == RC_HANDLE_ACCESS_FINE)) {
       Log.d(TAG, "Got unexpected permission result: " + requestCode);
       super.onRequestPermissionsResult(requestCode, permissions, grantResults);
       return;
     }
+    if (requestCode == RC_HANDLE_CAMERA_PERM) {
 
-    if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-      Log.d(TAG, "Camera permission granted - initialize the camera source");
-      // we have permission, so create the camerasource
-      boolean autoFocus = getIntent().getBooleanExtra(AutoFocus,false);
-      boolean useFlash = getIntent().getBooleanExtra(UseFlash, false);
-      createCameraSource(autoFocus, useFlash);
-      return;
+      if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        Log.d(TAG, "Camera permission granted - initialize the camera source");
+        // we have permission, so create the camerasource
+        boolean autoFocus = getIntent().getBooleanExtra(AutoFocus, false);
+        boolean useFlash = getIntent().getBooleanExtra(UseFlash, false);
+        updateUIBasedOnFlash();
+        createCameraSource(autoFocus, useFlash);
+
+        return;
+      }
+
+      Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
+              " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+
+      DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          finish();
+        }
+      };
+
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle("Speedy Moving Inventory")
+              .setMessage(R.string.no_camera_permission)
+              .setPositiveButton(R.string.ok, listener)
+              .show();
+    } else if (requestCode == RC_HANDLE_ACCESS_FINE){
+      if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        Log.d(TAG, "location granted - initialize tehe location stuff");
+        // we have permission, so create the camerasource
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        int rc2 = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (rc2 == PackageManager.PERMISSION_GRANTED) {
+          currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+          if (currentLocation == null) {
+            currentLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+          }
+          locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100.0f, locationListener);
+        }
+
+        allowScans = true;
+        return;
+      }
+
+      Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
+              " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+
+      DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface dialog, int id) {
+          finish();
+        }
+      };
+
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);
+      builder.setTitle("Speedy Moving Inventory")
+              .setMessage(R.string.no_location_permission)
+              .setPositiveButton(R.string.ok, listener)
+              .show();
     }
 
-    Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
-            " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
 
-    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialog, int id) {
-        finish();
-      }
-    };
-
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setTitle("Speedy Moving Inventory")
-            .setMessage(R.string.no_camera_permission)
-            .setPositiveButton(R.string.ok, listener)
-            .show();
   }
 
   /**
@@ -433,7 +617,7 @@ public class ScanActivity extends BaseActivity {
    */
   private boolean onTap(float rawX, float rawY) {
 
-    BarcodeGraphic graphic = graphicOverlay.getFirstGraphic();
+    BarcodeGraphic graphic = graphicOverlay.getGraphics().get(0);
     Barcode barcode = null;
     if (graphic != null) {
       barcode = graphic.getBarcode();
@@ -526,7 +710,7 @@ public class ScanActivity extends BaseActivity {
 
     if (!Utility.isQrcCodeValid(code)){
       invalidCodePlayer.start();
-      vibrator.vibrate(200);
+      vibrator.vibrate(300);
       scannerMessage.setText("Invalid QRC Code -- Not a Speedy Moving Inventory Code");
       processingCode = false;
       return;
@@ -558,7 +742,9 @@ public class ScanActivity extends BaseActivity {
             Log.d(TAG, "Item does not belong to this job");
             processingCode = false;
           } else {
-            positivePlayer.start();
+            itemExistsPlayer.start();
+            vibrator.vibrate(100);
+            //scannerMessage.setText("Item: Found");
             DatabaseReference itemRef = FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/" + code);
             itemRef.addListenerForSingleValueEvent(new ValueEventListener() {
               @Override
@@ -577,9 +763,21 @@ public class ScanActivity extends BaseActivity {
                   // check to see if already scanned if so note
                   if (item.getIsScanned()){
                     scannerMessage.setText("This item has already been scanned.");
-                    vibrator.vibrate(50);
+                    //vibrator.vibrate(100);
                   } else {
                     // set the item as scanned
+                    double latitude = 33.158092;
+                    double longitude = -117.350594;
+                    if (currentLocation != null){
+                      latitude = currentLocation.getLatitude();
+                      longitude = currentLocation.getLongitude();
+                    }
+                    ScanRecord scanRecord = new ScanRecord(new DateTime(), latitude,
+                            longitude, app().getCurrentUser().getUid(), false, lifecycle);
+
+
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/scanHistory/" + code).push();
+                    ref.setValue(scanRecord);
                     FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/" + code + "/isScanned").setValue(true);
                   }
 
@@ -613,6 +811,8 @@ public class ScanActivity extends BaseActivity {
     params.putString("jobKey", jobKey);
     params.putString("itemCode", code);
     params.putBoolean("itemIsOutOfPhase", allowItemAddOutsideNew);
+    params.putBoolean("invokedByScanner", true);
+    params.putString("lifecycle", job.getLifecycle().toString());
     intent.putExtras(params);
     startActivity(intent);
 
@@ -623,6 +823,7 @@ public class ScanActivity extends BaseActivity {
     // we are replacing a a code we have been invoked via startActivityForResult()
     // and we need just return the new code. No other work to dod
     positivePlayer.start();
+    vibrator.vibrate(100);
     Intent returnData = new Intent();
     returnData.putExtra("newCode", newCode);
     setResult(RESULT_OK, returnData);
@@ -633,16 +834,21 @@ public class ScanActivity extends BaseActivity {
     // the job has to be in status New for additional items to be created
     if (job.getLifecycle() != Job.Lifecycle.New && !allowItemAddOutsideNew){
       // its an error
-      Utility.error(topView, this, R.string.item_not_found);
+      //Utility.error(topView, this, R.string.item_not_found);
+      scannerMessage.setText(R.string.item_not_found);
+
       negativePlayer.start();
-      vibrator.vibrate(200);
+      vibrator.vibrate(300);
     } else {
       positivePlayer.start();
+      vibrator.vibrate(100);
       Intent intent = new Intent(thisActivity, NewItemActivity.class);
       Bundle params = new Bundle();
       params.putString("companyKey", companyKey);
       params.putString("jobKey", jobKey);
       params.putString("itemCode", code);
+      params.putBoolean("invokedByScanner", true);
+      params.putString("lifecycle", job.getLifecycle().toString());
       intent.putExtras(params);
       startActivity(intent);
 

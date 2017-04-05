@@ -58,7 +58,9 @@ public class LoginActivity extends BaseActivity {
 
   private FirebaseAuth auth;
   private FirebaseAuth.AuthStateListener authListener;
-  private boolean fired = false;
+
+
+
 
   /**
    * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -92,14 +94,10 @@ public class LoginActivity extends BaseActivity {
       @Override
       public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
-        if (fired) {
-          return;
-        }
-        //auth.removeAuthStateListener(authListener);
+        auth.removeAuthStateListener(authListener);
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
         if (user != null) {
-          fired = true;
           lookupDatabaseUser(user);
         }
 
@@ -181,7 +179,7 @@ public class LoginActivity extends BaseActivity {
     String uid = firebaseUser.getUid();
     DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/users/" + uid);
 
-    ref.addValueEventListener(new ValueEventListener() {
+    ref.addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
         if (dataSnapshot.getValue() == null){
@@ -192,20 +190,13 @@ public class LoginActivity extends BaseActivity {
         User user = null;
         try {
           user = dataSnapshot.getValue(User.class);
-          if (user.getRoleAsEnum() == User.Role.Customer) {
-            Utility.error(thisActivity.getRootView(), thisActivity,
-                    "We're sorry, but we presently do not support Customer logins in the mobile app. Please try the web interface at https://app.speedymovinginventory.com");
-            auth.signOut();
-            showProgress(false);
-            fired = false;
-            return;
-          }
+
         } catch (Exception e){
           Utility.error(thisActivity.getRootView(), thisActivity, "Unexpected error; cant read user information. Contact Support ErrorCode=" + e.getMessage());
           return;
         }
 
-        String s1 = user.getCompanyKey();
+
         app().setCurrentUser(user);
         if (rememberMe.isChecked()){
           String email = emailView.getText().toString();
@@ -220,9 +211,7 @@ public class LoginActivity extends BaseActivity {
           @Override
           public void run() {
             Intent intent = new Intent(thisActivity, ChooseCompanyActivity.class);
-            Bundle params = new Bundle();
-            params.putString("companyKey", userFinal.getCompanyKey());
-            intent.putExtras(params);
+
             startActivity(intent);
             finish();
           }
@@ -345,7 +334,12 @@ public class LoginActivity extends BaseActivity {
           loginErrorView.setVisibility(View.VISIBLE);
           showProgress(false);
         } else {
+          auth = FirebaseAuth.getInstance();
+          FirebaseUser user = auth.getCurrentUser();
 
+          if (user != null) {
+            lookupDatabaseUser(user);
+          }
         }
       }
     });
@@ -353,18 +347,23 @@ public class LoginActivity extends BaseActivity {
   }
 
   @Override
+  protected void onResume() {
+
+    super.onResume();
+    //auth.addAuthStateListener(authListener);
+  }
+
+  @Override
   public void onStart() {
     super.onStart();
 
-    auth.addAuthStateListener(authListener);
+
   }
 
   @Override
   public void onStop() {
     super.onStop();
-    if (authListener != null) {
-      auth.removeAuthStateListener(authListener);
-    }
+
   }
 
 

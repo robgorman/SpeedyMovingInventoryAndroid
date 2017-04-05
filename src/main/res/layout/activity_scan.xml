@@ -11,6 +11,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/previewLayout"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@color/Black">
+
+        <com.ranchosoftware.speedymovinginventory.ui.camera2.CameraSourcePreview
+          android:id="@+id/preview"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+        </com.ranchosoftware.speedymovinginventory.ui.camera2.CameraSourcePreview>
+
+        <com.ranchosoftware.speedymovinginventory.ui.camera2.GraphicOverlay
+            android:id="@+id/graphicOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="12dp"
+            />
+    </LinearLayout>
+
     <Button
         android:text="@string/end_scan"
         android:layout_width="wrap_content"
@@ -34,7 +59,28 @@
         android:layout_alignParentBottom="true"
         android:layout_marginRight="8dp"
         android:layout_width="50dp"
-        android:layout_height="50dp"/>
+        android:layout_height="50dp"
+        android:visibility="invisible"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="false"
+        android:layout_centerInParent="true">
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/square"
+            android:id="@+id/imageView3"
+            android:layout_centerHorizontal="false"
+            android:layout_centerInParent="false"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:layout_marginRight="60dp"
+            android:layout_marginLeft="60dp"/>
+    </LinearLayout>
 
     <TextView
         android:text="@string/scanner_message"
@@ -44,36 +90,15 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:gravity="center_horizontal"
-        android:layout_centerInParent="true"
+        android:layout_centerInParent="false"
         android:textColor="@color/White"
         android:textSize="20sp"
         android:lines="2"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        />
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/previewLayout"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
-
-        <com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview
-          android:id="@+id/preview"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent">
-
-        </com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview>
-
-        <com.ranchosoftware.speedymovinginventory.ui.camera.GraphicOverlay
-            android:id="@+id/graphicOverlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="12dp"
-            />
-    </LinearLayout>
+        android:visibility="visible"
+        android:layout_above="@+id/buttonEndScan"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="false"/>
 
 </RelativeLayout>

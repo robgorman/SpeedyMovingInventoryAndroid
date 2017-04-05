@@ -39,9 +39,11 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
   private ImageLoader imageLoader;
   private Class activityToLaunchOnItemTouch;
   private String sortBy;
+  private String lifecycle;
 
   public JobRecyclerGridAdapter(BaseActivity context, Boolean allowDelete, String companyKey,
-                                String jobKey, Class activityToLaunch, JobActivity.SortBy ref){
+                                String jobKey, Class activityToLaunch, JobActivity.SortBy ref,
+                                String lifecycle){
     super(Item.class, R.layout.moving_grid_item, MovingItemViewHolder.class, ref.query);
     this.context = context;
     this.allowDelete = allowDelete;
@@ -50,6 +52,10 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
     imageLoader = MyVolley.getImageLoader();
     this.activityToLaunchOnItemTouch = activityToLaunch;
     this.sortBy = ref.sortBy;
+    if (lifecycle == null){
+      Log.d(TAG, "null");
+    }
+    this.lifecycle = lifecycle;
   }
 
   public void remove(int position){
@@ -110,7 +116,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
   private void setTopText(MovingItemViewHolder holder, Item item){
     holder.topText.setText("");
     if (sortBy.equals("By Value")) {
-      holder.topText.setText("$" + String.format("%.0f",item.getMonetaryValue()));
+      holder.topText.setText("$" + String.format("%.2f",item.getMonetaryValue()));
     } else if (sortBy.equals("By Volume")){
       String styled = String.format("%.1f", (float) item.getVolume()) + " ft3";
 
@@ -180,7 +186,9 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
           params.putString("jobKey", jobKey);
           String itemCode = itemKey;
           params.putString("itemCode", itemCode);
+          params.putString("lifecycle", lifecycle);
           intent.putExtras(params);
+
           context.startActivity(intent);
 
       }

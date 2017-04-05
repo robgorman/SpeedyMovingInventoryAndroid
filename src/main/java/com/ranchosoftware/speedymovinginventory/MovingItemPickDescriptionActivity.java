@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.ranchosoftware.speedymovinginventory.app.RanchoApp;
+import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.MovingItemDataDescription;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
   private MovingItemDataDescription.Room room;
   private boolean allowCancel;
 
+  private Item.Category category;
 
   private int selectedIndex = -1; // neg is no selection
 
@@ -79,10 +81,13 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
     String roomString = getIntent().getExtras().getString("room");
     room = MovingItemDataDescription.Room.valueOf(roomString);
     allowCancel  = getIntent().getExtras().getBoolean("allowCancel");
+    // for now we always allow cancel
+    allowCancel = true;
+    category = Item.Category.valueOf(getIntent().getExtras().getString("category"));
 
     filterEdit = (EditText) findViewById(R.id.editFilter);
     changeRoomButton = (Button) findViewById(R.id.changeRoomButton);
-    changeRoomButton.setText(room + " >");
+    changeRoomButton.setText(category.toString() + " >");
     changeRoomButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -129,6 +134,7 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
             returnValue.putExtra("isBox", item.getIsBox());
             returnValue.putExtra("boxSize", item.getBoxSize());
             returnValue.putExtra("speciaInstructions", item.getSpecialInstructions());
+            returnValue.putExtra("category",category.toString() );
             setResult(RESULT_OK, returnValue);
             finish();
             overridePendingTransition(R.xml.slide_in_from_left, R.xml.slide_out_to_right);
@@ -183,9 +189,10 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
     Intent intent = new Intent(this, SpinnerActivity.class);
     Bundle b = new Bundle();
 
-    String names[] = new String[MovingItemDataDescription.Room.values().length];
+    //String names[] = new String[MovingItemDataDescription.Room.values().length];
+    String names[] = new String[Item.Category.values().length];
     int i = 0;
-    for (MovingItemDataDescription.Room r : MovingItemDataDescription.Room.values()){
+    for (Item.Category r : Item.Category.values()){
       names[i] = r.name();
       i = i +1;
     }
@@ -241,8 +248,17 @@ public class MovingItemPickDescriptionActivity extends BaseActivity {
       if (resultCode == Activity.RESULT_OK){
         // extract selected index
         int selectedIndex = data.getIntExtra(SpinnerActivity.paramSelectedIndex, 0);
-        this.room = MovingItemDataDescription.Room.values()[selectedIndex];
-        changeRoomButton.setText(room + " >");
+        this.category = Item.Category.values()[selectedIndex];
+
+        String roomName = "";
+        if (this.category.toString().contains("Bedroom")){
+          roomName = "Bedroom";
+        } else {
+          roomName = this.category.toString();
+        }
+        this.room = MovingItemDataDescription.Room.valueOf(roomName);
+
+        changeRoomButton.setText(category.toString() + " >");
 
         originalItemList = new ArrayList<MovingItemDataDescription>(app().getListFor(room));
         filteredItemList = new ArrayList<MovingItemDataDescription>(app().getListFor(room));

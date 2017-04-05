@@ -2,6 +2,8 @@ package com.ranchosoftware.speedymovinginventory.model;
 
 import com.google.firebase.database.Exclude;
 
+import org.joda.time.DateTime;
+
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -60,6 +62,9 @@ public class Item extends Model {
 
   private Boolean itemWasCreatedOutOfPhase;
 
+  private Long createDateTime;
+  private Long createDateTimeInverse;
+
 
 
   public Item(){
@@ -78,7 +83,8 @@ public class Item extends Model {
               String packedBy,
               String insurance,
               Boolean isBox,
-              Boolean itemWasCreatedOutOfPhase){
+              Boolean itemWasCreatedOutOfPhase,
+              Long createDateTime){
     this.category = category.toString();
     this.numberOfPads = numberOfPads;
     this.numberOfPadsInverse = -numberOfPads;
@@ -102,14 +108,29 @@ public class Item extends Model {
     this.insurance = insurance;
     this.isBox = isBox ;
     this.isScanned = false;
-    this.isScannedInverse = !this.isScanned;
+    this.isScannedInverse = !this.isScanned;  // this is not really necessary.
     this.damageDescription = "";
     this.syncWeightAndVolume = true;
     this.isDisassembled = false;
 
     this.itemWasCreatedOutOfPhase = itemWasCreatedOutOfPhase;
+    this.createDateTime = createDateTime;
+    this.createDateTimeInverse = -createDateTime;
   }
 
+  public Long getCreateDateTime(){
+    if (createDateTime == null){
+      createDateTime = 0L;
+    }
+    return createDateTime;
+  }
+
+  public Long getCreateDateTimeInverse(){
+    if (createDateTimeInverse == null){
+      return -1L;
+    }
+    return createDateTimeInverse;
+  }
 
   public String getSpecialHandling() {
 
@@ -324,5 +345,7 @@ public class Item extends Model {
     }
     return itemWasCreatedOutOfPhase;
   }
+
+
 }
 

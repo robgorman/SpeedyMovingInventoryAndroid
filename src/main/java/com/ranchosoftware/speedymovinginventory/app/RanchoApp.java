@@ -1,13 +1,18 @@
 package com.ranchosoftware.speedymovinginventory.app;
 
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.support.multidex.MultiDexApplication;
+
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.ranchosoftware.speedymovinginventory.R;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
@@ -16,6 +21,7 @@ import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.MovingItemDataDescription;
 import com.ranchosoftware.speedymovinginventory.model.User;
+import com.ranchosoftware.speedymovinginventory.model.UserCompanyAssignment;
 import com.ranchosoftware.speedymovinginventory.server.Server;
 
 import org.joda.time.format.DateTimeFormat;
@@ -25,6 +31,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static android.location.Criteria.ACCURACY_FINE;
 
 /**
  * Created by rob on 7/13/16.
@@ -61,6 +69,8 @@ public class RanchoApp extends MultiDexApplication {
   private final DateTimeFormatter imageDateTimeFormatter = DateTimeFormat.forPattern("MM/dd/yy HH:mm:ss");
 
   private User currentUser;
+  private UserCompanyAssignment userCompanyAssignment;
+  private String companyKey;
   private Company currentCompany;
 
   private Item currentItem;
@@ -84,14 +94,13 @@ public class RanchoApp extends MultiDexApplication {
     // compute the web app url from the storage url, because we
     // don't have a good way to get it. its necessary when sending email
 
-    if (storageUrl == "gs://speedymovinginventorydev-9c905.appspot.com" ){
+    if (storageUrl == "gs://speedymovinginventorydev-9c905.appspot.com") {
       webAppUrl = "https://speedymovinginventorydev-9c905.firebaseapp.com";
     } else {
       webAppUrl = "https://app.speedymovinginventory.com";
     }
 
     loadMovingItemDescriptions();
-
   }
 
 
@@ -182,23 +191,22 @@ public class RanchoApp extends MultiDexApplication {
     return currentUser;
   }
 
-  public void setCurrentUser(User currentUser) {
-    this.currentUser = currentUser;
-    String companyKey = currentUser.getCompanyKey();
+  public UserCompanyAssignment getUserCompanyAssignment() {
+    return userCompanyAssignment;
+  }
 
-//    FirebaseDatabase.getInstance().getReference("companies/" + companyKey).addValueEventListener(new ValueEventListener() {
-//      @Override
-//      public void onDataChange(DataSnapshot dataSnapshot) {
-//        Company company = dataSnapshot.getValue(Company.class);
-//        currentCompany = company;
-//      }
-//
-//      @Override
-//      public void onCancelled(DatabaseError databaseError) {
-//
-//      }
-//    });
+  public void setUserCompanyAssignment(UserCompanyAssignment userCompanyAssignment) {
+    if (userCompanyAssignment != null) {
+      this.userCompanyAssignment = userCompanyAssignment;
+    }
+  }
 
+
+
+  private Query userAssignments;
+
+  public void setCurrentCompany(final String companyKey){
+    this.companyKey = companyKey;
     DatabaseObject<Company> companyObject = new DatabaseObject<>(Company.class, companyKey);
     companyObject.addValueEventListener(new DatabaseObjectEventListener<Company>() {
       @Override
@@ -206,6 +214,24 @@ public class RanchoApp extends MultiDexApplication {
         currentCompany = company;
       }
     });
+
+    userAssignments  = FirebaseDatabase.getInstance().getReference("/companyUserAssignments/")
+            .orderByChild("uid")
+            .startAt(this.currentUser.getUid())
+            .endAt(this.currentUser.getUid());
+
+  }
+
+  public String getCompanyKey() {
+    return companyKey;
+  }
+
+  public void setCurrentUser(User currentUser) {
+    this.currentUser = currentUser;
+
+
+
+
   }
 
   public DateTimeFormatter getDateFormatter() {
@@ -263,10 +289,14 @@ public class RanchoApp extends MultiDexApplication {
   }
 
   public boolean userIsAtLeastForeman(){
-    User.Role role = currentUser.getRoleAsEnum();
+
+    // TODO hack because userCompanyAssignment is sometimes null and we don't know why
+    if (userCompanyAssignment == null){
+      return true;
+    }
+    User.Role role = userCompanyAssignment.getRoleAsEnum();
     return role == User.Role.AgentForeman ||
             role == User.Role.CompanyAdmin ||
-            role == User.Role.ServiceAdmin ||
             role == User.Role.Foreman;
 
   }

@@ -59,8 +59,17 @@ public class AboutDialog {
 
 
     RanchoApp app = (RanchoApp) activity.getApplication();
-    tvUserName.setText( app.getCurrentUser().getFirstName() + " " + app.getCurrentUser().getLastName() );
-    tvRole.setText("(" + app.getCurrentUser().getRole() + ")");
+    if (app.getCurrentUser() == null){
+      tvUserName.setText("");
+    } else {
+      tvUserName.setText(app.getCurrentUser().getFirstName() + " " + app.getCurrentUser().getLastName());
+    }
+
+    if (app.getUserCompanyAssignment() == null){
+      tvRole.setText("");
+    } else {
+      tvRole.setText("(" + app.getUserCompanyAssignment().getRole() + ")");
+    }
 
 
 

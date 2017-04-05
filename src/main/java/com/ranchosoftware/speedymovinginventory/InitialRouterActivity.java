@@ -22,8 +22,7 @@ public class InitialRouterActivity extends BaseActivity {
   private FirebaseAuth.AuthStateListener authListener;
   private FirebaseAuth auth;
 
-  private boolean fired = false;
-  private boolean foundUser = false;
+
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +37,7 @@ public class InitialRouterActivity extends BaseActivity {
     authListener = new FirebaseAuth.AuthStateListener() {
       @Override
       public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-        if (fired){
-          return;
-        }
-        fired = true;
+
         auth.removeAuthStateListener(authListener);
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
@@ -62,26 +58,30 @@ public class InitialRouterActivity extends BaseActivity {
     finish();
   }
 
-  ValueEventListener listener = new ValueEventListener() {
+  ValueEventListener userListener = new ValueEventListener() {
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
 
+      //userReference.removeEventListener(userListener);
       try {
         final User user = dataSnapshot.getValue(User.class);
-        String companyKey = user.getCompanyKey();
-        app().setCurrentUser(user);
+        if (user == null){
+          launchLogin();
+        } else {
+          app().setCurrentUser(user);
 
-        foundUser = true;
-        Handler mainHandler = new Handler(thisActivity.getMainLooper());
-        mainHandler.post(new Runnable() {
 
-          @Override
-          public void run() {
-            Intent intent = new Intent(thisActivity, ChooseCompanyActivity.class);
-            startActivity(intent);
-            finish();
-          }
-        });
+          Handler mainHandler = new Handler(thisActivity.getMainLooper());
+          mainHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+              Intent intent = new Intent(thisActivity, ChooseCompanyActivity.class);
+              startActivity(intent);
+              finish();
+            }
+          });
+        }
       } catch (Exception e) {
         // if we get an exception trying to pull the user out of the dataSnapshot
         launchLogin();
@@ -102,38 +102,33 @@ public class InitialRouterActivity extends BaseActivity {
     String uid = firebaseUser.getUid();
     userReference = FirebaseDatabase.getInstance().getReference("/users/"+uid);
 
-    // set a timeout because if the user has been deleted there will be no event occurring
-    new Handler().postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        if (!foundUser) {
-          userReference.removeEventListener(listener);
-          FirebaseAuth.getInstance().signOut();
-          launchLogin();
-        }
-      }
-    }, 10000);
+    userReference.addListenerForSingleValueEvent(userListener);
 
-    userReference.addValueEventListener(listener);
-    //ref.addChildEventListener(childEventListener);
 
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    auth.addAuthStateListener(authListener);
+  }
+
+  @Override
+  protected void onPause() {
+    super.onPause();
+    //auth.removeAuthStateListener(authListener);
   }
 
   @Override
   public void onStart() {
     super.onStart();
+    //auth.addAuthStateListener(authListener);
 
-    auth.addAuthStateListener(authListener);
   }
 
   @Override
   public void onStop() {
     super.onStop();
-    if (authListener != null) {
-      auth.removeAuthStateListener(authListener);
-    }
-    if (userReference != null){
-      userReference.removeEventListener(listener);
-    }
+
   }
 }
