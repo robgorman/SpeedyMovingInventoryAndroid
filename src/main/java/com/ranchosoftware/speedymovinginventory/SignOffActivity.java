@@ -1,6 +1,8 @@
 package com.ranchosoftware.speedymovinginventory;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -85,6 +87,34 @@ public class SignOffActivity extends BaseActivity {
   private ImageLoader imageLoader;
   private Company company;
   private Job job;
+
+  public static Intent getLaunchIntent(Context context,
+                                       String companyKey,
+                                       String jobKey,
+                                       String lifecycle,
+                                       Boolean storageInTransit,
+                                       int totalItems,
+                                       int totalValue,
+                                       int totalPads,
+                                       Float totalVolumeCubicFeet,
+                                       Float totalWeightLbs,
+                                       int totalDamagedItems){
+    Intent intent = new Intent(context, SignOffActivity.class);
+    Bundle params = new Bundle();
+    params.putString("companyKey",companyKey);
+    params.putString("jobKey", jobKey);;
+    params.putString("lifecycle", lifecycle);
+    params.putBoolean("storageInTransit", storageInTransit);
+    params.putInt("totalItems", totalItems);
+    params.putInt("totalValue", totalValue );
+    params.putInt("totalPads",  totalPads);
+    params.putFloat("totalVolumeCubicFeet",  totalVolumeCubicFeet);
+    params.putFloat("totalWeightLbs",  totalWeightLbs);
+    params.putInt("totalDamagedItems",  totalDamagedItems);
+
+    intent.putExtras(params);
+    return intent;
+  }
 
   private void updateLifecycle(Job job){
     if (job.getStorageInTransit()){
@@ -245,9 +275,18 @@ public class SignOffActivity extends BaseActivity {
 
 
   private String constructSummary(){
-    String summary =
-                    "• " + Integer.toString(totalItems) + " Items valued at $" + totalValue + "\n" +
-                    "• " + "Move destination is " + moveDestination() + "\n";
+
+
+    String summary = "";
+    if (app().getCurrentCompany() != null && app().getCurrentCompany().getExposeValueToCustomers()){
+      summary =  "• " + Integer.toString(totalItems) + " Items valued at $" + totalValue + "\n" +
+              "• " + "Move destination is " + moveDestination() + "\n";
+    } else {
+      // remove the value phrease
+      summary =  "• " + Integer.toString(totalItems) + " Items\n" +
+              "• " + "Move destination is " + moveDestination() + "\n";
+    }
+
     return summary;
   }
 
@@ -272,7 +311,7 @@ public class SignOffActivity extends BaseActivity {
     totalDamagedItems = params.getInt("totalDamagedItems");
 
     tvDate = (TextView) findViewById(R.id.tvDate);
-    DateTimeFormatter fmt = DateTimeFormat.forPattern("EEE, MMM d yyyy, h:mm a");
+    DateTimeFormatter fmt = DateTimeFormat.forPattern("EEE, MMM d yyyy, h:mm a z");
     DateTime now = new DateTime();
     tvDate.setText(fmt.print(now));
     tvForeman = (TextView) findViewById(R.id.tvForeman);
@@ -392,7 +431,9 @@ public class SignOffActivity extends BaseActivity {
       public void onFailure(@NonNull Exception e) {
         Log.d(TAG, "upload failed");
         Utility.error(getRootView(), thisActivity, "Signature upload failed. Try again");
-        progressDialog.hide();
+        progressDialog.dismiss();
+
+        progressDialog = null;
       }
     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
 
@@ -404,11 +445,13 @@ public class SignOffActivity extends BaseActivity {
 
         new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("lifecycle").setValue(nextState);
         //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/lifecycle").setValue(getNextLifecyle().toString());
+        @SuppressWarnings("VisibleForTests")
         Uri downloadUrl = taskSnapshot.getDownloadUrl();
         //FirebaseDatabase.getInstance().getReference("/jobs/" + jobKey + "/signature" + entryLifecycle.toString()).setValue(new Signature(name, downloadUrl.toString()));
         new DatabaseObject<Job>(Job.class, companyKey, jobKey).child("signature" + nextState)
                 .setValue(new Signature(name, downloadUrl.toString(), new DateTime().getMillis()));
-        progressDialog.hide();
+        progressDialog.dismiss();
+        progressDialog = null;
         setResult(RESULT_OK);
         finish();
       }

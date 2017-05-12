@@ -109,22 +109,18 @@ public class ItemDetailsActivity extends BaseActivity {
     public void onLocationChanged(final Location location) {
       //your code here
       currentLocation = location;
-
     }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-
     }
   };
   private ValueEventListener itemRefEventListener = new ValueEventListener() {
@@ -134,7 +130,6 @@ public class ItemDetailsActivity extends BaseActivity {
         // there is some sort of error
         Log.d(TAG, "Serious Error");
         Utility.error(getRootView(), thisActivity, "Error: Item Detail Activity, unexpected null.");
-
       } else {
         try {
           item = dataSnapshot.getValue(Item.class);
@@ -150,7 +145,6 @@ public class ItemDetailsActivity extends BaseActivity {
 
     @Override
     public void onCancelled(DatabaseError databaseError) {
-
     }
   };
 
@@ -167,7 +161,6 @@ public class ItemDetailsActivity extends BaseActivity {
       String stringUri = item.getImageReferences().get(key);
       adapter.add(new ImageAdapterItem(key, stringUri));
     }
-
 
     if ( !app().userIsAtLeastForeman()){
       scanOverrideSwitch.setVisibility(View.INVISIBLE);
@@ -191,7 +184,6 @@ public class ItemDetailsActivity extends BaseActivity {
 
     ((TextView)findViewById(R.id.tvWeight)).setText(String.format("%.0f",item.getWeightLbs()) + " lbs");
 
-
     scanOverrideSwitch.setChecked(item.getIsScanned());
     adapter.notifyDataSetChanged();
   }
@@ -200,21 +192,18 @@ public class ItemDetailsActivity extends BaseActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_item_details);
+    Bundle params = getIntent().getExtras();
+    companyKey = params.getString("companyKey");
+    jobKey = params.getString("jobKey");
+    qrcCode = params.getString("itemCode");
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-    toolbar.setTitle("Item Details");
+    toolbar.setTitle("Item Details: " + qrcCode.substring(0, 5));
     setSupportActionBar(toolbar);
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
     positivePlayer = MediaPlayer.create(thisActivity, R.raw.success);
     positivePlayer.setVolume(1.0f, 1.0f);
-
     vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
-    Bundle params = getIntent().getExtras();
-    companyKey = params.getString("companyKey");
-    jobKey = params.getString("jobKey");
-    qrcCode = params.getString("itemCode");
-
     lifecycle = Job.Lifecycle.valueOf(params.getString("lifecycle"));
 
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -258,7 +247,6 @@ public class ItemDetailsActivity extends BaseActivity {
               ScanRecord scanRecord = new ScanRecord(new DateTime(), latitude,
                       longitude, app().getCurrentUser().getUid(), true, lifecycle);
 
-
               DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/scanHistory/" + qrcCode).push();
               ref.setValue(scanRecord);
             }
@@ -286,10 +274,8 @@ public class ItemDetailsActivity extends BaseActivity {
     // permission is not granted yet, request permission.
     int rc2 = ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION);
     if (rc2 == PackageManager.PERMISSION_GRANTED) {
-
       LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
       currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
       locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100.0f, locationListener);
     } else {
       requestLocationPermission();
@@ -317,13 +303,11 @@ public class ItemDetailsActivity extends BaseActivity {
       }
     };
 
-
     Snackbar.make(getRootView(), R.string.permission_location_rationale,
             Snackbar.LENGTH_INDEFINITE)
             .setAction(R.string.ok, listener)
             .show();
   }
-
 
   private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 4;
   private static final int TAKE_PHOTO_CODE = 5;
@@ -360,7 +344,6 @@ public class ItemDetailsActivity extends BaseActivity {
     }
   }
 
-
   private File imageFile;
   private void createImageFile() throws IOException {
     String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -373,7 +356,6 @@ public class ItemDetailsActivity extends BaseActivity {
             storageDir      /* directory */
     );
     imageFile = image;
-
   }
 
   @Override
@@ -387,9 +369,7 @@ public class ItemDetailsActivity extends BaseActivity {
           // permission was granted, yay! Do the
           // contacts-related task you need to do.
           launchCameraForResult();
-
         } else {
-
           DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
               dialog.dismiss();
@@ -414,8 +394,6 @@ public class ItemDetailsActivity extends BaseActivity {
             currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100.0f, locationListener);
           }
-
-
           return;
         }
 
@@ -434,7 +412,6 @@ public class ItemDetailsActivity extends BaseActivity {
                 .setPositiveButton(R.string.ok, listener)
                 .show();
       }
-
       // other 'case' lines to check for other
       // permissions this app might request
     }
@@ -455,9 +432,7 @@ public class ItemDetailsActivity extends BaseActivity {
     Matrix matrix = new Matrix();
     matrix.postRotate(angle);
     return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
-
   }
-
 
   private Bitmap scaleBitmapIfNecessary(Bitmap bitmap){
     int maxSize = Math.max(bitmap.getWidth(), bitmap.getHeight());

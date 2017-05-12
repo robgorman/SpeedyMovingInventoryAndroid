@@ -216,9 +216,9 @@ public class NewItemActivity extends BaseActivity {
 
     invokedByScanner = params.getBoolean("invokedByScanner", false);
     if (invokedByScanner){
-      toolbar.setTitle("Scanning");
+      toolbar.setTitle("Item" + ": " + qrcCode.substring(0, 5));
     } else {
-      toolbar.setTitle("Edit Item");
+      toolbar.setTitle("Item" + ": " + qrcCode.substring(0, 5));
     }
 
     setSupportActionBar(toolbar);

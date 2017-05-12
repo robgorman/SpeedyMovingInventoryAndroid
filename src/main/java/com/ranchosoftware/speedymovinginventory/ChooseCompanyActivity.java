@@ -1,40 +1,28 @@
 package com.ranchosoftware.speedymovinginventory;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.PhoneNumberUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
-import com.android.volley.toolbox.ImageLoader;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import com.ranchosoftware.speedymovinginventory.app.MyVolley;
+import com.google.firebase.auth.FirebaseAuth;
+import com.ranchosoftware.speedymovinginventory.firebase.FirebaseServer;
 import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.User;
 import com.ranchosoftware.speedymovinginventory.model.UserCompanyAssignment;
+import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +37,6 @@ public class ChooseCompanyActivity extends BaseActivity {
   private ProgressBar loadingIndicator;
 
   private User user;
-
   private CompanyAdapter adapter;
 
   private class CompanyAndUca {
@@ -74,84 +61,37 @@ public class ChooseCompanyActivity extends BaseActivity {
 
   private List<CompanyAndUca> companies = new ArrayList<>();
 
-  class CustomValueEventListener implements ValueEventListener {
-    private DatabaseReference ref;
-    private UserCompanyAssignment uca;
 
-    CustomValueEventListener(DatabaseReference ref, UserCompanyAssignment uca) {
-      this.ref = ref;
-      this.uca = uca;
-    }
 
-    @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
-      ref.removeEventListener(this);
-      Company company = dataSnapshot.getValue(Company.class);
-      companies.add(new CompanyAndUca(company,uca));
-      adapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
+  public static Intent getLaunchIntent(Context context){
+    return new Intent(context, ChooseCompanyActivity.class);
   }
 
 
-/*
-  private int countActiveCompaniesForUser(User user){
-    if (user.getCompanies() == null){
-      // old style can only be 1
-      return 1;
-    }
-
-    if (user.getCompanies().size() == 1){
-      return 1;
-    }
-
-    int count = 0;
-    for (Map.Entry<String, UserCompanyAssignment> assignment : user.getCompanies().entrySet()) {
-      UserCompanyAssignment next = assignment.getValue();
-      if (next.getIsDisabled() == false){
-        count = count + 1;
+  public void noCompanyAssignmentsError(){
+    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int id) {
+        dialog.dismiss();
       }
-    }
-    return count;
-  }
-  */
-  private ChildEventListener childListener = new ChildEventListener(){
-
-  @Override
-  public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-    UserCompanyAssignment uca = dataSnapshot.getValue(UserCompanyAssignment.class);
-    if (!uca.getIsDisabled()){
-      int x = 5;
-      assignments.add(uca);
-      // TODO: this is confustion
-      // we need to set the app stuff here.
-    }
-  }
-
-  @Override
-  public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+    };
+    Utility.popupError(thisActivity, "Error",
+            "There are no company assignments for user " + user.getFirstName() + " " + user.getLastName() + ". Contact support.",
+            listener);
 
   }
 
-  @Override
-  public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+  public void errorLoginNotSupportedForCustomers(){
+    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int id) {
+        dialog.dismiss();
+        app().resetCredentials();
+        FirebaseAuth.getInstance().signOut();
+        finish();
+      }
+    };
+    Utility.popupError(thisActivity, "Customer Login Not Supported", "We apologize, but our mobile app does not support customer logins at this time. " +
+            "Please try the web interface at https://app.speedymovinginventory.com", listener);
   }
-
-  @Override
-  public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-  }
-
-  @Override
-  public void onCancelled(DatabaseError databaseError) {
-
-  }
-};
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -163,57 +103,65 @@ public class ChooseCompanyActivity extends BaseActivity {
     setSupportActionBar(toolbar);
 
     user = app().getCurrentUser();
-    // if the user is only associated with one company we just send them
-    // there. Otherwise they need to choose.
-    final Query companiesQuery = FirebaseDatabase.getInstance().getReference("/companyUserAssignments/").orderByChild("uid").startAt(user.getUid()).endAt(user.getUid());
-
-
-    companiesQuery.addChildEventListener(childListener);
-
-    companiesQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+    FirebaseServer server = app().getFirebaseServer();
+    server.getCompanyAssignmentsForUser(user, new FirebaseServer.CompanyAssignmentsSuccess() {
       @Override
-      public void onDataChange(DataSnapshot dataSnapshot) {
+      public void success(List<UserCompanyAssignment> assignments) {
 
-        Log.d(TAG, "all done");
-        companiesQuery.removeEventListener(childListener);
         if (assignments.size() == 0){
-          DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-              dialog.dismiss();
-            }
-          };
-          AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
-          builder.setTitle("Error")
-                  .setMessage("There are no company assignments for this user. Contact support.")
-                  .setPositiveButton(R.string.ok, listener)
-                  .show();
+          noCompanyAssignmentsError();
         } else if (assignments.size() == 1){
+          final UserCompanyAssignment assignment = assignments.get(0);
+          if (assignment.getRoleAsEnum() == User.Role.Customer){
+            errorLoginNotSupportedForCustomers();
+            return;
+          }
           // we just launch jobs
+          app().setUserCompanyAssignment(assignment);
+          FirebaseServer server = app().getFirebaseServer();
+          server.getCompany(assignment.getCompanyKey(), new FirebaseServer.GetCompanySuccess() {
+                    @Override
+                    public void success(Company company) {
+                      app().setCurrentCompany(company);
+                      Intent intent = JobsActivity.getLaunchIntent(thisActivity, assignment.getCompanyKey());
+                      startActivity(intent);
+                      finish();
+                      return;
+                    }
+                  }, new FirebaseServer.Failure() {
+                    @Override
+                    public void error(String message) {
 
-          app().setUserCompanyAssignment(assignments.get(0));
-          app().setCurrentCompany(assignments.get(0).getCompanyKey());
-          Intent intent = new Intent(thisActivity, JobsActivity.class);
-          Bundle params = new Bundle();
-          params.putString("companyKey", assignments.get(0).getCompanyKey());
+                    }
+                  });
 
-
-          intent.putExtras(params);
-          startActivity(intent);
-          finish();
-          return;
         } else {
-          for (UserCompanyAssignment uca : assignments) {
+          for (final UserCompanyAssignment uca : assignments) {
 
-            final DatabaseReference companyRef = FirebaseDatabase.getInstance().getReference("/companies/" + uca.getCompanyKey());
-            CustomValueEventListener listener = new CustomValueEventListener(companyRef, uca);
-            companyRef.addValueEventListener(listener);
+            FirebaseServer server = app().getFirebaseServer();
+            server.getCompany(uca.getCompanyKey(), new FirebaseServer.GetCompanySuccess() {
+              @Override
+              public void success(Company company) {
+                companies.add(new CompanyAndUca(company, uca));
+                adapter.notifyDataSetChanged();
+              }
+            }, new FirebaseServer.Failure() {
+              @Override
+              public void error(String message) {
+                //TODO what todo do
+
+              }
+            });
+
           }
         }
+
       }
-
+    }, new FirebaseServer.Failure() {
       @Override
-      public void onCancelled(DatabaseError databaseError) {
-
+      public void error(String message) {
+        // TODO
+        Utility.popupError(thisActivity, "Error", message, null);
       }
     });
 
@@ -225,15 +173,7 @@ public class ChooseCompanyActivity extends BaseActivity {
     adapter = new CompanyAdapter(thisActivity, companies);
     companiesListView.setAdapter(adapter);
 
-    /*
-    for (Map.Entry<String, UserCompanyAssignment> assignment : user.getCompanies().entrySet()) {
-      String companyKey = assignment.getValue().getCompanyKey();
-      final DatabaseReference companyRef = FirebaseDatabase.getInstance().getReference("/companies/" + companyKey);
-      CustomValueEventListener listener = new CustomValueEventListener(companyRef);
-      companyRef.addValueEventListener(listener);
 
-    }
-    */
 
     companiesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       @Override
@@ -241,15 +181,29 @@ public class ChooseCompanyActivity extends BaseActivity {
 
         CompanyAndUca companyAndUca = adapter.getItem(position);
 
-        app().setUserCompanyAssignment(assignments.get(0));
-        app().setCurrentCompany(assignments.get(0).getCompanyKey());
+        final UserCompanyAssignment assignment = companyAndUca.getUserCompanyAssignment();
+        app().setUserCompanyAssignment(assignment);
 
-        Intent intent = new Intent(thisActivity, JobsActivity.class);
-        Bundle params = new Bundle();
-        params.putString("companyKey", companyAndUca.getUserCompanyAssignment().getCompanyKey());
-        params.putBoolean("hasParent", true);
-        intent.putExtras(params);
-        startActivity(intent);
+        FirebaseServer server = app().getFirebaseServer();
+        server.getCompany(assignment.getCompanyKey(), new FirebaseServer.GetCompanySuccess() {
+          @Override
+          public void success(Company company) {
+            app().setCurrentCompany(company);
+            Intent intent = new Intent(thisActivity, JobsActivity.class);
+            Bundle params = new Bundle();
+            params.putString("companyKey", assignment.getCompanyKey());
+            params.putBoolean("hasParent", true);
+            intent.putExtras(params);
+            startActivity(intent);
+          }
+        }, new FirebaseServer.Failure() {
+          @Override
+          public void error(String message) {
+             // TODO
+          }
+        });
+
+
       }
     });
 

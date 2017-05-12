@@ -59,6 +59,7 @@
     <color name="DarkBlue">#00008B</color>
     <color name="Black">#000000</color>
 
+    <color name="almostTransparent">#2b000000</color>
     <color name="transparent">#00000000</color>
     <color name="transparentGray">#7b7b7b22</color>
     <color name="GrayCheck">#7b7b7b</color>

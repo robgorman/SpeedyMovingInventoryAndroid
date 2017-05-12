@@ -1,11 +1,13 @@
 package com.ranchosoftware.speedymovinginventory.utility;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 
 import com.ranchosoftware.speedymovinginventory.R;
@@ -13,9 +15,29 @@ import com.ranchosoftware.speedymovinginventory.model.Job;
 
 import java.util.UUID;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 
 public class Utility {
+
+  // question for test. Will this wwork with null
+  public static void popupError(Context context, String title, String message, DialogInterface.OnClickListener listener){
+    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+    builder.setTitle(title)
+            .setMessage(message);
+    if (listener != null){
+      builder.setPositiveButton("Ok", listener);
+    }
+    builder.show();
+
+  }
+
+
+  public static void infoMessage(View view, Context context, String message){
+
+    Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
+  }
 
   public static void error(View view, Context context, String message){
 
@@ -90,5 +112,17 @@ public class Utility {
     }
     return ResourcesCompat.getDrawable(context.getResources(), resource, null);
     //return context.getResources().getDrawable(resource);
+  }
+
+  public static boolean isValidEmailAddress(String email){
+    boolean result = true;
+    try {
+      InternetAddress emailAddress = new InternetAddress(email);
+      emailAddress.validate();
+
+    } catch (AddressException ex){
+      result = false;
+    }
+    return result;
   }
 }

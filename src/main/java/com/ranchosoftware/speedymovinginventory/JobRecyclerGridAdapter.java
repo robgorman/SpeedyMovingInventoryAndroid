@@ -41,6 +41,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
   private String sortBy;
   private String lifecycle;
 
+
   public JobRecyclerGridAdapter(BaseActivity context, Boolean allowDelete, String companyKey,
                                 String jobKey, Class activityToLaunch, JobActivity.SortBy ref,
                                 String lifecycle){
@@ -52,6 +53,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
     imageLoader = MyVolley.getImageLoader();
     this.activityToLaunchOnItemTouch = activityToLaunch;
     this.sortBy = ref.sortBy;
+
     if (lifecycle == null){
       Log.d(TAG, "null");
     }
@@ -113,7 +115,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
   }
 
 
-  private void setTopText(MovingItemViewHolder holder, Item item){
+  private void setTopText(MovingItemViewHolder holder, Item item, String itemKey){
     holder.topText.setText("");
     if (sortBy.equals("By Value")) {
       holder.topText.setText("$" + String.format("%.2f",item.getMonetaryValue()));
@@ -129,6 +131,14 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
       holder.topText.setText(item.getCategory().toString());
     }else if (sortBy.equals("By Weight")){
       holder.topText.setText(String.format("%.0f",item.getWeightLbs()) + " lbs");
+    } else if (sortBy.equals("By Item#")){
+      holder.topText.setText(itemKey.substring(0, 5));
+    } else if (sortBy.equals("By Pads")){
+      if (item.getNumberOfPads() == 0){
+        holder.topText.setText("No Pads");
+      } else {
+        holder.topText.setText(Integer.toString(item.getNumberOfPads()) + " Pads" );
+      }
     }
 
   }
@@ -174,7 +184,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
     }
 
 
-    setTopText(holder, item);
+    setTopText(holder, item, itemKey);
 
     holder.itemView.setOnClickListener(new View.OnClickListener() {
       @Override

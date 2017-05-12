@@ -1,5 +1,6 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -25,6 +27,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.ranchosoftware.speedymovinginventory.firebase.FirebaseListAdapter;
+import com.ranchosoftware.speedymovinginventory.firebase.FirebaseServer;
 import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.Job;
 import com.ranchosoftware.speedymovinginventory.model.User;
@@ -51,59 +54,35 @@ public class JobsActivity extends BaseMenuActivity {
   private UserCompanyAssignment uca;
   private User user;
 
-
   FirebaseListAdapter<Job> adapter;
   DateTimeFormatter formatter;
 
-  class CustomValueEventListener implements ValueEventListener {
-    private DatabaseReference ref;
-
-    CustomValueEventListener(DatabaseReference ref) {
-      this.ref = ref;
-    }
-
-    @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
-      ref.removeEventListener(this);
-      Company company = dataSnapshot.getValue(Company.class);
-      getSupportActionBar().setTitle("Jobs (" + company.getName() + ")");
-
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
+  public static Intent getLaunchIntent(Context context, String companyKey){
+    Bundle params = new Bundle();
+    params.putString("companyKey", companyKey);
+    Intent intent = new Intent(context, JobsActivity.class);
+    intent.putExtras(params);
+    return intent;
   }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_jobs);
-
+    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+    setSupportActionBar(toolbar);
     Bundle b = getIntent().getExtras();
 
     companyKey = b.getString("companyKey");
     boolean hasParent = b.getBoolean("hasParent", false);
 
-    final DatabaseReference companyRef = FirebaseDatabase.getInstance().getReference("/companies/" + companyKey);
-    companyRef.addValueEventListener(new CustomValueEventListener(companyRef));
+    ActionBar bar = getSupportActionBar();
+    bar.setTitle("Jobs (" + app().getCurrentCompany().getName() + ")");
 
-    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-    setSupportActionBar(toolbar);
+
     getSupportActionBar().setDisplayHomeAsUpEnabled(hasParent);
 
     formatter = app().getDateFormatter();
-
-    FirebaseAuth auth = FirebaseAuth.getInstance();
-    auth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
-      @Override
-      public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-        if (firebaseAuth.getCurrentUser() == null){
-          finish();
-        }
-      }
-    });
 
     FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
     fab.setOnClickListener(new View.OnClickListener() {
@@ -126,7 +105,6 @@ public class JobsActivity extends BaseMenuActivity {
       workingView.setVisibility(View.VISIBLE);
       noJobsView.setVisibility(View.INVISIBLE);
       jobsListView.setVisibility(View.INVISIBLE);
-
       new Handler().postDelayed(new Runnable() {
         @Override
         public void run() {
@@ -138,27 +116,16 @@ public class JobsActivity extends BaseMenuActivity {
       noJobsView.setVisibility(View.VISIBLE);
       jobsListView.setVisibility(View.INVISIBLE);
     }
-
     user = app().getCurrentUser();
     uca = app().getUserCompanyAssignment();
 
-    Query ref = FirebaseDatabase.getInstance().getReference("/joblists/" + companyKey + "/jobs")
-            .orderByChild("jobNumber");
-
-
-    // Todo; we certainly don't need this order by any more
-    //User user = app().getCurrentUser();
-    //if (user != null){
-    //  ref = ref.orderByChild("companyKey").startAt(user.getCompanyKey()).endAt(user.getCompanyKey());
-    //}
+    FirebaseServer server = app().getFirebaseServer();
+    Query ref = server.getJobsListQuery(companyKey);
 
     FirebaseListAdapter.IFilter filter = new FirebaseListAdapter.IFilter(){
       @Override
       public boolean filter(DataSnapshot dataSnapshot) {
         Job job = dataSnapshot.getValue(Job.class);
-        // TODO getCurrentUser() can return null sometimes. Probably if there is some
-        // uncompleted login. The logs show this is null in version 3.3 sometimes
-
         // filter all cancelled jobs
         if (job.getIsCancelled()){
           return true;
@@ -169,13 +136,8 @@ public class JobsActivity extends BaseMenuActivity {
             return false;
           }
         }
-
         return true;
-
-
       }
-
-
     };
 
     adapter = new FirebaseListAdapter<Job>(thisActivity, Job.class, R.layout.job_item, ref, filter){
@@ -204,18 +166,13 @@ public class JobsActivity extends BaseMenuActivity {
       }
     };
 
-
     jobsListView.setAdapter(adapter);
-
     jobsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Job job = adapter.getItem(position);
-        Bundle params = new Bundle();
-        params.putString("companyKey", job.getCompanyKey());
-        params.putString("jobKey", adapter.getRef(position).getKey());
-        Intent intent = new Intent(thisActivity, JobActivity.class);
-        intent.putExtras(params);
+        Intent intent = JobActivity.getLaunchIntent(thisActivity, job.getCompanyKey(),
+                adapter.getRef(position).getKey());
         startActivity(intent);
       }
     });
@@ -223,48 +180,25 @@ public class JobsActivity extends BaseMenuActivity {
     checkSchemaVersionAndWarn();
   }
 
-
-  private ValueEventListener schemaListener = new ValueEventListener(){
-
-    @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
-      final FirebaseDatabase database = FirebaseDatabase.getInstance();
-      database.getReference("schema").removeEventListener(schemaListener);
-
-      Long schema = null;
-      if (dataSnapshot.exists()){
-        Object o = dataSnapshot.getValue();
-        if (o instanceof Long) {
-          schema = (Long) dataSnapshot.getValue();
-        }
-      }
-
-      // this version compatible up to 1. That means null and 1 are acceptable
-      if (schema != null){
-        if (schema > 1){
-          thisActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-              showSchemaWarning();
-            }
-          });
-        }
-      }
-
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
-  };
-
   private void checkSchemaVersionAndWarn(){
     // speedyMovingItemDataDescriptions is readable by anyone. No security or login
     // necessary.
-    final FirebaseDatabase database = FirebaseDatabase.getInstance();
-    database.getReference("schema").addValueEventListener(schemaListener);
 
+    FirebaseServer server = app().getFirebaseServer();
+    server.getSchema(new FirebaseServer.GetSchemaSuccess() {
+      @Override
+      public void success(Long schemaVersion) {
+
+        if (schemaVersion > 1){
+          showSchemaWarning();
+        }
+      }
+    }, new FirebaseServer.Failure() {
+      @Override
+      public void error(String message) {
+        // nothing to do
+      }
+    });
   }
 
   private void showSchemaWarning(){

@@ -1,6 +1,7 @@
 package com.ranchosoftware.speedymovinginventory;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -39,6 +40,15 @@ public class PrintActivity extends BaseActivity {
   private ListView listView;
   private String jobKey;
   private String companyKey;
+
+  public static Intent getLaunchIntent(Context context, String companyKey, String jobKey){
+    Bundle params = new Bundle();
+    params.putString("companyKey", companyKey);
+    params.putString("jobKey", jobKey);
+    Intent intent = new Intent(context, PrintActivity.class);
+    intent.putExtras(params);
+    return intent;
+  }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {

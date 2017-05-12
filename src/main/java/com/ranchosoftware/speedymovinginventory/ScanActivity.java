@@ -18,6 +18,7 @@ import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -29,6 +30,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +45,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.ranchosoftware.speedymovinginventory.barcodereader.BarcodeGraphic;
 import com.ranchosoftware.speedymovinginventory.barcodereader.BarcodeGraphicTracker;
@@ -85,6 +88,7 @@ public class ScanActivity extends BaseActivity {
   private ScaleGestureDetector scaleGestureDetector;
   private GestureDetector gestureDetector;
 
+  private MediaPlayer tadaPlayer;
   private MediaPlayer positivePlayer;
   private MediaPlayer itemExistsPlayer;
   private MediaPlayer negativePlayer;
@@ -105,6 +109,9 @@ public class ScanActivity extends BaseActivity {
   private Job.Lifecycle lifecycle;
 
   private boolean allowScans = false;
+
+  private Button nextButton;
+  private ImageView checkMark;
   /**
    * Initializes the UI and creates the detector pipeline.
    */
@@ -136,6 +143,22 @@ public class ScanActivity extends BaseActivity {
   };
 
 
+  public static Intent getLaunchIntent(
+          Context context,
+          String companyKey,
+          String jobKey,
+          Boolean allowItemAddOutsideNew,
+          String lifecycle){
+    Intent intent = new Intent(context, ScanActivity.class);
+    Bundle params = new Bundle();
+    params.putString("companyKey", companyKey);
+    params.putString("jobKey", jobKey);
+    params.putBoolean("allowItemAddOutsideNew", allowItemAddOutsideNew);
+    params.putString("lifecycle", lifecycle);
+    intent.putExtras(params);
+    return intent;
+  }
+
 
   @Override
   public void onCreate(Bundle icicle) {
@@ -149,6 +172,9 @@ public class ScanActivity extends BaseActivity {
     allowItemAddOutsideNew = b.getBoolean("allowItemAddOutsideNew", false);
     lifecycle = Job.Lifecycle.valueOf(b.getString("lifecycle"));
 
+
+    tadaPlayer = MediaPlayer.create(thisActivity, R.raw.tada);
+    tadaPlayer.setVolume(1.0f, 1.0f);
 
     positivePlayer = MediaPlayer.create(thisActivity, R.raw.success);
     positivePlayer.setVolume(1.0f, 1.0f);
@@ -166,6 +192,22 @@ public class ScanActivity extends BaseActivity {
     invalidCodePlayer = MediaPlayer.create(thisActivity, R.raw.negative_beep);
     invalidCodePlayer.setVolume(1.0f, 1.0f);
     scannerMessage = (TextView) findViewById(R.id.tvScannerMessage);
+    nextButton = (Button) findViewById(R.id.buttonNext);
+    nextButton.setVisibility(View.INVISIBLE);
+    nextButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        processingCode = false;
+        nextButton.setVisibility(View.INVISIBLE);
+        checkMark.setVisibility(View.INVISIBLE);
+        scannerMessage.setText("Point camera at a QR Code");
+      }
+    });
+
+    checkMark = (ImageView) findViewById(R.id.ivCheckMark);
+    checkMark.setVisibility(View.INVISIBLE);
+
+
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     scannerMessage.setText("QRC Scanner initializing...");
@@ -177,7 +219,7 @@ public class ScanActivity extends BaseActivity {
           if (isReplacementCode){
             scannerMessage.setText("Point camera at QRC Label Replacement");
           } else {
-            scannerMessage.setText("Point camera at a QRC Code");
+            scannerMessage.setText("Point camera at a QR Code");
           }
           enableControlsForJob();
         } catch (Exception e){
@@ -393,11 +435,13 @@ public class ScanActivity extends BaseActivity {
           return;
         }
         if (job != null) {
-
+          processingCode = true;
           thisActivity.runOnUiThread(new Runnable(){
             public void run(){
               if(allowScans) {
                 barcodeScanned(code);
+              } else {
+                processingCode = false;
               }
             }
 
@@ -461,7 +505,8 @@ public class ScanActivity extends BaseActivity {
   @Override
   protected void onResume() {
     super.onResume();
-    scannerMessage.setText("Point camera at a QRC Code");
+    processingCode = false;
+    scannerMessage.setText("Point camera at a QR Code");
     startCameraSource();
   }
 
@@ -705,14 +750,133 @@ public class ScanActivity extends BaseActivity {
 
   }
 
+  private void dataChanged(DataSnapshot dataSnapshot, String code){
+    Item item;
+    try {
+      item = dataSnapshot.getValue(Item.class);
+    } catch (Exception e){
+      scannerMessage.setText("Unable to read item from database; Contact support. ErrorCode=" + e.getMessage());
+      resetProcessing();
+      return;
+    }
+    if (job.getLifecycle() == Job.Lifecycle.New) {
+      editItem(job, code, item);
+    } else {   // for any other job lifecycle just mark as scanned
+      // check to see if already scanned if so note
+      if (item.getIsScanned()){
+        scannerMessage.setText("Item " + code.substring(0,5) + " has already been scanned.");
+        showNext();
+        //vibrator.vibrate(100);
+      } else {
+        // set the item as scanned
+        double latitude = 33.158092;
+        double longitude = -117.350594;
+        if (currentLocation != null){
+          latitude = currentLocation.getLatitude();
+          longitude = currentLocation.getLongitude();
+        }
+        final ScanRecord scanRecord = new ScanRecord(new DateTime(), latitude,
+                longitude, app().getCurrentUser().getUid(), false, lifecycle);
+
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/scanHistory/" + code).push();
+        ref.setValue(scanRecord);
+        FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/" + code + "/isScanned").setValue(true);
+        scannerMessage.setText("Item " + code.substring(0, 5) + " successfully scanned.");
+        checkMark.setVisibility(View.VISIBLE);
+        showNext();
+
+        Query allScanned = FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/").orderByChild("isScanned");
+        allScanned.addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(DataSnapshot dataSnapshot) {
+            if (dataSnapshot.getValue() == null){
+              Log.d(TAG, "Serious Error");
+
+            } else {
+              for (DataSnapshot nextSnapshot : dataSnapshot.getChildren()){
+                try {
+                  final Item item = nextSnapshot.getValue(Item.class);
+                  if (!item.getIsScanned()){
+                    // do something special
+                    return;
+                  }
+                } catch (Exception e){
+                  // nothing to do
+                }
+              }
+              // if we get to here all items have been
+              // scanned
+              itemExistsPlayer.stop();
+              scannerMessage.setText(scannerMessage.getText() + "\n" + "ALL ITEMS HAVE BEEN SCANNED!");
+              tadaPlayer.start();
+            }
+          }
+
+          @Override
+          public void onCancelled(DatabaseError databaseError) {
+
+          }
+        });
+      }
+      // delay another scan by 1 second
+
+
+    }
+  }
+
+  private void dataChangedQrcList(DataSnapshot dataSnapshot, final String code){
+    if (dataSnapshot.getValue() == null){
+      // item is new
+      if (isReplacementCode){
+        // if its a replament code do one thing
+        replaceCode(job, code);
+      } else {
+        createNewItem(job, code);
+      }
+      resetProcessing();
+    } else {
+      // item exists see if it is this job
+      String itemJobKey = dataSnapshot.getValue(String.class);
+      if (!itemJobKey.equals(jobKey)){
+        scannerMessage.setText("This item belongs to another job.");
+        negativePlayer.start();
+        vibrator.vibrate(200);
+        Log.d(TAG, "Item does not belong to this job");
+        showNext();
+
+      } else {
+        itemExistsPlayer.start();
+        vibrator.vibrate(100);
+        //scannerMessage.setText("Item: Found");
+        DatabaseReference itemRef = FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/" + code);
+        itemRef.addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(DataSnapshot dataSnapshot) {
+            dataChanged(dataSnapshot, code);
+
+
+          }
+
+          @Override
+          public void onCancelled(DatabaseError databaseError) {
+            Log.d(TAG, "onCancelled");
+          }
+        });
+
+      }
+    }
+  }
+
   private void barcodeScanned(final String code){
     Log.d(TAG, code);
+    processingCode = true;
 
     if (!Utility.isQrcCodeValid(code)){
       invalidCodePlayer.start();
       vibrator.vibrate(300);
-      scannerMessage.setText("Invalid QRC Code -- Not a Speedy Moving Inventory Code");
-      processingCode = false;
+      scannerMessage.setText("Invalid QR Code -- Not a Speedy Moving Inventory Code");
+      showNext();
       return;
     }
 
@@ -722,77 +886,15 @@ public class ScanActivity extends BaseActivity {
     DatabaseReference ref = FirebaseDatabase.getInstance().getReference("qrcList/" + code);
     ref.addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
-      public void onDataChange(DataSnapshot dataSnapshot) {
-        if (dataSnapshot.getValue() == null){
-          // item is new
-          if (isReplacementCode){
-            // if its a replament code do one thing
-            replaceCode(job, code);
-          } else {
-            createNewItem(job, code);
+      public void onDataChange(final DataSnapshot dataSnapshot) {
+        thisActivity.runOnUiThread(new Runnable(){
+          @Override
+          public void run() {
+            dataChangedQrcList(dataSnapshot, code);
           }
-          processingCode = false;
-        } else {
-          // item exists see if it is this job
-          String itemJobKey = dataSnapshot.getValue(String.class);
-          if (!itemJobKey.equals(jobKey)){
-            scannerMessage.setText("This item belongs to another job.");
-            negativePlayer.start();
-            vibrator.vibrate(200);
-            Log.d(TAG, "Item does not belong to this job");
-            processingCode = false;
-          } else {
-            itemExistsPlayer.start();
-            vibrator.vibrate(100);
-            //scannerMessage.setText("Item: Found");
-            DatabaseReference itemRef = FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/" + code);
-            itemRef.addListenerForSingleValueEvent(new ValueEventListener() {
-              @Override
-              public void onDataChange(DataSnapshot dataSnapshot) {
-                Item item;
-                try {
-                  item = dataSnapshot.getValue(Item.class);
-                } catch (Exception e){
-                  scannerMessage.setText("Unable to read item from database; Contact support. ErrorCode=" + e.getMessage());
-                  processingCode = false;
-                  return;
-                }
-                if (job.getLifecycle() == Job.Lifecycle.New) {
-                  editItem(job, code, item);
-                } else {   // for any other job lifecycle just mark as scanned
-                  // check to see if already scanned if so note
-                  if (item.getIsScanned()){
-                    scannerMessage.setText("This item has already been scanned.");
-                    //vibrator.vibrate(100);
-                  } else {
-                    // set the item as scanned
-                    double latitude = 33.158092;
-                    double longitude = -117.350594;
-                    if (currentLocation != null){
-                      latitude = currentLocation.getLatitude();
-                      longitude = currentLocation.getLongitude();
-                    }
-                    ScanRecord scanRecord = new ScanRecord(new DateTime(), latitude,
-                            longitude, app().getCurrentUser().getUid(), false, lifecycle);
+        });
 
 
-                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("/scanHistory/" + code).push();
-                    ref.setValue(scanRecord);
-                    FirebaseDatabase.getInstance().getReference("/itemlists/" + jobKey + "/items/" + code + "/isScanned").setValue(true);
-                  }
-
-                }
-                processingCode = false;
-              }
-
-              @Override
-              public void onCancelled(DatabaseError databaseError) {
-                Log.d(TAG, "onCancelled");
-              }
-            });
-
-          }
-        }
       }
 
       @Override
@@ -802,6 +904,19 @@ public class ScanActivity extends BaseActivity {
     });
 
 
+  }
+
+  private void showNext(){
+    nextButton.setVisibility(View.VISIBLE);
+  }
+  private void resetProcessing(){
+    // delay at least 1 second between scanns
+    new Handler().postDelayed(new Runnable(){
+      @Override
+      public void run() {
+        processingCode = false;
+      }
+    }, 1000);
   }
 
   private void editItem(Job job, String code, Item item){
@@ -854,4 +969,6 @@ public class ScanActivity extends BaseActivity {
 
     }
   }
+
+
 }

@@ -20,6 +20,40 @@ public class Company extends Model{
   private String usDot;
   private String website;
 
+  ///////////////////////////////////////////////////////////////
+  // configurable UI Options
+  // Default is false. When true the number of pads becomes a sortable
+  // field in teh mobile apps. And on the printed inventory the
+  // number of pads becomes a column on the inventory sheet.
+  private Boolean showNumberOfPadsOnItems;
+
+
+  // Default is true. When false, the basic idea is that
+  // item values and summaries of value
+  // are not shown on customer interfaces. These
+  // interfaces include all sign off sheets, as well as
+  // the web interface if a customer logs in.
+  private Boolean exposeValueToCustomers;
+
+  // Default is true. When false, the basic idea is that
+  // item volume and volume summaries,
+  // are not shown on customer interfaces. These
+  // interfaces include all sign off sheets, as well as
+  // the web interface if a customer logs in.
+  private Boolean exposeVolumeToCustomers;
+
+  private Boolean sendCustomerEmailAtJobCreation;   // defaults to false
+  private String templateEmailAtJobCreation;
+
+  private Boolean sendCustomerEmailAtJobPickup;     // defaults to true
+  private String templateEmailAtJobPickup;
+
+  private Boolean sendCustomerEmailAtJobDelivery;    // defaults to true
+  private String templateEmailAtJobDelivery;
+
+  private Boolean sendCustomerEmailEveryJobStatusChange; // defaults to false
+  private String templateEmailEveryJobStatusChange;
+
   // required no args ctor
   public Company(){}
 
@@ -76,5 +110,58 @@ public class Company extends Model{
       return "";
     }
     return contactPerson;
+  }
+
+  public Boolean getShowNumberOfPadsOnItems(){
+    if (showNumberOfPadsOnItems == null){
+      return false;
+    }
+    return showNumberOfPadsOnItems;
+  }
+
+  public Boolean getExposeValueToCustomers(){
+    if (exposeValueToCustomers == null){
+      return true;
+    }
+    return exposeValueToCustomers;
+  }
+
+  public Boolean getExposeVolumeToCustomers(){
+    if (exposeVolumeToCustomers == null){
+      return true;
+    }
+    return exposeVolumeToCustomers;
+  }
+
+  public Boolean getSendCustomerEmailAtJobCreation() {
+    return sendCustomerEmailAtJobCreation;
+  }
+
+  public String getTemplateEmailAtJobCreation() {
+    return templateEmailAtJobCreation;
+  }
+
+  public Boolean getSendCustomerEmailAtJobPickup() {
+    return sendCustomerEmailAtJobPickup;
+  }
+
+  public String getTemplateEmailAtJobPickup() {
+    return templateEmailAtJobPickup;
+  }
+
+  public Boolean getSendCustomerEmailAtJobDelivery() {
+    return sendCustomerEmailAtJobDelivery;
+  }
+
+  public String getTemplateEmailAtJobDelivery() {
+    return templateEmailAtJobDelivery;
+  }
+
+  public Boolean getSendCustomerEmailEveryJobStatusChange() {
+    return sendCustomerEmailEveryJobStatusChange;
+  }
+
+  public String getTemplateEmailEveryJobStatusChange() {
+    return templateEmailEveryJobStatusChange;
   }
 }

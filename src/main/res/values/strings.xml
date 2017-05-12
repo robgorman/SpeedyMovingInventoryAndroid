@@ -214,4 +214,5 @@
     <string name="choose_company_message">You have an association with more than one Moving Company.  Please select the company you would like to work with from the list below.</string>
     <string name="phone_number_label">Phone</string>
     <string name="contact_label">Contact</string>
+    <!--<<string name="auth_domain">speedymovinginventorydev-9c905.firebaseapp.com</string>-->
 </resources>

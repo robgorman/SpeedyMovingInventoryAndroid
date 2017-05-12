@@ -1,5 +1,7 @@
 package com.ranchosoftware.speedymovinginventory;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
@@ -14,8 +16,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-
-import org.apache.commons.validator.routines.EmailValidator;
+import com.ranchosoftware.speedymovinginventory.utility.Utility;
 
 
 public class ForgotPasswordActivity extends BaseActivity {
@@ -23,6 +24,10 @@ public class ForgotPasswordActivity extends BaseActivity {
   private AutoCompleteTextView emailView;
 
   private TextView textSentMessage;
+
+  static Intent getLaunchIntent(Context context){
+    return new Intent(context, ForgotPasswordActivity.class);
+  }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +72,7 @@ public class ForgotPasswordActivity extends BaseActivity {
       emailView.setError(getString(R.string.error_field_required));
       focusView = emailView;
       cancel = true;
-    } else if (!EmailValidator.getInstance().isValid(email)) {
+    } else if (!Utility.isValidEmailAddress(email)) {
       emailView.setError(getString(R.string.error_invalid_email));
       focusView = emailView;
       cancel = true;

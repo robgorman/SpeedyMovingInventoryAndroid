@@ -1,13 +1,10 @@
 package com.ranchosoftware.speedymovinginventory.app;
 
 import android.content.SharedPreferences;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.support.multidex.MultiDexApplication;
+import android.util.Log;
 
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -17,6 +14,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.ranchosoftware.speedymovinginventory.R;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObject;
 import com.ranchosoftware.speedymovinginventory.database.DatabaseObjectEventListener;
+import com.ranchosoftware.speedymovinginventory.firebase.Authorization;
+import com.ranchosoftware.speedymovinginventory.firebase.FirebaseServer;
 import com.ranchosoftware.speedymovinginventory.model.Company;
 import com.ranchosoftware.speedymovinginventory.model.Item;
 import com.ranchosoftware.speedymovinginventory.model.MovingItemDataDescription;
@@ -31,8 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static android.location.Criteria.ACCURACY_FINE;
 
 /**
  * Created by rob on 7/13/16.
@@ -49,9 +46,11 @@ public class RanchoApp extends MultiDexApplication {
 
   private Server mailServer;
 
+  private Authorization firebaseAuthorization;
 
   private Map<String, ArrayList<MovingItemDataDescription>> movingItemDescriptions = new HashMap<>();
 
+  private FirebaseServer firebaseServer;
 
   public static class LoginCredential{
     public String email;
@@ -100,6 +99,10 @@ public class RanchoApp extends MultiDexApplication {
       webAppUrl = "https://app.speedymovinginventory.com";
     }
 
+    firebaseServer = new FirebaseServer();
+    firebaseAuthorization = new Authorization();
+
+
     loadMovingItemDescriptions();
   }
 
@@ -141,6 +144,13 @@ public class RanchoApp extends MultiDexApplication {
     }
   };
 
+  public Authorization getAuthorization() {
+    return firebaseAuthorization;
+  }
+
+  public FirebaseServer getFirebaseServer() {
+    return firebaseServer;
+  }
 
   private void loadMovingItemDescriptions(){
     // speedyMovingItemDataDescriptions is readable by anyone. No security or login
@@ -203,30 +213,34 @@ public class RanchoApp extends MultiDexApplication {
 
 
 
-  private Query userAssignments;
 
-  public void setCurrentCompany(final String companyKey){
-    this.companyKey = companyKey;
+
+  public void setCurrentCompany(final Company company){
+    this.currentCompany = company;
+
     DatabaseObject<Company> companyObject = new DatabaseObject<>(Company.class, companyKey);
     companyObject.addValueEventListener(new DatabaseObjectEventListener<Company>() {
       @Override
       public void onChange(String key, Company company) {
-        currentCompany = company;
+        if (company != null) {
+          currentCompany = company;
+        }
       }
     });
 
-    userAssignments  = FirebaseDatabase.getInstance().getReference("/companyUserAssignments/")
-            .orderByChild("uid")
-            .startAt(this.currentUser.getUid())
-            .endAt(this.currentUser.getUid());
+
 
   }
 
-  public String getCompanyKey() {
-    return companyKey;
-  }
+  //public String getCompanyKey() {
+  //  return companyKey;
+ // }
 
   public void setCurrentUser(User currentUser) {
+    if (currentUser == null){
+      Log.d(TAG, "Current user can't be nul");
+      return;
+    }
     this.currentUser = currentUser;
 
 
@@ -278,7 +292,9 @@ public class RanchoApp extends MultiDexApplication {
     return 7;
   }
 
-  public Company getCurrentCompany(){return currentCompany;}
+  public Company getCurrentCompany(){
+    return currentCompany;
+  }
 
   // may return null
   public String getCompanyLogoUrl(){

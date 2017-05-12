@@ -26,6 +26,7 @@ public class BaseActivity extends AppCompatActivity {
     firebaseAnalytics = FirebaseAnalytics.getInstance(this);
   }
 
+
   public RanchoApp app(){
     return ((RanchoApp)getApplication());
   }

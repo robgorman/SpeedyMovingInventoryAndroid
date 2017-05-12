@@ -5,6 +5,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.gson.Gson;
 import com.ranchosoftware.speedymovinginventory.app.MyVolley;
 
@@ -85,6 +87,59 @@ public class Server {
     RequestQueue queue = MyVolley.getRequestQueue();
     String url = serverUrl+ "/sendsignoffemail" + makeUrlParams(params);
     StringRequest request = new StringRequest(Request.Method.GET,url,
+            new Response.Listener<String>(){
+              @Override
+              public void onResponse(String s) {
+
+                Gson gson = new Gson();
+
+                ServletResponse response = gson.fromJson(s, ServletResponse.class);
+                if (response.isSuccess()){
+                  callback.success(response.getErrorMessage());
+                } else {
+                  callback.failure(response.getErrorMessage());
+                }
+
+              }
+            },
+            new Response.ErrorListener(){
+              @Override
+              public void onErrorResponse(VolleyError volleyError) {
+                // turn the error to string
+                callback.failure(volleyError.getMessage());
+              }
+            }){
+
+      protected Map<String, String> getParams() throws com.android.volley.AuthFailureError {
+
+        return params;
+      };
+    };
+    queue.add(request);
+  }
+
+
+  public void sendEmailMessage(final String recipients,
+                                         final String subject,
+                                         final String messageBody,
+                                         final String fromEmailAddress,
+                                         final EmailCallback callback)
+  {
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("recipients", recipients);
+    params.put("subject", subject);
+    params.put("body", messageBody);
+    params.put("fromemailaddress", fromEmailAddress);
+
+
+    sendEmailMessage(params, callback);
+  }
+
+  private void sendEmailMessage(final Map<String, String> params, final EmailCallback callback){
+
+    RequestQueue queue = MyVolley.getRequestQueue();
+    String url = serverUrl+ "/sendemmail" + makeUrlParams(params);
+    StringRequest request = new StringRequest(Request.Method.GET, url,
             new Response.Listener<String>(){
               @Override
               public void onResponse(String s) {

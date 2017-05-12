@@ -33,6 +33,17 @@ public class SpinnerActivity extends BaseActivity {
 
 
 
+  public static Intent getLaunchIntent(Context context, int initialPosition, String labels[],
+                                       String title){
+    Intent intent = new Intent(context, SpinnerActivity.class);
+    Bundle b = new Bundle();
+    b.putInt(SpinnerActivity.paramSelectedIndex,  initialPosition);
+    b.putStringArray(SpinnerActivity.paramLabels, labels);
+    b.putString(SpinnerActivity.paramTitle, "Choose A Sort");
+    intent.putExtras(b);
+    return intent;
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
