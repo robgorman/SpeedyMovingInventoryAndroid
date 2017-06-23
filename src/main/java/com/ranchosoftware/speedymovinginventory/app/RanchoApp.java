@@ -213,22 +213,27 @@ public class RanchoApp extends MultiDexApplication {
 
 
 
+  DatabaseReference currentCompanyRef;
 
 
-  public void setCurrentCompany(final Company company){
+  public void setCurrentCompany(final Company company, final String companyKey){
     this.currentCompany = company;
 
-    DatabaseObject<Company> companyObject = new DatabaseObject<>(Company.class, companyKey);
-    companyObject.addValueEventListener(new DatabaseObjectEventListener<Company>() {
+    currentCompanyRef = FirebaseDatabase.getInstance().getReference("/companies/" + companyKey);
+    currentCompanyRef.addValueEventListener(new ValueEventListener() {
       @Override
-      public void onChange(String key, Company company) {
-        if (company != null) {
-          currentCompany = company;
+      public void onDataChange(DataSnapshot dataSnapshot) {
+        Company newCoData = dataSnapshot.getValue(Company.class);
+        if (newCoData != null){
+          RanchoApp.this.currentCompany = newCoData;
         }
       }
+
+      @Override
+      public void onCancelled(DatabaseError databaseError) {
+
+      }
     });
-
-
 
   }
 

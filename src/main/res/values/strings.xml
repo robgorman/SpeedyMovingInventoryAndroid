@@ -190,7 +190,7 @@
     <string name="print">Print</string>
     <string name="desc_label">Desc:</string>
     <string name="title_activity_moving_item_pick_description">Choose An Item</string>
-    <string name="damage_description_label">Damage Description:</string>
+    <string name="damage_description_label">Claim Damage Description:</string>
     <string name="type_to_filter_the_list">Type to filter the list</string>
     <string name="claim_label">Claim:</string>
     <string name="claim_number_hint">Claim Number</string>
@@ -214,5 +214,6 @@
     <string name="choose_company_message">You have an association with more than one Moving Company.  Please select the company you would like to work with from the list below.</string>
     <string name="phone_number_label">Phone</string>
     <string name="contact_label">Contact</string>
+    <string name="preexisting_damage_description">Pre-existing Damage:</string>
     <!--<<string name="auth_domain">speedymovinginventorydev-9c905.firebaseapp.com</string>-->
 </resources>

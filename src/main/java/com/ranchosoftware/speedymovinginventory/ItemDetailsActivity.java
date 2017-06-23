@@ -95,6 +95,8 @@ public class ItemDetailsActivity extends BaseActivity {
   private CheckBox checkBoxIsBox;
   private TextView descriptionView;
   private Switch scanOverrideSwitch;
+  private TextView preexistingDamageDescription;
+  private ImageView preexistingDamageImage;
 
   private MediaPlayer positivePlayer;
   private Vibrator vibrator;
@@ -102,6 +104,7 @@ public class ItemDetailsActivity extends BaseActivity {
   private static final int RC_HANDLE_ACCESS_FINE  = 3;
   private Location currentLocation;
   private Job.Lifecycle lifecycle;
+
 
 
   private final LocationListener locationListener = new LocationListener() {
@@ -153,6 +156,13 @@ public class ItemDetailsActivity extends BaseActivity {
 
     checkBoxIsBox.setChecked(item.getIsBox());
     descriptionView.setText(item.getDescription());
+    if (item.getPreexistingDamageDescription().length() > 0){
+      preexistingDamageImage.setVisibility(View.VISIBLE);
+      preexistingDamageDescription.setText(item.getPreexistingDamageDescription());
+    } else {
+      preexistingDamageImage.setVisibility(View.INVISIBLE);
+      preexistingDamageDescription.setText("None");
+    }
     checkBoxDamaged.setChecked(item.getHasClaim());
     damageDescription.setText(item.getDamageDescription());
     claimNumber.setText(item.getClaimNumber());
@@ -219,6 +229,8 @@ public class ItemDetailsActivity extends BaseActivity {
     specialHandling = (EditText) findViewById(R.id.editSpecialHandling);
     checkBoxIsBox = (CheckBox) findViewById(R.id.cbIsBox);
     descriptionView = (TextView) findViewById(R.id.tvDescription);
+    preexistingDamageImage = (ImageView) findViewById(R.id.ivPreexistingDamage);
+    preexistingDamageDescription = (TextView) findViewById(R.id.tvPreexistingDamageDescription);
     scanOverrideSwitch = (Switch) findViewById(R.id.scanOverrideSwitch);
 
     scanOverrideSwitch.setOnClickListener(new View.OnClickListener() {

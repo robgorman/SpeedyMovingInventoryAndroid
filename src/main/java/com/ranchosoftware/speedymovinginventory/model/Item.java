@@ -51,6 +51,7 @@ public class Item extends Model {
   private Float monetaryValueInverse;
   private Integer numberOfPads;
   private Integer numberOfPadsInverse;
+  private String preexistingDamageDescription;
   private String packedBy;
   private String specialHandling;
   private String uidOfCreator;
@@ -104,6 +105,7 @@ public class Item extends Model {
     this.claimNumber = "";
     this.hasClaim = false;
     this.hasClaimInverse = !this.hasClaim;
+    this.preexistingDamageDescription = "";
 
     this.insurance = insurance;
     this.isBox = isBox ;
@@ -346,6 +348,15 @@ public class Item extends Model {
     return itemWasCreatedOutOfPhase;
   }
 
+  public String getPreexistingDamageDescription() {
+    if (preexistingDamageDescription ==  null){
+      preexistingDamageDescription = "";
+    }
+    return preexistingDamageDescription;
+  }
 
+  public void setPreexistingDamageDescription(String preexistingDamageDescription) {
+    this.preexistingDamageDescription = preexistingDamageDescription;
+  }
 }
 

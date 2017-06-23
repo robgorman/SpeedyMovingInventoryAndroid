@@ -10,75 +10,84 @@
               android:layout_marginTop="4dp">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginLeft="2dp"
-        android:layout_marginRight="2dp">
+        android:layout_marginRight="2dp"
+        android:orientation="vertical">
 
         <me.grantland.widget.AutofitTextView
+            android:id="@+id/tvTextTop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/tvTextTop"
-            android:layout_weight="1"
             android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
             android:textColor="@color/themeBlueLightest"
             android:textStyle="normal|bold"/>
 
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="2dp"
             android:paddingBottom="2dp"
+            android:paddingTop="2dp"
             >
 
             <ImageView
-                android:layout_width="120dp"
                 android:id="@+id/ivItemImage"
-                android:scaleType="fitCenter"
-                android:adjustViewBounds="true"
+                android:layout_width="120dp"
                 android:layout_height="120dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
                 autofit:srcCompat="@drawable/noimage"/>
 
             <ImageView
-                autofit:srcCompat="@drawable/damage_warning_red"
                 android:id="@+id/ivDamaged"
-                android:layout_centerInParent="true"
                 android:layout_width="60dp"
-                android:layout_height="60dp"/>
+                android:layout_height="60dp"
+                android:layout_centerInParent="true"
+                autofit:srcCompat="@drawable/damage_warning_red"/>
 
             <me.grantland.widget.AutofitTextView
+                android:id="@+id/tvMoreImages"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@id/ivItemImage"
-                android:paddingBottom="12dp"
-                android:gravity="center_horizontal"
                 android:layout_centerHorizontal="true"
-                android:id="@+id/tvMoreImages"
+                android:gravity="center_horizontal"
+                android:paddingBottom="12dp"
                 android:textColor="@color/White"/>
 
             <ImageView
-                autofit:srcCompat="@drawable/checkmark"
                 android:id="@+id/ivScannedCheck"
-                android:layout_height="30dp"
                 android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_alignBottom="@id/ivItemImage"
                 android:layout_marginBottom="10dp"
-                android:layout_marginLeft="10dp"/>
+                android:layout_marginLeft="10dp"
+                autofit:srcCompat="@drawable/checkmark"/>
+
+            <ImageView
+                android:id="@+id/ivPreexistingDamage"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_alignBottom="@+id/ivItemImage"
+                android:layout_alignRight="@+id/ivItemImage"
+                android:layout_weight="1"
+                autofit:srcCompat="@drawable/damage"/>
 
         </RelativeLayout>
 
         <me.grantland.widget.AutofitTextView
+            android:id="@+id/tvDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/tvDescription"
-            android:layout_weight="1"
             android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
             android:gravity="center_horizontal"
-            android:textColor="@color/Black"
             android:lines="1"
+            android:maxLines="1"
             android:singleLine="false"
-            android:maxLines="1"/>
+            android:textColor="@color/Black"/>
 
     </LinearLayout>
 

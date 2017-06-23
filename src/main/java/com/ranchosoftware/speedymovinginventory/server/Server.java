@@ -138,7 +138,7 @@ public class Server {
   private void sendEmailMessage(final Map<String, String> params, final EmailCallback callback){
 
     RequestQueue queue = MyVolley.getRequestQueue();
-    String url = serverUrl+ "/sendemmail" + makeUrlParams(params);
+    String url = serverUrl+ "/sendemail" + makeUrlParams(params);
     StringRequest request = new StringRequest(Request.Method.GET, url,
             new Response.Listener<String>(){
               @Override

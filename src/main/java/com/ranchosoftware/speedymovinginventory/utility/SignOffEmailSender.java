@@ -61,18 +61,15 @@ public class SignOffEmailSender {
     this.companyKey = companyKey;
   }
 
-
-  public void sendSignOffEmails() {
-
+  private void sendSignOffEmails() {
     // we have to retrieve the job because it was just updated.
-
     firebaseServer.getJob(companyKey, jobKey, new FirebaseServer.GetJobSuccess() {
               @Override
               public void success(Job job) {
 
                 SignOffEmailSender.this.job = job;
                 sendUserEmail();
-                // sendCompanyEmail();
+                sendCompanyEmail();
               }
             }, new FirebaseServer.Failure() {
               @Override
@@ -80,9 +77,6 @@ public class SignOffEmailSender {
                 // nothing to do
               }
             });
-
-
-
   }
 
   private String formSingleLineCompanyAddress(Company company) {
@@ -100,7 +94,6 @@ public class SignOffEmailSender {
     if (addressLine3.length() > 0) {
       address = address + ", " + addressLine3;
     }
-
     return address;
   }
 
@@ -115,27 +108,19 @@ public class SignOffEmailSender {
       addressLine2 = company.getAddress().getCity() + ", " + company.getAddress().getState() + " " + company.getAddress().getZip();
       addressLine3 = "";
     }
-
     String multiLineAddress = addressLine1 + "\n" + addressLine2;
     if (addressLine3.length() > 0) {
       multiLineAddress = multiLineAddress + "\n" + addressLine3;
     }
-
     return multiLineAddress;
-
   }
-
 
   private String substitute(String template) {
 
     String customerName = job.getCustomerFirstName() + " " + job.getCustomerLastName();
-    ;
     template = template.replaceAll("(?i)<<CustomerName>>", customerName);
-
     template = template.replaceAll("(?i)<<CompanyName>>", company.getName());
-
     template = template.replaceAll("(?i)<<CompanyMultiLineAddress>>", formMultiLineCompanyAddress(company));
-
     template = template.replaceAll("(?i)<<CompanySingleLineAddress>>", formSingleLineCompanyAddress(company));
 
     String companyPhone = null;
@@ -145,13 +130,12 @@ public class SignOffEmailSender {
       companyPhone = PhoneNumberUtils.formatNumber(company.getPhoneNumber());
     }
     template = template.replaceAll("(?i)<<CompanyPhone>>", companyPhone);
-
     template = template.replaceAll("(?i)<<CompanyWebSite>>", company.getWebsite());
 
-
     String signupUrl = "";
+    String authDomain = context.getString(R.string.auth_domain);
     try {
-      String authDomain = context.getString(R.string.auth_domain);
+
       signupUrl = "https://" + authDomain + "/user-sign-up"
               + "?companyname=" + URLEncoder.encode(company.getName(), "UTF-8")
               + "&customeremail=" + URLEncoder.encode(job.getCustomerEmail(), "UTF-8")
@@ -162,16 +146,45 @@ public class SignOffEmailSender {
       // not sure what we can do
     }
 
-    signupUrl = "<a href=\"" + signupUrl + "\">link</a>";
-    template = template.replaceAll("(?i)<<CustomerLinkToPortal>>", signupUrl);
+    signupUrl = "<a href=\"" + signupUrl + "\">Sign Up</a>";
+    template = template.replaceAll("(?i)<<CustomerPortalSignupLink>>", signupUrl);
+
+    String portalUrl =  "https://" + authDomain;
+    portalUrl = "<a href=\"" + portalUrl + "\">Portal</a>";
+    template = template.replaceAll("(?i)<<PortalLink>>", portalUrl);
 
     DateTimeFormatter fmt = DateTimeFormat.forPattern("MM/dd/yy, h:mm z");
     String moveDateTime = fmt.print(job.getPickupDateTime());
+    template = template.replaceAll("(?i)<<MovePickupDateTime>>", moveDateTime);
 
     String companyLogo = "<img src=\"" + company.getLogoUrl() + "\">";
     template = template.replaceAll("(?i)<<CompanyLogo>>", companyLogo);
 
+    template = template.replaceAll("(?i)<<JobStatus>>", job.getLifecycle().toString());
+
+    template = template.replaceAll("(?i)<<JobNumber>>", job.getJobNumber());
+
+    template = template.replaceAll("\\n", "<br>");
+
     return template;
+  }
+
+  private void sendCompanyEmail(){
+
+    String messageBody = substitute(company.getTemplateEmailForEmployees());
+    String subject = "Job Number: " + job.getJobNumber();
+    mailServer.sendEmailMessage(recipientList, subject, messageBody, "noreply@speedymovinginventory.com", new Server.EmailCallback() {
+      @Override
+      public void success(String message) {
+        // nothing to do
+      }
+
+      @Override
+      public void failure(final String message) {
+        // nothing to do for now
+      }
+    });
+
   }
 
   private void sendUserEmail() {
@@ -203,12 +216,10 @@ public class SignOffEmailSender {
           subject = "Job Delivery Complete!";
           break;
         }
-
-
     }
 
     if (messageBody.length() > 0) {
-      mailServer.sendEmailMessage(recipientList, subject, messageBody, "noreply@speedymovinginventory.com", new Server.EmailCallback() {
+      mailServer.sendEmailMessage(job.getCustomerEmail(), subject, messageBody, "noreply@speedymovinginventory.com", new Server.EmailCallback() {
         @Override
         public void success(String message) {
           new Handler(Looper.getMainLooper()).post(new Runnable() {

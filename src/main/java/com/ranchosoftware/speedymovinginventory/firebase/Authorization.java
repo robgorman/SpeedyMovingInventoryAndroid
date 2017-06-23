@@ -16,6 +16,7 @@ import java.util.List;
  * Created by rob on 5/7/17.
  */
 
+
 public class Authorization {
 
   private FirebaseAuth auth;
@@ -44,13 +45,17 @@ public class Authorization {
   }
 
   private void notifyLoggedIn(){
-    for (FirebaseSignIn listener : signInListeners){
+    // make copy to avoid concurrent exception. Apparently while we
+    // are notifying, there may be callback into add or remove
+    List<FirebaseSignIn> copy = signInListeners;
+    for (FirebaseSignIn listener : copy) {
       listener.userSignedIn(user);
     }
   }
 
   private void notifyLoggedOut(){
-    for (FirebaseSignIn listener : signInListeners){
+    List<FirebaseSignIn> copy = signInListeners;
+    for (FirebaseSignIn listener : copy) {
       listener.userSignedOut();
     }
   }
@@ -64,23 +69,23 @@ public class Authorization {
   }
 
   public void addListener(FirebaseSignIn listener){
-    if (!signInListeners.contains(listener)){
-      signInListeners.add(listener);
-      // notify latecomers of the initial state if we know it
-      if (gotAuthStateChangedOnce){
-        if (isLoggedIn()){
-          listener.userSignedIn(user);
-        } else {
-          listener.userSignedOut();
+      if (!signInListeners.contains(listener)) {
+        signInListeners.add(listener);
+        // notify latecomers of the initial state if we know it
+        if (gotAuthStateChangedOnce) {
+          if (isLoggedIn()) {
+            listener.userSignedIn(user);
+          } else {
+            listener.userSignedOut();
+          }
         }
       }
-    }
   }
 
   public void removeListener(FirebaseSignIn listener){
-    if (signInListeners.contains(listener)){
-      signInListeners.remove(listener);
-    }
+      if (signInListeners.contains(listener)) {
+        signInListeners.remove(listener);
+      }
   }
 
   public boolean isLoggedIn(){

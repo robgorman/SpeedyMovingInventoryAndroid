@@ -107,7 +107,8 @@ public class NewItemActivity extends BaseActivity {
 
   private CheckBox isDisassembled;
   private Button assist;
-  private EditText damageDescription;
+  private EditText preexistingDamageDescription;
+  private ImageView preexistingDamageImage;
 
   private boolean invokedByScanner = false;
 
@@ -216,9 +217,9 @@ public class NewItemActivity extends BaseActivity {
 
     invokedByScanner = params.getBoolean("invokedByScanner", false);
     if (invokedByScanner){
-      toolbar.setTitle("Item" + ": " + qrcCode.substring(0, 5));
+      toolbar.setTitle("Item: " + qrcCode.substring(0, 5));
     } else {
-      toolbar.setTitle("Item" + ": " + qrcCode.substring(0, 5));
+      toolbar.setTitle("Item: " + qrcCode.substring(0, 5));
     }
 
     setSupportActionBar(toolbar);
@@ -298,8 +299,9 @@ public class NewItemActivity extends BaseActivity {
       }
     });
 
-    damageDescription = (EditText) findViewById(R.id.editDamageDescription);
-    damageDescription.addTextChangedListener(new TextWatcher() {
+    preexistingDamageImage = (ImageView) findViewById(R.id.ivPreexistingDamage);
+    preexistingDamageDescription = (EditText) findViewById(R.id.editPreexistingDamageDescription);
+    preexistingDamageDescription.addTextChangedListener(new TextWatcher() {
       @Override
       public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -313,7 +315,13 @@ public class NewItemActivity extends BaseActivity {
       @Override
       public void afterTextChanged(Editable editable) {
         String newText = editable.toString();
-        item.setDamageDescription(newText);
+        item.setPreexistingDamageDescription(newText);
+        if (newText.length() > 0){
+          preexistingDamageImage.setVisibility(View.VISIBLE);
+        } else {
+          preexistingDamageImage.setVisibility(View.INVISIBLE);
+        }
+
       }
     });
 
@@ -548,7 +556,12 @@ public class NewItemActivity extends BaseActivity {
     //int prog = getMonetaryValueProgessFromValue(item.getMonetaryValue());
    // monetaryValueSeek.setProgress(prog);
 
-    damageDescription.setText(item.getDamageDescription());
+    preexistingDamageDescription.setText(item.getPreexistingDamageDescription());
+    if (item.getPreexistingDamageDescription().length() > 0){
+      preexistingDamageImage.setVisibility(View.VISIBLE);
+    } else {
+      preexistingDamageImage.setVisibility(View.INVISIBLE);
+    }
 
     descriptionEdit.setText(item.getDescription());
     specialHandlingEdit.setText(item.getSpecialHandling());

@@ -122,7 +122,7 @@ public class ChooseCompanyActivity extends BaseActivity {
           server.getCompany(assignment.getCompanyKey(), new FirebaseServer.GetCompanySuccess() {
                     @Override
                     public void success(Company company) {
-                      app().setCurrentCompany(company);
+                      app().setCurrentCompany(company, assignment.getCompanyKey());
                       Intent intent = JobsActivity.getLaunchIntent(thisActivity, assignment.getCompanyKey());
                       startActivity(intent);
                       finish();
@@ -188,7 +188,7 @@ public class ChooseCompanyActivity extends BaseActivity {
         server.getCompany(assignment.getCompanyKey(), new FirebaseServer.GetCompanySuccess() {
           @Override
           public void success(Company company) {
-            app().setCurrentCompany(company);
+            app().setCurrentCompany(company, assignment.getCompanyKey());
             Intent intent = new Intent(thisActivity, JobsActivity.class);
             Bundle params = new Bundle();
             params.putString("companyKey", assignment.getCompanyKey());

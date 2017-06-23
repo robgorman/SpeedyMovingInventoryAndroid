@@ -54,6 +54,8 @@ public class Company extends Model{
   private Boolean sendCustomerEmailEveryJobStatusChange; // defaults to false
   private String templateEmailEveryJobStatusChange;
 
+  private String templateEmailForEmployees;
+
   // required no args ctor
   public Company(){}
 
@@ -138,6 +140,9 @@ public class Company extends Model{
   }
 
   public String getTemplateEmailAtJobCreation() {
+    if (templateEmailAtJobCreation == null || templateEmailAtJobCreation.length() == 0) {
+      return "";
+    }
     return templateEmailAtJobCreation;
   }
 
@@ -146,6 +151,9 @@ public class Company extends Model{
   }
 
   public String getTemplateEmailAtJobPickup() {
+    if (templateEmailAtJobPickup == null || templateEmailAtJobPickup.length() == 0) {
+      return "";
+    }
     return templateEmailAtJobPickup;
   }
 
@@ -154,6 +162,9 @@ public class Company extends Model{
   }
 
   public String getTemplateEmailAtJobDelivery() {
+    if (templateEmailAtJobDelivery == null || templateEmailAtJobDelivery.length() == 0) {
+      return "";
+    }
     return templateEmailAtJobDelivery;
   }
 
@@ -162,6 +173,16 @@ public class Company extends Model{
   }
 
   public String getTemplateEmailEveryJobStatusChange() {
+    if (templateEmailEveryJobStatusChange == null || templateEmailEveryJobStatusChange.length() == 0) {
+      return "";
+    }
     return templateEmailEveryJobStatusChange;
+  }
+
+  public String getTemplateEmailForEmployees() {
+    if (templateEmailForEmployees == null || templateEmailForEmployees.length() == 0) {
+      return "";
+    }
+    return templateEmailForEmployees;
   }
 }

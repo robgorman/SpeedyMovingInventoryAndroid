@@ -83,21 +83,36 @@
                 android:layout_weight="1">
 
                 <TextView
-                    android:text="@string/damage_description_label"
+                    android:id="@+id/textView24"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textView24"
                     android:layout_weight="1"
+                    android:text="@string/preexisting_damage_description"
                     android:textColor="@color/Black"/>
 
-                <EditText
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textCapSentences|textMultiLine"
-                    android:ems="10"
-                    android:id="@+id/editDamageDescription"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:hint="Damage Description"/>
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/editPreexistingDamageDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:hint="Pre-existing Damage"
+                        android:inputType="textCapSentences|textMultiLine"/>
+
+                    <ImageView
+                        android:id="@+id/ivPreexistingDamage"
+                        android:layout_width="40dp"
+                        android:layout_height="32dp"
+                        android:layout_weight="1"
+                        app:srcCompat="@drawable/damage"/>
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout

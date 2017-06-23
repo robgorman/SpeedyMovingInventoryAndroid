@@ -174,6 +174,12 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
 
     setClaimInfo(model, holder);
 
+    if (model.getPreexistingDamageDescription().length() > 0){
+      holder.preexistingDamageImage.setVisibility(View.VISIBLE);
+    } else {
+      holder.preexistingDamageImage.setVisibility(View.INVISIBLE);
+    }
+
     holder.description.setText(item.getDescription());
 
 
@@ -210,6 +216,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
     ImageView scannedCheck;
     TextView description;
     TextView moreImages;
+    ImageView preexistingDamageImage;
 
     // labels one of these will get highlighted due to sort order
     TextView topText;
@@ -224,6 +231,7 @@ public class JobRecyclerGridAdapter extends FirebaseRecyclerAdapter<Item, JobRec
       scannedCheck = (ImageView) v.findViewById(R.id.ivScannedCheck);
 
       topText = (TextView) v.findViewById(R.id.tvTextTop);
+      preexistingDamageImage = (ImageView) v.findViewById(R.id.ivPreexistingDamage);
 
 
     }
