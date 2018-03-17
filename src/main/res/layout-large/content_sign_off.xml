@@ -7,7 +7,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ranchosoftware.speedymovinginventory.SignOffActivity"
+    tools:context=".SignOffActivity"
     tools:showIn="@layout/activity_sign_off"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:orientation="vertical">

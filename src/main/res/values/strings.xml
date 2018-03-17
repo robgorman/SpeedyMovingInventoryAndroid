@@ -186,7 +186,7 @@
     <string name="off">Off</string>
     <string name="us_dot_label">US DOT:</string>
     <string name="icc_mc_label">ICC MC:</string>
-    <string name="cal_t_label">Cal T:</string>
+    <string name="cal_t_label">State Lic.:</string>
     <string name="print">Print</string>
     <string name="desc_label">Desc:</string>
     <string name="title_activity_moving_item_pick_description">Choose An Item</string>
@@ -215,5 +215,6 @@
     <string name="phone_number_label">Phone</string>
     <string name="contact_label">Contact</string>
     <string name="preexisting_damage_description">Pre-existing Damage:</string>
+    <string name="pickup_site_condition">Use the camera button below to record condition of the flooring and walls at the pickup site. Don\'t forget to record the materials and steps you use to protect the site.</string>
     <!--<<string name="auth_domain">speedymovinginventorydev-9c905.firebaseapp.com</string>-->
 </resources>

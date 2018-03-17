@@ -24,17 +24,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview
+        <com.speedymovinginventory.speedyinventory.ui.camera.CameraSourcePreview
           android:id="@+id/preview"
           android:layout_width="match_parent"
           android:layout_height="match_parent">
 
-        <com.ranchosoftware.speedymovinginventory.ui.camera.GraphicOverlay
+        <com.speedymovinginventory.speedyinventory.ui.camera.GraphicOverlay
             android:id="@+id/graphicOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-      </com.ranchosoftware.speedymovinginventory.ui.camera.CameraSourcePreview>
+      </com.speedymovinginventory.speedyinventory.ui.camera.CameraSourcePreview>
     </LinearLayout>
 
     <TextView

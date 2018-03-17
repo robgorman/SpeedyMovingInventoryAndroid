@@ -11,7 +11,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.ranchosoftware.speedymovinginventory.MovingItemPickDescriptionActivity"
+    tools:context=".MovingItemPickDescriptionActivity"
     tools:showIn="@layout/activity_moving_item_pick_description"
     android:orientation="vertical">
 

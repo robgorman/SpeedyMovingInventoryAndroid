@@ -7,7 +7,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ranchosoftware.speedymovinginventory.SignOffActivity"
+    tools:context=".SignOffActivity"
     tools:showIn="@layout/activity_sign_off"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:orientation="vertical">
@@ -134,13 +134,13 @@
                         android:id="@+id/llCalTGroup">
 
                         <TextView
-                            android:text="@string/cal_t_label"
+                            android:id="@+id/tvCalTLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:id="@+id/tvCalTLabel"
-                            android:layout_weight="0"
                             android:layout_marginLeft="8dp"
                             android:layout_marginRight="4dp"
+                            android:layout_weight="0"
+                            android:text="@string/cal_t_label"
                             android:textColor="@color/Black"/>
 
                         <TextView

@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ranchosoftware.speedymovinginventory.NewItemActivity"
+    tools:context=".NewItemActivity"
     tools:showIn="@layout/activity_new_item"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:orientation="vertical"

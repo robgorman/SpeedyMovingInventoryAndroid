@@ -129,6 +129,119 @@
           "status": 2
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559611929727:android:21185062a5252819",
+        "android_client_info": {
+          "package_name": "com.ranchosoftware.speedydatafixutility"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "559611929727-719ls0iv2f6b57ks88t1gu8e054e5vkj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ranchosoftware.speedydatafixutility",
+            "certificate_hash": "9506c32f2cc2ccaadcc9dc2b1933e33110eaac54"
+          }
+        },
+        {
+          "client_id": "559611929727-0nu3vfteso9b0l13td6pg5eiabsii7i6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBty2mhOGpt0iteBFM4pSwaQKw2_xFtRdA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "559611929727-0nu3vfteso9b0l13td6pg5eiabsii7i6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "559611929727-l516o5d6u94t49nffc2gf5b8eg746ctb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.speedyinventory.dev"
+              }
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559611929727:android:846d66f0e2e5d75f",
+        "android_client_info": {
+          "package_name": "com.ranchosoftware.speedypopulatecubesheettemplates"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "559611929727-0nu3vfteso9b0l13td6pg5eiabsii7i6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBty2mhOGpt0iteBFM4pSwaQKw2_xFtRdA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559611929727:android:6430ed30061b7764",
+        "android_client_info": {
+          "package_name": "com.speedymovinginventory.speedymoving.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "559611929727-0nu3vfteso9b0l13td6pg5eiabsii7i6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBty2mhOGpt0iteBFM4pSwaQKw2_xFtRdA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
     }
   ],
   "configuration_version": "1"

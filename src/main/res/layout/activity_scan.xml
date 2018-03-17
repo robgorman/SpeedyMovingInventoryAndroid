@@ -21,14 +21,14 @@
         android:layout_alignParentStart="true"
         android:background="@color/Black">
 
-        <com.ranchosoftware.speedymovinginventory.ui.camera2.CameraSourcePreview
+        <com.speedymovinginventory.speedyinventory.ui.camera2.CameraSourcePreview
           android:id="@+id/preview"
           android:layout_width="match_parent"
           android:layout_height="match_parent">
 
-        </com.ranchosoftware.speedymovinginventory.ui.camera2.CameraSourcePreview>
+        </com.speedymovinginventory.speedyinventory.ui.camera2.CameraSourcePreview>
 
-        <com.ranchosoftware.speedymovinginventory.ui.camera2.GraphicOverlay
+        <com.speedymovinginventory.speedyinventory.ui.camera2.GraphicOverlay
             android:id="@+id/graphicOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.ranchosoftware.speedymovinginventory.JobsActivity">
+    tools:context=".JobsActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -49,4 +49,16 @@
         app:layout_anchorGravity="bottom|start|end"
         app:useCompatPadding="true"
         android:layout_width="80dp"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingActionTakePic"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:visibility="gone"
+        app:backgroundTint="@color/speedyDark"
+        app:layout_anchor="@id/floatingActionSignOff"
+        app:layout_anchorGravity="bottom|start|end"
+        app:srcCompat="@drawable/camera_add_white"
+        app:useCompatPadding="true"/>
 </android.support.design.widget.CoordinatorLayout>
